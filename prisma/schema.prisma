@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Currency {
+  INR
+  USD
+  EUR
+  GBP
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+}
+
+enum ExpenseType {
+  DAILY
+  MONTHLY
+  LARGE
+}
+
+enum IncomeSource {
+  Salary
+  Freelance
+  Business
+  Other
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum GroupRole {
+  ADMIN
+  MEMBER
+}
+
+enum SplitType {
+  EQUAL
+  PERCENTAGE
+  CUSTOM
+}
+
+model User {
+  id                String   @id @default(uuid())
+  name              String
+  email             String   @unique
+  hashedPassword    String
+  currency          Currency @default(INR)
+  role              Role     @default(USER)
+  securityQuestion  String?
+  securityAnswer    String?
+  lastActive        DateTime?
+  emailVerified     Boolean  @default(false)
+  verificationToken String?
+  verificationTokenExpires DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  personalExpenses  PersonalExpense[]
+  incomes           Income[]
+  savings           Saving[]
+  savingsGoals      SavingsGoal[]
+  recurringExpenses RecurringExpense[]
+  groupMembers      GroupMember[]
+  paidExpenses      GroupExpense[]     @relation("PaidBy")
+  groupSplits       GroupSplit[]
+  settlementsFrom   Settlement[]       @relation("SettlementFrom")
+  settlementsTo     Settlement[]       @relation("SettlementTo")
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PersonalExpense {
+  id            String        @id @default(uuid())
+  amount        Float
+  category      String
+  date          DateTime
+  paymentMethod PaymentMethod
+  notes         String?
+  type          ExpenseType
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([userId, date])
+  @@index([userId, category])
+}
+
+model Income {
+  id        String       @id @default(uuid())
+  amount    Float
+  source    IncomeSource
+  date      DateTime
+  notes     String?
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([userId, date])
+}
+
+model Saving {
+  id        String   @id @default(uuid())
+  amount    Float
+  month     Int
+  year      Int
+  notes     String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, month, year])
+}
+
+model SavingsGoal {
+  id            String    @id @default(uuid())
+  name          String
+  targetAmount  Float
+  currentAmount Float     @default(0)
+  deadline      DateTime?
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model RecurringExpense {
+  id            String        @id @default(uuid())
+  amount        Float
+  category      String
+  frequency     Frequency
+  nextDueDate   DateTime
+  paymentMethod PaymentMethod
+  notes         String?
+  isActive      Boolean       @default(true)
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Group {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  members     GroupMember[]
+  expenses    GroupExpense[]
+  settlements Settlement[]
+}
+
+model GroupMember {
+  id       String    @id @default(uuid())
+  role     GroupRole @default(MEMBER)
+  userId   String
+  groupId  String
+  joinedAt DateTime  @default(now())
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group    Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+}
+
+model GroupExpense {
+  id          String       @id @default(uuid())
+  amount      Float
+  description String
+  date        DateTime
+  splitType   SplitType
+  paidById    String
+  groupId     String
+  paidBy      User         @relation("PaidBy", fields: [paidById], references: [id])
+  group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  splits      GroupSplit[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model GroupSplit {
+  id             String       @id @default(uuid())
+  amount         Float
+  groupExpenseId String
+  userId         String
+  groupExpense   GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Settlement {
+  id        String   @id @default(uuid())
+  amount    Float
+  fromId    String
+  toId      String
+  groupId   String
+  from      User     @relation("SettlementFrom", fields: [fromId], references: [id])
+  to        User     @relation("SettlementTo", fields: [toId], references: [id])
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+}
