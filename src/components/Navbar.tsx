@@ -3,6 +3,8 @@
 import React from "react";
 import Link from "next/link";
 
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+
 export function BrandIcon({ className = "h-8 w-8" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 32 32" fill="none">
@@ -49,8 +51,9 @@ export function Navbar() {
           ))}
         </div>
 
-        {/* Auth Buttons */}
+        {/* Auth Buttons + Theme Toggle */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <Link
             href="/login"
             className="text-sm font-medium text-slate-300 transition-colors duration-200 hover:text-white"

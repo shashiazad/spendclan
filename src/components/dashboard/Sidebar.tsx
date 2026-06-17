@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { BrandIcon } from "@/components/Navbar";
 
 interface NavItem {
   href: string;
@@ -118,9 +120,7 @@ export function Sidebar() {
     <>
       <div className="flex h-16 items-center gap-3 border-b border-slate-800 px-6">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/30">
-          <svg className="h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <BrandIcon className="h-5 w-5 text-emerald-400" />
         </div>
         <div>
           <p className="text-sm font-bold text-white">SpendClan</p>
@@ -150,16 +150,19 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-slate-800 p-4">
-        {session?.user && (
-          <div className="mb-3 px-2">
-            <p className="truncate text-sm font-medium text-slate-200">
-              {session.user.name}
-            </p>
-            <p className="truncate text-xs text-slate-500">
-              {session.user.email}
-            </p>
-          </div>
-        )}
+        <div className="flex items-center justify-between mb-3 px-2">
+          {session?.user && (
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-slate-200">
+                {session.user.name}
+              </p>
+              <p className="truncate text-xs text-slate-500">
+                {session.user.email}
+              </p>
+            </div>
+          )}
+          <ThemeToggle />
+        </div>
         <Button
           variant="ghost"
           size="sm"
@@ -181,9 +184,7 @@ export function Sidebar() {
       <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-slate-800 bg-slate-900/95 px-4 backdrop-blur-md lg:hidden">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
-            <svg className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <BrandIcon className="h-4 w-4 text-emerald-400" />
           </div>
           <span className="text-sm font-bold text-white">SpendClan</span>
         </div>
