@@ -47,7 +47,7 @@ export function ExpenseReport() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Xpensio Expense Report</title>
+          <title>SpendClan Expense Report</title>
           <style>
             body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1e293b; line-height: 1.6; }
             h1, h2, h3 { color: #0f172a; }
