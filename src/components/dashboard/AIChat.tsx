@@ -7,6 +7,7 @@ type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  isError?: boolean;
 };
 
 const SUGGESTED_QUESTIONS = [
@@ -54,13 +55,14 @@ export function AIChat() {
         id: crypto.randomUUID(),
         role: "assistant",
         content: data.response ?? data.error ?? "Sorry, I couldn't process that request.",
+        isError: !data.response && !!data.error,
       };
 
       setMessages((prev) => [...prev, aiMsg]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), role: "assistant", content: "Network error. Please try again." },
+        { id: crypto.randomUUID(), role: "assistant", content: "Looks like you're offline or our servers are busy. Check your connection and try again. 🌐", isError: true },
       ]);
     }
 
@@ -113,7 +115,9 @@ export function AIChat() {
               className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                 msg.role === "user"
                   ? "bg-emerald-500/20 text-emerald-100 rounded-br-md"
-                  : "bg-slate-800/80 text-slate-200 rounded-bl-md border border-slate-700/50"
+                  : msg.isError
+                    ? "bg-amber-500/10 text-amber-200 rounded-bl-md border border-amber-500/30"
+                    : "bg-slate-800/80 text-slate-200 rounded-bl-md border border-slate-700/50"
               }`}
             >
               {msg.role === "assistant" ? (
