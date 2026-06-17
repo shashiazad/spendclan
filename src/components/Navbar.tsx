@@ -33,7 +33,7 @@ export function Navbar() {
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <BrandIcon className="h-8 w-8 text-emerald-400 transition-transform duration-300 group-hover:scale-110" />
-          <span className="text-xl font-bold tracking-tight text-white animate-fade-in">
+          <span className="text-xl font-bold tracking-tight text-slate-100 animate-fade-in">
             Spend<span className="text-emerald-400">Clan</span>
           </span>
         </Link>
@@ -44,7 +44,7 @@ export function Navbar() {
             <a
               key={item}
               href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-              className="text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-white"
+              className="text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-slate-100"
             >
               {item}
             </a>
@@ -56,7 +56,7 @@ export function Navbar() {
           <ThemeToggle />
           <Link
             href="/login"
-            className="text-sm font-medium text-slate-300 transition-colors duration-200 hover:text-white"
+            className="text-sm font-medium text-slate-300 transition-colors duration-200 hover:text-slate-100"
           >
             Login
           </Link>

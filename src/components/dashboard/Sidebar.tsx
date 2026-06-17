@@ -123,7 +123,7 @@ export function Sidebar() {
           <BrandIcon className="h-5 w-5 text-emerald-400" />
         </div>
         <div>
-          <p className="text-sm font-bold text-white">SpendClan</p>
+          <p className="text-sm font-bold text-slate-100">SpendClan</p>
           <p className="text-xs text-slate-500">Finance tracker</p>
         </div>
       </div>
@@ -186,11 +186,11 @@ export function Sidebar() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
             <BrandIcon className="h-4 w-4 text-emerald-400" />
           </div>
-          <span className="text-sm font-bold text-white">SpendClan</span>
+          <span className="text-sm font-bold text-slate-100">SpendClan</span>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white"
+          className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100"
           aria-label="Toggle menu"
         >
           {mobileOpen ? (

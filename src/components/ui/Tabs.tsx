@@ -27,7 +27,7 @@ export function Tabs({ tabs, defaultTab, children, className = "" }: TabsProps) 
             onClick={() => setActive(tab.id)}
             className={`relative flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
               active === tab.id
-                ? "bg-slate-800 text-white shadow-lg shadow-black/20"
+                ? "bg-slate-800 text-slate-100 shadow-lg shadow-black/20"
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >

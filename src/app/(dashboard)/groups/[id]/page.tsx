@@ -209,7 +209,7 @@ export default function GroupDetailPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">{group?.name ?? "Pocket Details"}</h1>
+          <h1 className="text-2xl font-bold text-slate-100">{group?.name ?? "Pocket Details"}</h1>
           <p className="mt-1 text-slate-400">{group?.description ?? "Manage shared expenses and settlements"}</p>
         </div>
         {isAdmin && (
@@ -315,7 +315,7 @@ export default function GroupDetailPage() {
         <div className="space-y-6">
           <Card padding="sm">
             <p className="text-sm text-slate-400">Total Group Spend</p>
-            <p className="text-2xl font-bold text-white">{formatCurrency(totalSpend, currency)}</p>
+            <p className="text-2xl font-bold text-slate-100">{formatCurrency(totalSpend, currency)}</p>
           </Card>
 
           <Card>

@@ -14,7 +14,7 @@ export function AuthCard({ children, title, subtitle }: AuthCardProps) {
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/30">
           <BrandIcon className="h-6 w-6 text-emerald-400" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-100">
           SpendClan
         </h1>
         <h2 className="mt-3 text-lg font-semibold text-slate-100">{title}</h2>
