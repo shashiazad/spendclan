@@ -128,7 +128,7 @@ export default function ExpensesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Expenses</h1>
+        <h1 className="text-2xl font-bold text-slate-100">Expenses</h1>
         <p className="mt-1 text-slate-400">Track your personal spending</p>
       </div>
 

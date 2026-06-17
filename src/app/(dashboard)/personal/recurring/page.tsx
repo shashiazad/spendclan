@@ -119,7 +119,7 @@ export default function RecurringPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Recurring Expenses</h1>
+          <h1 className="text-2xl font-bold text-slate-100">Recurring Expenses</h1>
           <p className="mt-1 text-slate-400">Track regular bills and subscriptions</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)}>{showForm ? "Cancel" : "Add Recurring"}</Button>

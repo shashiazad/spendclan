@@ -94,13 +94,13 @@ function MockDashboard() {
       {/* Welcome header */}
       <div className="mb-5">
         <p className="text-xs text-slate-500 mb-0.5">Good Evening</p>
-        <h3 className="text-lg font-bold text-white">Shashi 👋</h3>
+        <h3 className="text-lg font-bold text-slate-100">Shashi 👋</h3>
       </div>
 
       {/* Balance card */}
       <div className="rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 border border-emerald-500/20 p-4 mb-5">
         <p className="text-xs text-emerald-300/70 font-medium mb-1">Total Balance</p>
-        <p className="text-3xl font-bold text-white tracking-tight">
+        <p className="text-3xl font-bold text-slate-100 tracking-tight">
           +₹51,700<span className="text-lg text-emerald-400">.00</span>
         </p>
         <div className="mt-2 flex items-center gap-1.5">
@@ -169,7 +169,7 @@ function HeroSection() {
               <span className="text-xs font-medium text-emerald-300">Free forever for personal use</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.1] tracking-tight text-white mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.1] tracking-tight text-slate-100 mb-6">
               Manage Finances{" "}
               <span className="bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent">
                 Smartly.
@@ -195,7 +195,7 @@ function HeroSection() {
               </Link>
               <Link
                 href="/login"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/50 px-7 py-3.5 text-base font-medium text-slate-300 transition-all duration-300 hover:border-slate-600 hover:bg-slate-800 hover:text-white"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/50 px-7 py-3.5 text-base font-medium text-slate-300 transition-all duration-300 hover:border-slate-600 hover:bg-slate-800 hover:text-slate-100"
               >
                 Sign In
               </Link>
@@ -243,7 +243,7 @@ function FeatureCard({
       <div className="mb-4 inline-flex items-center justify-center rounded-xl bg-emerald-500/10 p-2.5 text-emerald-400 ring-1 ring-emerald-500/20 transition-all duration-300 group-hover:bg-emerald-500/15 group-hover:ring-emerald-500/30">
         {icon}
       </div>
-      <h3 className="text-base font-bold text-white mb-2">{title}</h3>
+      <h3 className="text-base font-bold text-slate-100 mb-2">{title}</h3>
       <div className="text-sm text-slate-400 leading-relaxed">{children}</div>
     </div>
   );
@@ -464,7 +464,7 @@ function FeaturesSection() {
       <div className="mx-auto max-w-7xl px-6">
         {/* Section Header */}
         <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-100 tracking-tight mb-3">
             Everything You Need
           </h2>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
@@ -545,7 +545,7 @@ function WhySpendClanSection() {
     <section id="why-spendclan" className="py-20 border-t border-slate-800/50">
       <div className="mx-auto max-w-7xl px-6">
         <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-100 tracking-tight mb-3">
             Why SpendClan?
           </h2>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
@@ -559,7 +559,7 @@ function WhySpendClanSection() {
               className="group rounded-xl border border-slate-800/80 bg-slate-900/60 p-4 transition-all duration-300 hover:border-emerald-500/20 hover:bg-slate-900/80"
             >
               <span className="text-xl mb-1 block">{b.icon}</span>
-              <p className="text-sm font-bold text-white mb-0.5 group-hover:text-emerald-400 transition-colors">{b.name}</p>
+              <p className="text-sm font-bold text-slate-100 mb-0.5 group-hover:text-emerald-400 transition-colors">{b.name}</p>
               <p className="text-xs text-slate-500">{b.desc}</p>
             </div>
           ))}
@@ -579,7 +579,7 @@ function SecuritySection() {
           <div className="inline-flex items-center justify-center rounded-xl bg-emerald-500/10 p-3 text-emerald-400 ring-1 ring-emerald-500/20 mb-5">
             <ShieldIcon />
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-100 tracking-tight mb-3">
             Your Data, Fully Protected
           </h2>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
@@ -609,7 +609,7 @@ function SecuritySection() {
               className="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 transition-all duration-300 hover:border-slate-700/80 hover:shadow-lg hover:shadow-black/20"
             >
               <span className="text-2xl mb-3 block">{item.icon}</span>
-              <h3 className="text-base font-bold text-white mb-2">{item.title}</h3>
+              <h3 className="text-base font-bold text-slate-100 mb-2">{item.title}</h3>
               <p className="text-sm text-slate-400 leading-relaxed">{item.desc}</p>
             </div>
           ))}
@@ -625,7 +625,7 @@ function CTASection() {
   return (
     <section className="py-20 border-t border-slate-800/50">
       <div className="mx-auto max-w-3xl px-6 text-center">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-100 tracking-tight mb-4">
           Ready to take control of your finances?
         </h2>
         <p className="text-lg text-slate-400 mb-8">

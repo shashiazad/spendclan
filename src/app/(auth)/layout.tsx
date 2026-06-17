@@ -4,7 +4,7 @@ import { BrandIcon } from "@/components/Navbar";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#0b1120] text-slate-100 transition-colors duration-300">
+    <div className="min-h-screen flex flex-col md:flex-row bg-slate-950 text-slate-100 transition-colors duration-300">
       
       {/* Left Column / Visual Brand Graphic (Web App / Desktop only) */}
       <div className="hidden md:flex md:w-1/2 lg:w-3/5 flex-col justify-between p-12 bg-slate-950 border-r border-slate-900/40 relative overflow-hidden auth-gradient">
@@ -18,7 +18,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/30 group-hover:scale-105 transition-transform duration-300">
               <BrandIcon className="h-6 w-6 text-emerald-400" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">
+            <span className="text-xl font-bold tracking-tight text-slate-100">
               Spend<span className="text-emerald-400">Clan</span>
             </span>
           </Link>
@@ -31,7 +31,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Pocket</span>
-                <h3 className="text-lg font-bold text-white mt-0.5">🏕️ Weekend Trip split</h3>
+                <h3 className="text-lg font-bold text-slate-100 mt-0.5">🏕️ Weekend Trip split</h3>
               </div>
               <span className="bg-emerald-500/10 text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium ring-1 ring-emerald-500/20">
                 Active Ledger
@@ -42,7 +42,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800/50">
                 <span className="text-xs text-slate-500 block">Total Spent</span>
-                <span className="text-xl font-bold text-white">₹14,850.00</span>
+                <span className="text-xl font-bold text-slate-100">₹14,850.00</span>
               </div>
               <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800/50">
                 <span className="text-xs text-slate-500 block">Your Share</span>
@@ -114,7 +114,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       </div>
 
       {/* Right Column / Centered Login Card (Mobile: Full screen) */}
-      <div className="w-full md:w-1/2 lg:w-2/5 flex items-center justify-center p-6 sm:p-12 relative bg-[#0b1120] auth-gradient">
+      <div className="w-full md:w-1/2 lg:w-2/5 flex items-center justify-center p-6 sm:p-12 relative bg-slate-950 auth-gradient">
         {/* Glow behind card on mobile */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none block md:hidden" />
         <div className="relative z-10 w-full flex justify-center">
