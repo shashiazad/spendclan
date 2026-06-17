@@ -3,7 +3,10 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 
 const connectionString =
+  process.env.POSTGRES_URL_NON_POOLING ??
+  process.env.DIRECT_URL ??
   process.env.DATABASE_URL ??
+  process.env.POSTGRES_PRISMA_URL ??
   "postgresql://ledgerly:ledgerly@localhost:5432/ledgerly?schema=public";
 
 const adapter = new PrismaPg({ connectionString });
