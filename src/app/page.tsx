@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Footer } from "@/components/Footer";
+
 
 export const metadata: Metadata = {
   title: "SpendClan — Premium Expense Tracker & Smart Group Splits",
@@ -20,13 +22,20 @@ export const metadata: Metadata = {
 function BrandIcon({ className = "h-8 w-8" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 32 32" fill="none">
-      {/* Linked-nodes / split wallet icon */}
-      <rect x="2" y="6" width="12" height="20" rx="3" stroke="currentColor" strokeWidth="1.8" />
-      <rect x="18" y="6" width="12" height="20" rx="3" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M14 14h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M14 18h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <circle cx="8" cy="12" r="1.5" fill="currentColor" />
-      <circle cx="24" cy="12" r="1.5" fill="currentColor" />
+      {/* Wallet base */}
+      <rect x="2" y="9" width="12" height="14" rx="2.5" stroke="currentColor" strokeWidth={2} />
+      {/* Wallet clasp */}
+      <path d="M14 17h-2.5a1.5 1.5 0 01-1.5-1.5v-1a1.5 1.5 0 011.5-1.5h2.5" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+      {/* Trendline inside wallet (Expense Tracking & Savings) */}
+      <path d="M5 17l2.5-2.5 2 2 3-3" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+      {/* Splitting Paths (Bill Splits & shared expenses) */}
+      <path d="M14 16h6" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+      <path d="M20 16l5-6" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+      <path d="M20 16l5 6" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+      {/* Clan Nodes */}
+      <circle cx="25" cy="10" r="2.5" fill="currentColor" />
+      <circle cx="26" cy="16" r="2.5" fill="currentColor" />
+      <circle cx="25" cy="22" r="2.5" fill="currentColor" />
     </svg>
   );
 }
@@ -698,37 +707,6 @@ function CTASection() {
   );
 }
 
-/* ──────────────────────────── FOOTER ──────────────────────────── */
-
-function LandingFooter() {
-  return (
-    <footer className="border-t border-slate-800/50 py-8">
-      <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <BrandIcon className="h-5 w-5 text-emerald-400" />
-          <span className="text-sm font-semibold text-slate-400">
-            SpendClan
-          </span>
-          <span className="text-xs text-slate-600">
-            &copy; {new Date().getFullYear()}
-          </span>
-        </div>
-        <p className="text-xs text-slate-600">
-          Built by{" "}
-          <a
-            href="https://github.com/shashiazad"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-slate-500 hover:text-emerald-400 transition-colors"
-          >
-            Shashi Azad
-          </a>
-        </p>
-      </div>
-    </footer>
-  );
-}
-
 /* ──────────────────────────── PAGE ──────────────────────────── */
 
 export default function HomePage() {
@@ -742,7 +720,7 @@ export default function HomePage() {
         <SecuritySection />
         <CTASection />
       </main>
-      <LandingFooter />
+      <Footer />
     </div>
   );
 }
