@@ -3,9 +3,13 @@
 :root {
   --background: #0b1120;
   --foreground: #e2e8f0;
+  --foreground-light: #f1f5f9;
+  --foreground-muted: #cbd5e1;
   --card: #111827;
   --card-border: #1e293b;
+  --card-border-hover: #334155;
   --muted: #94a3b8;
+  --muted-light: #64748b;
   --accent: #6366f1; /* Royal Indigo */
   --accent-hover: #4f46e5; /* Deep Indigo */
   --accent-muted: rgba(99, 102, 241, 0.15);
@@ -32,9 +36,13 @@
 .light {
   --background: #f8fafc; /* Soft slate white */
   --foreground: #0f172a; /* Dark slate text */
+  --foreground-light: #1e293b;
+  --foreground-muted: #334155;
   --card: #ffffff;       /* Pure white card */
   --card-border: #e2e8f0; /* Soft border */
-  --muted: #64748b;
+  --card-border-hover: #cbd5e1;
+  --muted: #64748b;      /* Slate-500 */
+  --muted-light: #94a3b8;
   --accent: #4f46e5;      /* Indigo-600 */
   --accent-hover: #3730a3;
   --accent-muted: rgba(79, 70, 229, 0.08);
@@ -75,6 +83,17 @@
   --color-ai-secondary: var(--ai-secondary);
   --color-ai-glow: var(--ai-glow);
   --font-sans: var(--font-inter);
+
+  /* Remap slate colors to make them theme-aware globally */
+  --color-slate-950: var(--background);
+  --color-slate-900: var(--card);
+  --color-slate-800: var(--card-border);
+  --color-slate-700: var(--card-border-hover);
+  --color-slate-500: var(--muted-light);
+  --color-slate-400: var(--muted);
+  --color-slate-300: var(--foreground-muted);
+  --color-slate-200: var(--foreground-light);
+  --color-slate-100: var(--foreground);
 
   /* Semantic financial colors */
   --color-income: var(--income);
