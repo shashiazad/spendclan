@@ -14,7 +14,7 @@ Personal finance and group expense management web app.
 ### Prerequisites
 
 - Node.js 20+
-- PostgreSQL 16 (or use Docker Compose)
+- PostgreSQL 16
 
 ### Setup
 
@@ -24,9 +24,7 @@ npm install
 
 # Copy environment variables
 cp .env.example .env
-
-# Start PostgreSQL (optional - via Docker)
-docker compose up db -d
+# Edit .env with your PostgreSQL connection string
 
 # Push schema to database
 npm run db:push
@@ -47,14 +45,24 @@ Open [http://localhost:3000](http://localhost:3000)
 | admin@ledgerly.com | admin123 | ADMIN |
 | user@ledgerly.com | user123 | USER |
 
-## Docker (Full Stack)
+## Deploy to Vercel
 
-```bash
-docker compose up --build
-```
-
-- **App**: Available at [http://localhost](http://localhost) via Nginx reverse proxy.
-- **Mailpit Web UI (Mock Inbox)**: Available at [http://localhost:8025](http://localhost:8025) (every email sent by the app during local registration/testing goes here instantly).
+1. Push this repo to GitHub.
+2. Import the project in [Vercel](https://vercel.com/new).
+3. Set the following environment variables in the Vercel dashboard:
+   - `DATABASE_URL` — PostgreSQL connection string (e.g. from [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)).
+   - `NEXTAUTH_SECRET` — Random secret for JWT signing.
+   - `NEXTAUTH_URL` — Your production URL (e.g. `https://ledgerly.vercel.app`).
+   - `SMTP_HOST` — SMTP server host (e.g. `smtp.resend.com`).
+   - `SMTP_PORT` — SMTP port (`587` for STARTTLS, `465` for TLS).
+   - `SMTP_SECURE` — `true` for TLS (port 465) or `false` for STARTTLS (port 587).
+   - `SMTP_USER` & `SMTP_PASS` — Credentials for the SMTP server.
+   - `SMTP_FROM` — Sender email address (e.g. `Ledgerly <noreply@yourdomain.com>`).
+4. Deploy. Vercel will automatically run `npm run build` (which includes `prisma generate`).
+5. After the first deploy, run migrations against your production database:
+   ```bash
+   DATABASE_URL="your-production-connection-string" npx prisma db push
+   ```
 
 ## Environment Variables
 
@@ -62,9 +70,9 @@ See `.env.example` for all required variables:
 
 - `DATABASE_URL` — PostgreSQL connection string.
 - `NEXTAUTH_SECRET` — Random secret for JWT signing.
-- `NEXTAUTH_URL` — App URL (e.g. `http://localhost`).
-- `SMTP_HOST` — SMTP server host (e.g. `mailpit` in local Docker, or a real service like `smtp.resend.com` in production).
-- `SMTP_PORT` — SMTP port (e.g. `1025` for Mailpit, `587` or `465` for production).
+- `NEXTAUTH_URL` — App URL (e.g. `http://localhost:3000` locally, `https://yourdomain.com` in production).
+- `SMTP_HOST` — SMTP server host (e.g. `smtp.resend.com`).
+- `SMTP_PORT` — SMTP port (`587` for STARTTLS, `465` for TLS).
 - `SMTP_SECURE` — `true` for TLS (port 465) or `false` for STARTTLS (port 587).
 - `SMTP_USER` & `SMTP_PASS` — Credentials for the SMTP server.
 - `SMTP_FROM` — Sender email address (e.g. `Ledgerly <noreply@yourdomain.com>`).
