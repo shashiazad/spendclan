@@ -13,6 +13,39 @@ function getClient(): GoogleGenAI | null {
 // Helper function to delay execution
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+/** Maps raw Gemini API errors to user-friendly messages */
+export function friendlyAIError(error: unknown): string {
+  const msg = error instanceof Error ? error.message : String(error);
+  const msgLower = msg.toLowerCase();
+
+  if (
+    msgLower.includes("503") ||
+    msgLower.includes("unavailable") ||
+    msgLower.includes("high demand") ||
+    msgLower.includes("overloaded")
+  ) {
+    return "SpendClan AI is analyzing a lot of balance sheets right now! \ud83d\udcca Please give us a quick moment and try asking your question again.";
+  }
+
+  if (
+    msgLower.includes("429") ||
+    msgLower.includes("resource_exhausted") ||
+    msgLower.includes("rate limit")
+  ) {
+    return "SpendClan AI is analyzing a lot of balance sheets right now! \ud83d\udcca Please give us a quick moment and try asking your question again.";
+  }
+
+  if (msgLower.includes("api_key") || msgLower.includes("not configured")) {
+    return "AI features are being set up. Check back soon! \u2728";
+  }
+
+  if (msgLower.includes("timeout") || msgLower.includes("deadline")) {
+    return "The AI advisor took too long to respond. Please try a shorter question or try again in a moment.";
+  }
+
+  return "Something unexpected happened with our AI advisor. Please try again in a moment. \ud83d\ude4f";
+}
+
 export async function generateFinancialInsight(prompt: string, maxRetries = 3): Promise<string> {
   const ai = getClient();
   if (!ai) {
@@ -46,13 +79,13 @@ export async function generateFinancialInsight(prompt: string, maxRetries = 3): 
         continue;
       }
       
-      const msg = error instanceof Error ? error.message : "Unknown error";
-      console.error(`[Gemini] Error generating content (Attempt ${attempt}):`, msg);
-      throw new Error(`AI generation failed: ${msg}`);
+      const rawMsg = error instanceof Error ? error.message : "Unknown error";
+      console.error(`[Gemini] Error generating content (Attempt ${attempt}):`, rawMsg);
+      throw new Error(friendlyAIError(error));
     }
   }
   
-  throw new Error("AI generation failed after max retries");
+  throw new Error("SpendClan AI is analyzing a lot of balance sheets right now! \ud83d\udcca Please give us a quick moment and try asking your question again.");
 }
 
 export function isAIConfigured(): boolean {

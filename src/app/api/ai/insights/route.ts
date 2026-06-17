@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { isAIConfigured, generateWithCache } from "@/lib/gemini";
+import { isAIConfigured, generateWithCache, friendlyAIError } from "@/lib/gemini";
 import { getAIContext } from "@/lib/ai-data";
 import { buildInsightsPrompt } from "@/lib/ai-prompts";
 
@@ -45,8 +45,9 @@ export async function GET() {
 
     return NextResponse.json({ configured: true, ...parsed });
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Unknown error";
-    console.error("[AI Insights] Error:", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    const rawMsg = error instanceof Error ? error.message : "Unknown error";
+    console.error("[AI Insights] Error:", rawMsg);
+    const userMsg = friendlyAIError(error);
+    return NextResponse.json({ error: userMsg }, { status: 500 });
   }
 }

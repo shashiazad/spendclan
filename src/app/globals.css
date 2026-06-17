@@ -15,6 +15,12 @@
   --ai-primary: #8b5cf6;
   --ai-secondary: #6366f1;
   --ai-glow: rgba(139, 92, 246, 0.15);
+
+  /* Semantic financial colors */
+  --income: #10B981;       /* Mint Green — Income, positive balances */
+  --expense: #EF4444;      /* Crimson — Expenses, debts, overdue */
+  --savings: #6366F1;      /* Indigo — Savings, investments, goals */
+  --ai-accent: #F59E0B;    /* Amber/Gold — AI elements, smart features */
 }
 
 @theme inline {
@@ -33,6 +39,12 @@
   --color-ai-secondary: var(--ai-secondary);
   --color-ai-glow: var(--ai-glow);
   --font-sans: var(--font-inter);
+
+  /* Semantic financial colors */
+  --color-income: var(--income);
+  --color-expense: var(--expense);
+  --color-savings: var(--savings);
+  --color-ai-accent: var(--ai-accent);
 
   /* Override default emerald palette to use our royal indigo accent */
   --color-emerald-500: var(--accent);

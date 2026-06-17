@@ -99,25 +99,23 @@ export default function AboutPage() {
 
       {/* Tech stack */}
       <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-8 shadow-2xl shadow-black/30 backdrop-blur-md animate-slide-up" style={{ animationDelay: "100ms" }}>
-        <h2 className="text-lg font-bold text-white mb-4">Tech Stack</h2>
+        <h2 className="text-lg font-bold text-white mb-4">What Makes SpendClan Special</h2>
         <div className="flex flex-wrap gap-2">
           {[
-            "Next.js 16",
-            "React 19",
-            "TypeScript",
-            "Tailwind CSS 4",
-            "PostgreSQL 16",
-            "Prisma 7",
-            "NextAuth.js",
-            "Recharts 3",
-            "Gemini AI",
-            "Vercel",
-          ].map((tech) => (
+            "Instant Loading",
+            "Bank-Grade Security",
+            "Real-Time Sync",
+            "Smart AI Insights",
+            "Visual Reports",
+            "Group Splits",
+            "Mobile Friendly",
+            "Always Available",
+          ].map((feature) => (
             <span
-              key={tech}
+              key={feature}
               className="rounded-full border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:border-emerald-500/30 hover:text-emerald-400"
             >
-              {tech}
+              {feature}
             </span>
           ))}
         </div>

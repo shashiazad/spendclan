@@ -103,10 +103,10 @@ function Navbar() {
 
         {/* Center Nav Links */}
         <div className="hidden md:flex items-center gap-8">
-          {["Features", "Architecture", "Security"].map((item) => (
+          {["Features", "Why SpendClan", "Security"].map((item) => (
             <a
               key={item}
-              href={`#${item.toLowerCase()}`}
+              href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
               className="text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-white"
             >
               {item}
@@ -454,7 +454,7 @@ function DebtSimplificationMini() {
         </div>
       </div>
       <p className="text-[10px] text-slate-500 text-center">
-        Greedy algorithm · ₹0.01 accuracy threshold
+        Smart math · Penny-perfect accuracy
       </p>
     </div>
   );
@@ -493,10 +493,10 @@ function AIInsightsMini() {
 
 function SecurityMini() {
   const badges = [
-    { label: "NextAuth.js JWT", desc: "Session Isolation" },
-    { label: "bcrypt (12 rounds)", desc: "Password Security" },
-    { label: "Auto Token Destroy", desc: "Single-Use Tokens" },
-    { label: "Row-Level Isolation", desc: "Data Privacy" },
+    { label: "Encrypted Sessions", desc: "Session Isolation" },
+    { label: "Military-Grade Hash", desc: "Password Security" },
+    { label: "One-Time Links", desc: "Single-Use Tokens" },
+    { label: "Private Data Walls", desc: "Data Privacy" },
   ];
 
   return (
@@ -553,7 +553,7 @@ function FeaturesSection() {
           </FeatureCard>
 
           {/* 3. Debt Simplification */}
-          <FeatureCard icon={<BoltIcon />} title="Greedy Debt Simplification">
+          <FeatureCard icon={<BoltIcon />} title="Smart Debt Settlement">
             <p>
               Our algorithm simplifies complex group debts into the fewest possible
               clean transactions — no more messy IOUs.
@@ -571,9 +571,9 @@ function FeaturesSection() {
           </FeatureCard>
 
           {/* 5. Security */}
-          <FeatureCard icon={<ShieldIcon />} title="Secure Core Architecture">
+          <FeatureCard icon={<ShieldIcon />} title="Bank-Grade Security">
             <p>
-              Enterprise-grade security architecture protecting every layer of your financial data.
+              Your financial data is protected with the same security standards used by banks and payment platforms.
             </p>
             <SecurityMini />
           </FeatureCard>
@@ -585,37 +585,38 @@ function FeaturesSection() {
 
 /* ──────────────────────────── ARCHITECTURE SECTION ──────────────────────────── */
 
-function ArchitectureSection() {
-  const stack = [
-    { name: "Next.js 16", desc: "App Router, Server Components" },
-    { name: "React 19", desc: "Concurrent rendering" },
-    { name: "Prisma 7", desc: "Type-safe ORM with pg adapter" },
-    { name: "PostgreSQL", desc: "Serverless via Neon / Vercel" },
-    { name: "NextAuth.js", desc: "JWT credential sessions" },
-    { name: "Tailwind CSS 4", desc: "Utility-first styling" },
-    { name: "Recharts 3", desc: "Interactive data visualization" },
-    { name: "Vercel", desc: "Edge-optimized deployment" },
+function WhySpendClanSection() {
+  const benefits = [
+    { icon: "⚡", name: "Instant-Load Performance", desc: "Blazing fast on mobile & desktop" },
+    { icon: "🏦", name: "Bank-Grade Data Integrity", desc: "Every transaction recorded accurately" },
+    { icon: "☁️", name: "Always Available", desc: "Your data synced and accessible 24/7" },
+    { icon: "🔐", name: "Private by Default", desc: "Your finances are yours alone" },
+    { icon: "🎨", name: "Beautiful & Responsive", desc: "Looks great on any screen size" },
+    { icon: "📊", name: "Visual Insights", desc: "Understand your money at a glance" },
+    { icon: "🌍", name: "Fast Everywhere", desc: "Global performance, zero lag" },
+    { icon: "♻️", name: "Real-Time Updates", desc: "See changes as they happen" },
   ];
 
   return (
-    <section id="architecture" className="py-20 border-t border-slate-800/50">
+    <section id="why-spendclan" className="py-20 border-t border-slate-800/50">
       <div className="mx-auto max-w-7xl px-6">
         <div className="text-center mb-14">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">
-            Built on Modern Architecture
+            Why SpendClan?
           </h2>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-            Production-grade stack optimized for serverless deployment, type safety, and developer experience.
+            Built for real people who want clarity, speed, and confidence in their finances.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {stack.map((tech) => (
+          {benefits.map((b) => (
             <div
-              key={tech.name}
+              key={b.name}
               className="group rounded-xl border border-slate-800/80 bg-slate-900/60 p-4 transition-all duration-300 hover:border-emerald-500/20 hover:bg-slate-900/80"
             >
-              <p className="text-sm font-bold text-white mb-0.5 group-hover:text-emerald-400 transition-colors">{tech.name}</p>
-              <p className="text-xs text-slate-500">{tech.desc}</p>
+              <span className="text-xl mb-1 block">{b.icon}</span>
+              <p className="text-sm font-bold text-white mb-0.5 group-hover:text-emerald-400 transition-colors">{b.name}</p>
+              <p className="text-xs text-slate-500">{b.desc}</p>
             </div>
           ))}
         </div>
@@ -644,18 +645,18 @@ function SecuritySection() {
         <div className="grid gap-4 sm:grid-cols-3">
           {[
             {
-              title: "JWT Session Isolation",
-              desc: "Stateless, encrypted sessions ensure each user's context is cryptographically separated. No session sharing, no leaks.",
+              title: "Private Sessions",
+              desc: "Your account is completely isolated and encrypted. No one else can see your data — not even other SpendClan users.",
               icon: "🔒",
             },
             {
-              title: "bcrypt 12-Round Hashing",
-              desc: "All passwords and security answers are hashed with bcrypt at 12 rounds — computationally infeasible to brute-force.",
+              title: "Military-Grade Passwords",
+              desc: "Your passwords and security answers are protected with industry-leading encryption — computationally impossible to crack.",
               icon: "🛡️",
             },
             {
-              title: "Atomic Token Destruction",
-              desc: "Password reset tokens are single-use and destroyed atomically upon first query. Race-condition-proof by design.",
+              title: "One-Time Reset Links",
+              desc: "Password reset links work exactly once and are destroyed immediately after use. No chance of replay or reuse.",
               icon: "💥",
             },
           ].map((item) => (
@@ -737,7 +738,7 @@ export default function HomePage() {
       <main>
         <HeroSection />
         <FeaturesSection />
-        <ArchitectureSection />
+        <WhySpendClanSection />
         <SecuritySection />
         <CTASection />
       </main>

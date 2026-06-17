@@ -71,9 +71,11 @@ export function AIInsightsCard() {
       <Card className="relative overflow-hidden">
         <div className="absolute inset-0 ai-gradient" />
         <div className="relative p-6 text-center">
-          <p className="text-slate-400">{error}</p>
-          <Button size="sm" variant="ghost" onClick={fetchInsights} className="mt-2">
-            Retry
+          <p className="text-2xl mb-2">📊</p>
+          <p className="text-sm text-slate-300 font-medium mb-1">AI is taking a breather</p>
+          <p className="text-xs text-slate-500 max-w-xs mx-auto">SpendClan AI is analyzing a lot of balance sheets right now. Give us a quick moment!</p>
+          <Button size="sm" variant="ghost" onClick={fetchInsights} className="mt-3">
+            Try Again
           </Button>
         </div>
       </Card>

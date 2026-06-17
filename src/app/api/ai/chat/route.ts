@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { isAIConfigured, generateFinancialInsight } from "@/lib/gemini";
+import { isAIConfigured, generateFinancialInsight, friendlyAIError } from "@/lib/gemini";
 import { getAIContext } from "@/lib/ai-data";
 import { buildAdvisorPrompt } from "@/lib/ai-prompts";
 
@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   if ("error" in auth) return auth.error;
 
   if (!isAIConfigured()) {
-    return NextResponse.json({ error: "AI not configured. Set GEMINI_API_KEY." }, { status: 503 });
+    return NextResponse.json({ error: "AI features are being set up. Check back soon! ✨" }, { status: 503 });
   }
 
   try {
@@ -30,8 +30,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ response });
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Unknown error";
-    console.error("[AI Chat] Error:", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    const rawMsg = error instanceof Error ? error.message : "Unknown error";
+    console.error("[AI Chat] Error:", rawMsg);
+    const userMsg = friendlyAIError(error);
+    return NextResponse.json({ error: userMsg }, { status: 500 });
   }
 }
