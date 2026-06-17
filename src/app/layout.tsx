@@ -19,8 +19,13 @@ export const metadata: Metadata = {
   description: "Manage your personal finances and split group expenses effortlessly with SpendClan.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
+    icon: [
+      { url: "/logo.svg", type: "image/svg+xml" },
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" }
+    ],
+    apple: [
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" }
+    ]
   },
   appleWebApp: {
     capable: true,
