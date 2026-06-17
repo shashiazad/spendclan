@@ -1,0 +1,10 @@
+
+NEXTAUTH_SECRET="dev-secret-change-in-production-ledgerly-2026"
+NEXTAUTH_URL="http://localhost:3000"
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="shashishekhar.coder@gmail.com"
+SMTP_PASS="krhorufwovgtvwxj"
+SMTP_FROM="Xpensio <shashishekhar.coder@gmail.com>"
+GEMINI_API_KEY="AQ.Ab8RN6LkE4zN5SYSObIQTeBf97LKplOAe6ojYHzjYeqbpXANhQ"

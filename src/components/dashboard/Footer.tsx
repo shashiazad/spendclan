@@ -7,7 +7,7 @@ export function Footer() {
     <footer className="border-t border-slate-800 bg-slate-900/50 px-6 py-4">
       <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
         <p className="text-xs text-slate-500">
-          &copy; {year} Xpensio. Personal finance made simple.
+          &copy; {year} SpendClan. Personal finance made simple.
         </p>
         <div className="flex items-center gap-4">
           <p className="text-xs text-slate-600">

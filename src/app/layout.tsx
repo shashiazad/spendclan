@@ -10,13 +10,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Xpensio",
-  description: "Personal finance and group expense management",
+  title: "SpendClan — Premium Expense Tracker & Smart Group Splits",
+  description: "Manage your personal finances and split group expenses effortlessly with SpendClan.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Xpensio",
+    title: "SpendClan",
   },
 };
 

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About — Xpensio",
+  title: "About — SpendClan",
   description:
-    "Learn about Xpensio, the personal finance and group expense management app built by Shashi Azad.",
+    "Learn about SpendClan, the personal finance and group expense management app built by Shashi Azad.",
 };
 
 export default function AboutPage() {
@@ -12,7 +12,7 @@ export default function AboutPage() {
     <div className="space-y-10">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">About Xpensio</h1>
+        <h1 className="text-2xl font-bold text-white">About SpendClan</h1>
         <p className="mt-1 text-slate-400">
           Your personal finance companion
         </p>
@@ -37,13 +37,13 @@ export default function AboutPage() {
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Xpensio</h2>
+            <h2 className="text-xl font-bold text-white">SpendClan</h2>
             <p className="text-sm text-slate-400">v0.1.0</p>
           </div>
         </div>
 
         <p className="text-slate-300 leading-relaxed mb-6">
-          Xpensio is a modern, full-featured personal finance and group expense
+          SpendClan is a modern, full-featured personal finance and group expense
           management web app. Track your daily expenses, income, recurring bills,
           savings goals, and split costs with friends — all in one place.
         </p>
