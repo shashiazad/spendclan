@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { SpendingScore } from "@/components/ui/SpendingScore";
@@ -28,28 +28,29 @@ const typeConfig = {
 
 export function AIInsightsCard() {
   const [data, setData] = useState<InsightsData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // User-initiated only — no useEffect auto-fetch
   async function fetchInsights() {
-    setLoading(true);
+    setIsAiLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/ai/insights");
-      if (!res.ok) throw new Error("Failed to load");
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error || "Failed to load");
+      }
       const json = await res.json();
       setData(json);
-    } catch {
-      setError("Failed to load AI insights");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to load AI insights");
     }
-    setLoading(false);
+    setIsAiLoading(false);
   }
 
-  useEffect(() => {
-    fetchInsights();
-  }, []);
-
-  if (loading) {
+  // Loading state — isolated, doesn't block the rest of the page
+  if (isAiLoading) {
     return (
       <Card className="relative overflow-hidden">
         <div className="absolute inset-0 ai-gradient" />
@@ -61,6 +62,9 @@ export function AIInsightsCard() {
           <div className="skeleton h-20 w-full" />
           <div className="skeleton h-16 w-full" />
           <div className="skeleton h-16 w-full" />
+          <p className="text-center text-xs text-slate-500 animate-pulse">
+            Analyzing your spending patterns...
+          </p>
         </div>
       </Card>
     );
@@ -73,7 +77,7 @@ export function AIInsightsCard() {
         <div className="relative p-6 text-center">
           <p className="text-2xl mb-2">📊</p>
           <p className="text-sm text-slate-300 font-medium mb-1">AI is taking a breather</p>
-          <p className="text-xs text-slate-500 max-w-xs mx-auto">SpendClan AI is analyzing a lot of balance sheets right now. Give us a quick moment!</p>
+          <p className="text-xs text-slate-500 max-w-xs mx-auto">{error}</p>
           <Button size="sm" variant="ghost" onClick={fetchInsights} className="mt-3">
             Try Again
           </Button>
@@ -82,8 +86,48 @@ export function AIInsightsCard() {
     );
   }
 
-  if (!data) return null;
+  // Default idle state — shown on mount, no API call made yet
+  if (!data) {
+    return (
+      <Card className="relative overflow-hidden" padding="none">
+        <div className="absolute inset-0 ai-gradient" />
+        <div className="relative">
+          <div className="flex items-center justify-between border-b border-slate-800/50 px-6 py-4">
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+              </svg>
+              <h3 className="text-sm font-semibold text-slate-200">AI Insights</h3>
+            </div>
+            <Link href="/advisor" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
+              Open Advisor →
+            </Link>
+          </div>
+          <div className="p-6 text-center">
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10">
+              <svg className="h-6 w-6 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-slate-200 mb-1">
+              Ready to analyze your spending
+            </p>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
+              Click below to get AI-powered insights on your income, expenses, and savings patterns.
+            </p>
+            <Button onClick={fetchInsights} size="sm">
+              <svg className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+              </svg>
+              Generate AI Insights
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
+  // Results state — only rendered after user clicked "Generate AI Insights"
   return (
     <Card className="relative overflow-hidden" padding="none">
       <div className="absolute inset-0 ai-gradient" />

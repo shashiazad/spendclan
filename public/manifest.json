@@ -1,24 +1,36 @@
 {
-  "name": "Xpensio Personal Finance",
-  "short_name": "Xpensio",
-  "description": "Personal finance and group expense management web app",
+  "name": "SpendClan Personal Finance",
+  "short_name": "SpendClan",
+  "description": "Premium Expense Tracker & Smart Group Splits",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#6366f1",
+  "background_color": "#0b1120",
+  "theme_color": "#0b1120",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/globe.svg",
+      "src": "/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/globe.svg",
+      "src": "/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"
+    },
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }
