@@ -21,7 +21,43 @@
   --expense: #EF4444;      /* Crimson — Expenses, debts, overdue */
   --savings: #6366F1;      /* Indigo — Savings, investments, goals */
   --ai-accent: #F59E0B;    /* Amber/Gold — AI elements, smart features */
+
+  /* Glassmorphism styling variables */
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(148, 163, 184, 0.08);
+  --glass-card-bg: rgba(17, 24, 39, 0.5);
+  --glass-card-border: rgba(30, 41, 59, 0.7);
 }
+
+.light {
+  --background: #f8fafc; /* Soft slate white */
+  --foreground: #0f172a; /* Dark slate text */
+  --card: #ffffff;       /* Pure white card */
+  --card-border: #e2e8f0; /* Soft border */
+  --muted: #64748b;
+  --accent: #4f46e5;      /* Indigo-600 */
+  --accent-hover: #3730a3;
+  --accent-muted: rgba(79, 70, 229, 0.08);
+  --danger: #ef4444;
+  --sidebar: #f1f5f9;     /* Light slate sidebar */
+  --sidebar-hover: #e2e8f0;
+  --ai-primary: #7c3aed;  /* Violet-600 */
+  --ai-secondary: #4f46e5;
+  --ai-glow: rgba(124, 58, 237, 0.08);
+
+  /* Adjusted semantic financial colors for light mode contrast */
+  --income: #059669;       /* Emerald-600 */
+  --expense: #dc2626;      /* Red-600 */
+  --savings: #4f46e5;      /* Indigo-600 */
+  --ai-accent: #d97706;    /* Amber-600 */
+
+  /* Glassmorphism styling variables for light mode */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(15, 23, 42, 0.06);
+  --glass-card-bg: rgba(255, 255, 255, 0.75);
+  --glass-card-border: rgba(226, 232, 240, 0.8);
+}
+
 
 @theme inline {
   --color-background: var(--background);
@@ -63,33 +99,33 @@ body {
 
 .auth-gradient {
   background:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99, 102, 241, 0.18), transparent),
-    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(139, 92, 246, 0.08), transparent),
-    linear-gradient(to bottom, #0b1120, #0f172a 50%, #0b1120);
+    radial-gradient(ellipse 80% 60% at 50% -10%, var(--accent-muted), transparent),
+    radial-gradient(ellipse 60% 50% at 100% 100%, var(--ai-glow), transparent),
+    linear-gradient(to bottom, var(--background), var(--sidebar) 50%, var(--background));
 }
 
 .dashboard-gradient {
-  background: linear-gradient(135deg, #0b1120 0%, #0f172a 50%, #0b1120 100%);
+  background: linear-gradient(135deg, var(--background) 0%, var(--sidebar) 50%, var(--background) 100%);
 }
 
 /* AI theme gradient */
 .ai-gradient {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(99, 102, 241, 0.05), transparent);
+  background: linear-gradient(135deg, var(--ai-glow), var(--accent-muted), transparent);
 }
 
 /* Glassmorphism */
 .glass {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(148, 163, 184, 0.08);
+  border: 1px solid var(--glass-border);
 }
 
 .glass-card {
-  background: rgba(17, 24, 39, 0.5);
+  background: var(--glass-card-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(30, 41, 59, 0.7);
+  border: 1px solid var(--glass-card-border);
 }
 
 /* Animations */
