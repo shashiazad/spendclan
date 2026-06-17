@@ -1,6 +1,6 @@
 {
-  "name": "Ledgerly Personal Finance",
-  "short_name": "Ledgerly",
+  "name": "Xpensio Personal Finance",
+  "short_name": "Xpensio",
   "description": "Personal finance and group expense management web app",
   "start_url": "/",
   "display": "standalone",

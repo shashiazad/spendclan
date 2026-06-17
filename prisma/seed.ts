@@ -14,11 +14,11 @@ async function main() {
   const answer = await bcrypt.hash("fluffy", 12);
 
   const admin = await prisma.user.upsert({
-    where: { email: "admin@ledgerly.com" },
+    where: { email: "admin@xpensio.app" },
     update: { emailVerified: true },
     create: {
       name: "Admin User",
-      email: "admin@ledgerly.com",
+      email: "admin@xpensio.app",
       hashedPassword: password,
       currency: "INR",
       role: "ADMIN",
@@ -32,11 +32,11 @@ async function main() {
   const userAnswer = await bcrypt.hash("mumbai", 12);
 
   const user = await prisma.user.upsert({
-    where: { email: "user@ledgerly.com" },
+    where: { email: "user@xpensio.app" },
     update: { emailVerified: true },
     create: {
       name: "Demo User",
-      email: "user@ledgerly.com",
+      email: "user@xpensio.app",
       hashedPassword: userPassword,
       currency: "INR",
       role: "USER",
@@ -47,8 +47,8 @@ async function main() {
   });
 
   console.log("Seeded users:");
-  console.log(`  Admin: admin@ledgerly.com / admin123 (${admin.id})`);
-  console.log(`  User:  user@ledgerly.com / user123 (${user.id})`);
+  console.log(`  Admin: admin@xpensio.app / admin123 (${admin.id})`);
+  console.log(`  User:  user@xpensio.app / user123 (${user.id})`);
 }
 
 main()

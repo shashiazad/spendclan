@@ -1,4 +1,4 @@
-# Ledgerly Requirements
+# Xpensio Requirements
 
 Personal finance group expense management web app.
 
@@ -10,7 +10,7 @@ Personal finance group expense management web app.
 - **Database**: PostgreSQL 16, Prisma 7 (with `@prisma/adapter-pg`)
 - **Auth**: NextAuth.js 4 (Credentials provider, JWT sessions)
 - **Other**: bcryptjs, Nodemailer (SMTP), date-fns, uuid, Zod 4
-- **Deployment**: Docker (multi-stage, `node:20-alpine`, standalone output), Docker Compose (PostgreSQL + App + Nginx reverse proxy)
+- **Deployment**: Vercel
 
 ## 2. Authentication
 

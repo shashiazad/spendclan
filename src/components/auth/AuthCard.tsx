@@ -26,7 +26,7 @@ export function AuthCard({ children, title, subtitle }: AuthCardProps) {
           </svg>
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-white">
-          Ledgerly
+          Xpensio
         </h1>
         <h2 className="mt-3 text-lg font-semibold text-slate-100">{title}</h2>
         {subtitle && (

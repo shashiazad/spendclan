@@ -37,11 +37,11 @@ export async function sendPasswordResetEmail(
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM ?? "Ledgerly <noreply@example.com>",
+      from: process.env.SMTP_FROM ?? "Xpensio <noreply@example.com>",
       to: email,
-      subject: "Reset your Ledgerly password",
+      subject: "Reset your Xpensio password",
       html: `
-        <p>You requested a password reset for your Ledgerly account.</p>
+        <p>You requested a password reset for your Xpensio account.</p>
         <p><a href="${resetUrl}">Click here to reset your password</a></p>
         <p>This link expires in 1 hour.</p>
         <p>If you did not request this, you can ignore this email.</p>
@@ -71,17 +71,17 @@ export async function sendVerificationEmail(
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM ?? "Ledgerly <noreply@example.com>",
+      from: process.env.SMTP_FROM ?? "Xpensio <noreply@example.com>",
       to: email,
-      subject: "Verify your Ledgerly email address",
+      subject: "Verify your Xpensio email address",
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h2 style="color: #4f46e5; margin-bottom: 20px;">Welcome to Ledgerly, ${name}!</h2>
+          <h2 style="color: #4f46e5; margin-bottom: 20px;">Welcome to Xpensio, ${name}!</h2>
           <p>Thank you for signing up. Please verify your email address by entering the following 6-digit code on the verification screen:</p>
           <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #1e293b; margin: 24px 0;">
             ${token}
           </div>
-          <p style="color: #64748b; font-size: 14px;">This code is valid for 1 hour. If you did not sign up for Ledgerly, please ignore this email.</p>
+          <p style="color: #64748b; font-size: 14px;">This code is valid for 1 hour. If you did not sign up for Xpensio, please ignore this email.</p>
         </div>
       `,
     });

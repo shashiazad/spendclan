@@ -10,13 +10,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Ledgerly",
+  title: "Xpensio",
   description: "Personal finance and group expense management",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Ledgerly",
+    title: "Xpensio",
   },
 };
 

@@ -9,11 +9,24 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { token, password } = resetPasswordSchema.parse(body);
 
-    const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { token },
-    });
+    // Atomically delete the token first to prevent concurrent reuse (strict single-use validation)
+    let resetToken;
+    try {
+      resetToken = await prisma.passwordResetToken.delete({
+        where: { token },
+      });
+    } catch (err: any) {
+      // Prisma error code for RecordNotFound (P2025)
+      if (err.code === "P2025") {
+        return NextResponse.json(
+          { error: "Invalid or expired reset token" },
+          { status: 400 },
+        );
+      }
+      throw err;
+    }
 
-    if (!resetToken || resetToken.expiresAt < new Date()) {
+    if (resetToken.expiresAt < new Date()) {
       return NextResponse.json(
         { error: "Invalid or expired reset token" },
         { status: 400 },
@@ -22,15 +35,10 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: resetToken.userId },
-        data: { hashedPassword },
-      }),
-      prisma.passwordResetToken.delete({
-        where: { id: resetToken.id },
-      }),
-    ]);
+    await prisma.user.update({
+      where: { id: resetToken.userId },
+      data: { hashedPassword },
+    });
 
     return NextResponse.json({ message: "Password reset successfully" });
   } catch (error) {
