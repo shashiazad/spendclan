@@ -83,6 +83,14 @@ export const groupSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional().nullable(),
   memberEmails: z.string().optional(),
+  members: z
+    .array(
+      z.object({
+        id: z.string().uuid().optional(),
+        email: z.string().email().optional(),
+      })
+    )
+    .optional(),
 });
 
 export const groupExpenseSchema = z.object({
@@ -108,4 +116,17 @@ export const settlementSchema = z.object({
 
 export const addMemberSchema = z.object({
   email: z.string().email(),
+});
+
+export const userSearchSchema = z.object({
+  q: z.string().min(2),
+});
+
+export const profileUpdateSchema = z.object({
+  profilePhoto: z.string().optional().nullable(),
+});
+
+export const addMemberByIdSchema = z.object({
+  id: z.string().uuid().optional(),
+  email: z.string().email().optional(),
 });

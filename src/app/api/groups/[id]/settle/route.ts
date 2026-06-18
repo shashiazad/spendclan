@@ -4,6 +4,7 @@ import {
   requireGroupMember,
   handleZodError,
 } from "@/lib/auth";
+import { invalidateGroupMemberDashboards } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { settlementSchema } from "@/lib/validators";
 
@@ -30,7 +31,7 @@ export async function GET(_request: Request, context: RouteContext) {
     prisma.groupMember.findMany({
       where: { groupId },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, profilePhoto: true } },
       },
     }),
   ]);
@@ -93,6 +94,7 @@ export async function POST(request: Request, context: RouteContext) {
       },
     });
 
+    await invalidateGroupMemberDashboards(groupId);
     return NextResponse.json({ settlement }, { status: 201 });
   } catch (error) {
     return handleZodError(error);
@@ -129,5 +131,6 @@ export async function DELETE(request: Request, context: RouteContext) {
 
   await prisma.settlement.delete({ where: { id: settlementId } });
 
+  await invalidateGroupMemberDashboards(groupId);
   return NextResponse.json({ message: "Settlement deleted" });
 }

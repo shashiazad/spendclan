@@ -150,16 +150,39 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-slate-800 p-4">
-        <div className="flex items-center justify-between mb-3 px-2">
+        <div className="flex items-center justify-between mb-3 px-1 gap-2">
           {session?.user && (
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-slate-200">
-                {session.user.name}
-              </p>
-              <p className="truncate text-xs text-slate-500">
-                {session.user.email}
-              </p>
-            </div>
+            <Link
+              href="/profile"
+              className="flex items-center gap-2.5 min-w-0 flex-1 hover:bg-slate-800/60 rounded-lg p-1.5 transition-colors group"
+            >
+              {session.user.profilePhoto ? (
+                <img
+                  src={session.user.profilePhoto}
+                  alt={session.user.name ?? "User"}
+                  className="w-8 h-8 rounded-full object-cover border border-slate-700/80 group-hover:border-emerald-500/50 transition-colors"
+                />
+              ) : (
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 font-bold text-xs border border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/20 transition-all">
+                  {session.user.name
+                    ? session.user.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()
+                    : "?"}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold text-slate-200 group-hover:text-emerald-400 transition-colors leading-snug">
+                  {session.user.name}
+                </p>
+                <p className="truncate text-[10px] text-slate-500 leading-normal">
+                  {session.user.email}
+                </p>
+              </div>
+            </Link>
           )}
           <ThemeToggle />
         </div>

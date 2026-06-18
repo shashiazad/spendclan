@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { requireAuth, handleZodError } from "@/lib/auth";
+import { requireAuth, handleZodError, getBaseUrl } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { groupSchema } from "@/lib/validators";
+import { sendGroupInvitationEmail } from "@/lib/email";
+import { invalidateGroupMemberDashboards } from "@/lib/cache";
 
 export async function GET() {
   const auth = await requireAuth();
@@ -15,7 +17,7 @@ export async function GET() {
           members: {
             include: {
               user: {
-                select: { id: true, name: true, email: true },
+                select: { id: true, name: true, email: true, profilePhoto: true },
               },
             },
           },
@@ -43,32 +45,69 @@ export async function POST(request: Request) {
     const body = await request.json();
     const data = groupSchema.parse(body);
 
-    const emails = (data.memberEmails ?? "")
-      .split(",")
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean);
+    // 1. Gather all unique emails and user IDs from input
+    const memberIds = new Set<string>();
+    const inputEmails = new Set<string>();
 
-    const uniqueEmails = [...new Set(emails)].filter(
-      (e) => e !== auth.session.user.email!.toLowerCase(),
-    );
+    if (data.members && data.members.length > 0) {
+      for (const m of data.members) {
+        if (m.id) memberIds.add(m.id);
+        if (m.email) inputEmails.add(m.email.trim().toLowerCase());
+      }
+    }
 
-    const users = uniqueEmails.length
+    if (data.memberEmails) {
+      const legacyEmails = data.memberEmails
+        .split(",")
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean);
+      for (const e of legacyEmails) {
+        inputEmails.add(e);
+      }
+    }
+
+    // Exclude current user from member inputs
+    memberIds.delete(auth.session.user.id);
+    if (auth.session.user.email) {
+      inputEmails.delete(auth.session.user.email.toLowerCase());
+    }
+
+    // 2. Fetch users by ID
+    const usersById = memberIds.size
       ? await prisma.user.findMany({
-          where: { email: { in: uniqueEmails } },
+          where: { id: { in: Array.from(memberIds) } },
           select: { id: true, email: true },
         })
       : [];
 
-    const foundEmails = new Set(users.map((u) => u.email));
-    const missing = uniqueEmails.filter((e) => !foundEmails.has(e));
-
-    if (missing.length > 0) {
-      return NextResponse.json(
-        { error: "Some member emails were not found", missing },
-        { status: 400 },
-      );
+    // Add their emails to inputEmails to make sure we treat them as registered users
+    for (const u of usersById) {
+      inputEmails.add(u.email.toLowerCase());
     }
 
+    // 3. Fetch users by Email
+    const usersByEmail = inputEmails.size
+      ? await prisma.user.findMany({
+          where: { email: { in: Array.from(inputEmails) } },
+          select: { id: true, email: true },
+        })
+      : [];
+
+    // Combine users into a Map (email -> id)
+    const allUsersMap = new Map<string, string>();
+    for (const u of usersById) {
+      allUsersMap.set(u.email.toLowerCase(), u.id);
+    }
+    for (const u of usersByEmail) {
+      allUsersMap.set(u.email.toLowerCase(), u.id);
+    }
+
+    const registeredUserIds = Array.from(new Set(allUsersMap.values()));
+    const unregisteredEmails = Array.from(inputEmails).filter(
+      (email) => !allUsersMap.has(email)
+    );
+
+    // 4. Create the group
     const group = await prisma.group.create({
       data: {
         name: data.name,
@@ -79,8 +118,8 @@ export async function POST(request: Request) {
               userId: auth.session.user.id,
               role: "ADMIN",
             },
-            ...users.map((u) => ({
-              userId: u.id,
+            ...registeredUserIds.map((userId) => ({
+              userId,
               role: "MEMBER" as const,
             })),
           ],
@@ -89,11 +128,42 @@ export async function POST(request: Request) {
       include: {
         members: {
           include: {
-            user: { select: { id: true, name: true, email: true } },
+            user: { select: { id: true, name: true, email: true, profilePhoto: true } },
           },
         },
       },
     });
+
+    // 5. Handle invitations for unregistered emails
+    if (unregisteredEmails.length > 0) {
+      const baseUrl = await getBaseUrl();
+      const inviterName = auth.session.user.name || "A friend";
+
+      await Promise.all(
+        unregisteredEmails.map(async (email) => {
+          try {
+            await prisma.groupInvitation.upsert({
+              where: {
+                email_groupId: { email, groupId: group.id },
+              },
+              create: {
+                email,
+                groupId: group.id,
+                invitedBy: inviterName,
+              },
+              update: {},
+            });
+
+            await sendGroupInvitationEmail(email, group.name, inviterName, baseUrl);
+          } catch (e) {
+            console.error(`Failed to create/send invitation for ${email}:`, e);
+          }
+        })
+      );
+    }
+
+    // 6. Invalidate dashboard cache for all members
+    await invalidateGroupMemberDashboards(group.id);
 
     return NextResponse.json({ group }, { status: 201 });
   } catch (error) {

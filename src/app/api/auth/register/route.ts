@@ -60,6 +60,38 @@ export async function POST(request: Request) {
     // Send verification email
     await sendVerificationEmail(user.email, user.name, token);
 
+    // Process pending group invitations for this email
+    try {
+      const invitations = await prisma.groupInvitation.findMany({
+        where: { email: user.email },
+      });
+
+      if (invitations.length > 0) {
+        // Create GroupMember records
+        await prisma.groupMember.createMany({
+          data: invitations.map((inv) => ({
+            userId: user.id,
+            groupId: inv.groupId,
+            role: "MEMBER",
+          })),
+        });
+
+        // Delete processed invitations
+        await prisma.groupInvitation.deleteMany({
+          where: { email: user.email },
+        });
+
+        // Invalidate dashboards
+        const { invalidateDashboard, invalidateGroupMemberDashboards } = await import("@/lib/cache");
+        for (const inv of invitations) {
+          await invalidateGroupMemberDashboards(inv.groupId);
+        }
+        invalidateDashboard(user.id);
+      }
+    } catch (inviteError) {
+      console.error("Failed to process auto-join invitations during registration:", inviteError);
+    }
+
     return NextResponse.json({ user }, { status: 201 });
   } catch (error) {
     return handleZodError(error);

@@ -10,6 +10,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatCurrency } from "@/lib/constants";
 import { useSession } from "next-auth/react";
+import { MemberSearch, type SelectedMember } from "@/components/ui/MemberSearch";
 
 type Group = {
   id: string;
@@ -17,7 +18,7 @@ type Group = {
   description?: string;
   expenseCount?: number;
   _count?: { expenses: number };
-  members?: { user: { id: string; name: string; email: string } }[];
+  members?: { user: { id: string; name: string; email: string; profilePhoto?: string | null } }[];
   userBalance?: number;
 };
 
@@ -31,7 +32,11 @@ export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", memberEmails: "" });
+  const [form, setForm] = useState<{
+    name: string;
+    description: string;
+    members: SelectedMember[];
+  }>({ name: "", description: "", members: [] });
   const [creating, setCreating] = useState(false);
 
   const load = useCallback(async () => {
@@ -50,11 +55,15 @@ export default function GroupsPage() {
     const res = await fetch("/api/groups", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        name: form.name,
+        description: form.description,
+        members: form.members.map((m) => ({ id: m.id, email: m.email })),
+      }),
     });
     if (res.ok) {
       setShowModal(false);
-      setForm({ name: "", description: "", memberEmails: "" });
+      setForm({ name: "", description: "", members: [] });
       load();
     }
     setCreating(false);
@@ -106,15 +115,26 @@ export default function GroupsPage() {
                   <CardHeader title={group.name} description={group.description ?? undefined} />
                   <CardBody>
                     <div className="flex items-center gap-2">
-                      {(group.members ?? []).slice(0, 5).map((m) => (
-                        <div
-                          key={m.user.id}
-                          title={m.user.name}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-400 ring-1 ring-emerald-500/20"
-                        >
-                          {initials(m.user.name)}
-                        </div>
-                      ))}
+                      {(group.members ?? []).slice(0, 5).map((m) => {
+                        const hasPhoto = !!m.user.profilePhoto;
+                        return hasPhoto ? (
+                          <img
+                            key={m.user.id}
+                            src={m.user.profilePhoto!}
+                            alt={m.user.name}
+                            title={m.user.name}
+                            className="h-8 w-8 rounded-full object-cover border border-slate-700/80 ring-1 ring-emerald-500/20"
+                          />
+                        ) : (
+                          <div
+                            key={m.user.id}
+                            title={m.user.name}
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-400 ring-1 ring-emerald-500/20"
+                          >
+                            {initials(m.user.name)}
+                          </div>
+                        );
+                      })}
                       {(group.members?.length ?? 0) > 5 && (
                         <span className="text-xs text-slate-500">+{(group.members?.length ?? 0) - 5}</span>
                       )}
@@ -139,13 +159,28 @@ export default function GroupsPage() {
         <form onSubmit={handleCreate} className="space-y-4">
           <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <Input label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-          <Input
-            label="Member Emails"
-            hint="Comma-separated. Must be existing users."
-            value={form.memberEmails}
-            onChange={(e) => setForm({ ...form, memberEmails: e.target.value })}
-          />
-          <div className="flex justify-end gap-2">
+          
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-300">
+              Pocket Members
+            </label>
+            <MemberSearch
+              selectedMembers={form.members}
+              onAddMember={(member) =>
+                setForm({ ...form, members: [...form.members, member] })
+              }
+              onRemoveMember={(email) =>
+                setForm({
+                  ...form,
+                  members: form.members.filter((m) => m.email !== email),
+                })
+              }
+              excludeEmails={session?.user?.email ? [session.user.email] : []}
+              placeholder="Search by name or type email..."
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
             <Button type="submit" loading={creating}>Create</Button>
           </div>

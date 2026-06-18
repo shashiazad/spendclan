@@ -67,6 +67,7 @@ model User {
   emailVerified     Boolean  @default(false)
   verificationToken String?
   verificationTokenExpires DateTime?
+  profilePhoto      String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -155,6 +156,8 @@ model RecurringExpense {
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
 }
 
 model Group {
@@ -166,6 +169,7 @@ model Group {
   members     GroupMember[]
   expenses    GroupExpense[]
   settlements Settlement[]
+  invitations GroupInvitation[]
 }
 
 model GroupMember {
@@ -178,6 +182,7 @@ model GroupMember {
   group    Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@unique([userId, groupId])
+  @@index([groupId])
 }
 
 model GroupExpense {
@@ -193,6 +198,9 @@ model GroupExpense {
   splits      GroupSplit[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+
+  @@index([groupId])
+  @@index([paidById])
 }
 
 model GroupSplit {
@@ -202,6 +210,9 @@ model GroupSplit {
   userId         String
   groupExpense   GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([groupExpenseId])
+  @@index([userId])
 }
 
 model Settlement {
@@ -214,6 +225,10 @@ model Settlement {
   to        User     @relation("SettlementTo", fields: [toId], references: [id])
   group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
+  @@index([groupId])
+  @@index([fromId])
+  @@index([toId])
 }
 
 model PasswordResetToken {
@@ -225,4 +240,17 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 
   @@index([token])
+}
+
+model GroupInvitation {
+  id        String   @id @default(uuid())
+  email     String
+  groupId   String
+  invitedBy String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([email, groupId])
+  @@index([email])
+  @@index([groupId])
 }

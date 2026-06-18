@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth, requireGroupAdmin } from "@/lib/auth";
+import { invalidateGroupMemberDashboards } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -12,6 +13,9 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
   const adminCheck = await requireGroupAdmin(id, auth.session.user.id);
   if ("error" in adminCheck) return adminCheck.error;
+
+  // Invalidate dashboard caches for all group members before deletion
+  await invalidateGroupMemberDashboards(id);
 
   await prisma.group.delete({ where: { id } });
 

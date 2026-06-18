@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth, handleZodError } from "@/lib/auth";
+import { invalidateDashboard } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { savingSchema } from "@/lib/validators";
 
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
       },
     });
 
+    invalidateDashboard(auth.session.user.id);
     return NextResponse.json({ saving }, { status: 201 });
   } catch (error) {
     return handleZodError(error);
@@ -83,5 +85,6 @@ export async function DELETE(request: Request) {
 
   await prisma.saving.delete({ where: { id } });
 
+  invalidateDashboard(auth.session.user.id);
   return NextResponse.json({ message: "Saving deleted" });
 }

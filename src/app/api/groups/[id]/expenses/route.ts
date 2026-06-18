@@ -6,6 +6,7 @@ import {
   handleZodError,
 } from "@/lib/auth";
 import { buildEqualSplits } from "@/lib/group-balances";
+import { invalidateGroupMemberDashboards } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { groupExpenseSchema } from "@/lib/validators";
 
@@ -150,6 +151,7 @@ export async function POST(request: Request, context: RouteContext) {
       },
     });
 
+    await invalidateGroupMemberDashboards(groupId);
     return NextResponse.json({ expense }, { status: 201 });
   } catch (error) {
     return handleZodError(error);
@@ -180,5 +182,6 @@ export async function DELETE(request: Request, context: RouteContext) {
 
   await prisma.groupExpense.delete({ where: { id: expenseId } });
 
+  await invalidateGroupMemberDashboards(groupId);
   return NextResponse.json({ message: "Expense deleted" });
 }

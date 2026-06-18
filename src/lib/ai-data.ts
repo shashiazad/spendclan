@@ -21,50 +21,87 @@ export type AIFinancialContext = {
 
 export async function getAIContext(userId: string): Promise<AIFinancialContext> {
   const now = new Date();
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { currency: true },
-  });
-  const currency = user?.currency ?? "INR";
-
-  // Last 3 months of data
-  const monthlyData = [];
-  for (let i = 2; i >= 0; i--) {
-    const d = subMonths(now, i);
-    const start = startOfMonth(d);
-    const end = endOfMonth(d);
-
-    const [incomeAgg, expenseAgg] = await Promise.all([
-      prisma.income.aggregate({
-        where: { userId, date: { gte: start, lte: end } },
-        _sum: { amount: true },
-      }),
-      prisma.personalExpense.aggregate({
-        where: { userId, date: { gte: start, lte: end } },
-        _sum: { amount: true },
-      }),
-    ]);
-
-    const income = incomeAgg._sum.amount ?? 0;
-    const expenses = expenseAgg._sum.amount ?? 0;
-
-    monthlyData.push({
-      month: format(d, "MMMM yyyy"),
-      income,
-      expenses,
-      savings: income - expenses,
-    });
-  }
-
-  // Current month category breakdown
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
+  const threeMonthsAgo = subMonths(now, 3);
 
-  const categoryExpenses = await prisma.personalExpense.groupBy({
-    by: ["category", "type"],
-    where: { userId, date: { gte: monthStart, lte: monthEnd } },
-    _sum: { amount: true },
-  });
+  // Run ALL independent queries concurrently
+  const [
+    user,
+    monthlyData,
+    categoryExpenses,
+    recurring,
+    groups,
+    topCats,
+  ] = await Promise.all([
+    // User currency
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { currency: true },
+    }),
+    // Last 3 months of data — run all 3 concurrently (was sequential loop)
+    Promise.all(
+      Array.from({ length: 3 }, (_, i) => {
+        const d = subMonths(now, 2 - i);
+        const start = startOfMonth(d);
+        const end = endOfMonth(d);
+
+        return Promise.all([
+          prisma.income.aggregate({
+            where: { userId, date: { gte: start, lte: end } },
+            _sum: { amount: true },
+          }),
+          prisma.personalExpense.aggregate({
+            where: { userId, date: { gte: start, lte: end } },
+            _sum: { amount: true },
+          }),
+        ]).then(([incomeAgg, expenseAgg]) => {
+          const income = incomeAgg._sum.amount ?? 0;
+          const expenses = expenseAgg._sum.amount ?? 0;
+          return {
+            month: format(d, "MMMM yyyy"),
+            income,
+            expenses,
+            savings: income - expenses,
+          };
+        });
+      })
+    ),
+    // Current month category breakdown
+    prisma.personalExpense.groupBy({
+      by: ["category", "type"],
+      where: { userId, date: { gte: monthStart, lte: monthEnd } },
+      _sum: { amount: true },
+    }),
+    // Recurring expenses
+    prisma.recurringExpense.findMany({
+      where: { userId, isActive: true },
+      select: { category: true, amount: true, frequency: true },
+    }),
+    // Group balances
+    prisma.groupMember.findMany({
+      where: { userId },
+      include: {
+        group: {
+          include: {
+            members: { include: { user: { select: { id: true, name: true } } } },
+            expenses: { include: { splits: true } },
+            settlements: true,
+          },
+        },
+      },
+    }),
+    // Top categories across 3 months
+    prisma.personalExpense.groupBy({
+      by: ["category"],
+      where: { userId, date: { gte: threeMonthsAgo, lte: monthEnd } },
+      _sum: { amount: true },
+      orderBy: { _sum: { amount: "desc" } },
+      take: 5,
+    }),
+  ]);
+
+  const currency = user?.currency ?? "INR";
 
   const categoryBreakdown = categoryExpenses.map((c) => ({
     category: c.category,
@@ -80,31 +117,12 @@ export async function getAIContext(userId: string): Promise<AIFinancialContext> 
     else if (c.type === "LARGE") typeBreakdown.large += c.amount;
   }
 
-  // Recurring expenses
-  const recurring = await prisma.recurringExpense.findMany({
-    where: { userId, isActive: true },
-    select: { category: true, amount: true, frequency: true },
-  });
-
   // Savings rate
   const totalIncome = monthlyData.reduce((s, m) => s + m.income, 0);
   const totalExpenses = monthlyData.reduce((s, m) => s + m.expenses, 0);
   const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
 
   // Group balances
-  const groups = await prisma.groupMember.findMany({
-    where: { userId },
-    include: {
-      group: {
-        include: {
-          members: { include: { user: { select: { id: true, name: true } } } },
-          expenses: { include: { splits: true } },
-          settlements: true,
-        },
-      },
-    },
-  });
-
   const groupBalances = groups.map((membership) => {
     const group = membership.group;
     const members = group.members.map((m) => ({ userId: m.userId, name: m.user.name }));
@@ -122,16 +140,6 @@ export async function getAIContext(userId: string): Promise<AIFinancialContext> 
     const balances = computeMemberBalances(members, expenses, settlements);
     const myBalance = balances.find((b) => b.userId === userId)?.balance ?? 0;
     return { groupName: group.name, balance: myBalance };
-  });
-
-  // Top categories across 3 months
-  const threeMonthsAgo = subMonths(now, 3);
-  const topCats = await prisma.personalExpense.groupBy({
-    by: ["category"],
-    where: { userId, date: { gte: threeMonthsAgo, lte: monthEnd } },
-    _sum: { amount: true },
-    orderBy: { _sum: { amount: "desc" } },
-    take: 5,
   });
 
   const topCategories = topCats.map((c) => ({
@@ -156,3 +164,4 @@ export async function getAIContext(userId: string): Promise<AIFinancialContext> 
     topCategories,
   };
 }
+

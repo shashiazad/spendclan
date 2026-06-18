@@ -1,7 +1,6 @@
 import { endOfMonth, startOfMonth } from "date-fns";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { getMonthlyTotals } from "@/lib/dashboard";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
@@ -20,10 +19,10 @@ export async function GET(request: Request) {
     );
   }
 
-  const totals = await getMonthlyTotals(auth.session.user.id, month, year);
   const start = startOfMonth(new Date(year, month - 1, 1));
   const end = endOfMonth(start);
 
+  // Run all queries concurrently — no redundant getMonthlyTotals call
   const [expensesByCategory, incomeBySource, manualSaving] = await Promise.all([
     prisma.personalExpense.groupBy({
       by: ["category"],
@@ -52,10 +51,16 @@ export async function GET(request: Request) {
     }),
   ]);
 
+  // Compute totals from groupBy results instead of a separate query
+  const income = incomeBySource.reduce((sum, s) => sum + (s._sum.amount ?? 0), 0);
+  const expenses = expensesByCategory.reduce((sum, c) => sum + (c._sum.amount ?? 0), 0);
+
   return NextResponse.json({
     month,
     year,
-    ...totals,
+    income,
+    expenses,
+    savings: income - expenses,
     manualSaving: manualSaving?.amount ?? null,
     expensesByCategory: expensesByCategory.map((c) => ({
       category: c.category,
@@ -67,3 +72,4 @@ export async function GET(request: Request) {
     })),
   });
 }
+
