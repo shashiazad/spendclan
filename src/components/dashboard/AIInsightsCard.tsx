@@ -62,7 +62,7 @@ export function AIInsightsCard() {
           <div className="skeleton h-20 w-full" />
           <div className="skeleton h-16 w-full" />
           <div className="skeleton h-16 w-full" />
-          <p className="text-center text-xs text-slate-500 animate-pulse">
+          <p className="text-center text-xs text-slate-400 animate-pulse">
             Analyzing your spending patterns...
           </p>
         </div>
@@ -77,7 +77,7 @@ export function AIInsightsCard() {
         <div className="relative p-6 text-center">
           <p className="text-2xl mb-2">📊</p>
           <p className="text-sm text-slate-300 font-medium mb-1">AI is taking a breather</p>
-          <p className="text-xs text-slate-500 max-w-xs mx-auto">{error}</p>
+          <p className="text-xs text-slate-400 max-w-xs mx-auto">{error}</p>
           <Button size="sm" variant="ghost" onClick={fetchInsights} className="mt-3">
             Try Again
           </Button>
@@ -112,7 +112,7 @@ export function AIInsightsCard() {
             <p className="text-sm font-medium text-slate-200 mb-1">
               Ready to analyze your spending
             </p>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
+            <p className="text-xs text-slate-400 max-w-sm mx-auto mb-4">
               Click below to get AI-powered insights on your income, expenses, and savings patterns.
             </p>
             <Button onClick={fetchInsights} size="sm">
@@ -163,7 +163,7 @@ export function AIInsightsCard() {
               <SpendingScore score={data.spendingScore} size={80} strokeWidth={6} />
             )}
             <div className="flex-1">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Top Suggestion</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Top Suggestion</p>
               <p className="mt-1 text-sm text-slate-300">{data.topSuggestion}</p>
             </div>
           </div>

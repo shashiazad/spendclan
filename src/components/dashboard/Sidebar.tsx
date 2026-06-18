@@ -123,8 +123,8 @@ export function Sidebar() {
           <BrandIcon className="h-5 w-5 text-emerald-400" />
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">SpendClan</p>
-          <p className="text-xs text-slate-400 dark:text-slate-500">Finance tracker</p>
+          <p className="text-sm font-semibold text-slate-100">SpendClan</p>
+          <p className="text-xs text-slate-400">Finance tracker</p>
         </div>
       </div>
 
@@ -136,10 +136,10 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 min-h-[44px] text-sm font-medium transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98] ${
                 active
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/25"
-                  : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/50 hover:text-slate-900 dark:hover:text-slate-100"
+                  ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 ring-1 ring-emerald-500/25"
+                  : "text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/50 hover:text-slate-100"
               }`}
             >
               {item.icon}
@@ -163,7 +163,7 @@ export function Sidebar() {
                   className="w-8 h-8 rounded-full object-cover border border-zinc-200 dark:border-zinc-700/80 group-hover:border-emerald-500/50 transition-colors"
                 />
               ) : (
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/20 transition-all">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/20 transition-all">
                   {session.user.name
                     ? session.user.name
                         .split(" ")
@@ -175,10 +175,10 @@ export function Sidebar() {
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-emerald-500 transition-colors leading-snug">
+                <p className="truncate text-xs font-semibold text-slate-100 group-hover:text-emerald-500 transition-colors leading-snug">
                   {session.user.name}
                 </p>
-                <p className="truncate text-[10px] text-slate-400 dark:text-slate-500 leading-normal">
+                <p className="truncate text-[10px] text-slate-400 leading-normal">
                   {session.user.email}
                 </p>
               </div>
@@ -189,7 +189,7 @@ export function Sidebar() {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start text-slate-500 dark:text-slate-400 hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full justify-start text-slate-400 hover:scale-[1.01] active:scale-[0.98] transition-all duration-200 ease-out"
           onClick={() => signOut({ callbackUrl: "/login" })}
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
