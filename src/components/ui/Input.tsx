@@ -17,7 +17,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            className="block text-[13px] font-normal uppercase tracking-wider text-[#8e8e93]"
           >
             {label}
           </label>
@@ -25,17 +25,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           id={inputId}
-          className={`w-full rounded-xl border bg-white/50 dark:bg-zinc-900/50 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:ring-blue-500/30 dark:focus:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`w-full min-h-[44px] rounded-xl border bg-white/50 dark:bg-zinc-900/50 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-[#5e5ce6] focus:border-[#5e5ce6] disabled:cursor-not-allowed disabled:opacity-50 ${
             error
-              ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20"
-              : "border-zinc-200 dark:border-zinc-800 focus:border-blue-500"
+              ? "border-[#ff453a] focus:border-[#ff453a] focus:ring-[#ff453a]"
+              : "border-zinc-200 dark:border-zinc-800 focus:border-[#5e5ce6]"
           } ${className}`}
           {...props}
         />
         {hint && !error && (
-          <p className="text-xs text-slate-500">{hint}</p>
+          <p className="text-xs text-slate-400">{hint}</p>
         )}
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-[#ff453a]">{error}</p>}
       </div>
     );
   },

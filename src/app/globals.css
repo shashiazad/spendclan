@@ -1,69 +1,69 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b1120;
-  --foreground: #e2e8f0;
-  --foreground-light: #f1f5f9;
-  --foreground-muted: #cbd5e1;
-  --card: #111827;
-  --card-border: #1e293b;
-  --card-border-hover: #334155;
-  --muted: #94a3b8;
-  --muted-light: #64748b;
-  --accent: #6366f1; /* Royal Indigo */
-  --accent-hover: #4f46e5; /* Deep Indigo */
-  --accent-muted: rgba(99, 102, 241, 0.15);
-  --danger: #f87171;
-  --sidebar: #0f172a;
-  --sidebar-hover: #1e293b;
-  --ai-primary: #8b5cf6;
-  --ai-secondary: #6366f1;
-  --ai-glow: rgba(139, 92, 246, 0.15);
+  --background: #000000;
+  --foreground: #ffffff;
+  --foreground-light: #f2f2f7;
+  --foreground-muted: #e5e5ea;
+  --card: #1c1c1e;
+  --card-border: #2c2c2e;
+  --card-border-hover: #3a3a3c;
+  --muted: #8e8e93;
+  --muted-light: #636366;
+  --accent: #5e5ce6; /* Apple Dark Indigo */
+  --accent-hover: #4f46e5;
+  --accent-muted: rgba(94, 92, 230, 0.15);
+  --danger: #ff453a; /* Apple Dark Red */
+  --sidebar: #1c1c1e;
+  --sidebar-hover: #2c2c2e;
+  --ai-primary: #bf5af2; /* Apple Dark Purple */
+  --ai-secondary: #5e5ce6;
+  --ai-glow: rgba(191, 90, 242, 0.15);
 
-  /* Semantic financial colors */
-  --income: #10B981;       /* Mint Green — Income, positive balances */
-  --expense: #EF4444;      /* Crimson — Expenses, debts, overdue */
-  --savings: #6366F1;      /* Indigo — Savings, investments, goals */
-  --ai-accent: #F59E0B;    /* Amber/Gold — AI elements, smart features */
+  /* Semantic financial colors - Apple Dark HIG Adaptive */
+  --income: #30d158;       /* Apple Dark Green */
+  --expense: #ff453a;      /* Apple Dark Red */
+  --savings: #5e5ce6;      /* Apple Dark Indigo */
+  --ai-accent: #ff9f0a;    /* Apple Dark Orange */
 
   /* Glassmorphism styling variables */
-  --glass-bg: rgba(15, 23, 42, 0.6);
-  --glass-border: rgba(148, 163, 184, 0.08);
-  --glass-card-bg: rgba(17, 24, 39, 0.5);
-  --glass-card-border: rgba(30, 41, 59, 0.7);
+  --glass-bg: rgba(28, 28, 30, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-card-bg: rgba(28, 28, 30, 0.7);
+  --glass-card-border: rgba(44, 44, 46, 0.7);
 }
 
 .light {
-  --background: #f8fafc; /* Soft slate white */
-  --foreground: #0f172a; /* Dark slate text */
-  --foreground-light: #1e293b;
-  --foreground-muted: #334155;
-  --card: #ffffff;       /* Pure white card */
-  --card-border: #e2e8f0; /* Soft border */
-  --card-border-hover: #cbd5e1;
-  --muted: #64748b;      /* Slate-500 */
-  --muted-light: #94a3b8;
-  --accent: #4f46e5;      /* Indigo-600 */
-  --accent-hover: #3730a3;
-  --accent-muted: rgba(79, 70, 229, 0.08);
-  --danger: #ef4444;
-  --sidebar: #f1f5f9;     /* Light slate sidebar */
-  --sidebar-hover: #e2e8f0;
-  --ai-primary: #7c3aed;  /* Violet-600 */
-  --ai-secondary: #4f46e5;
-  --ai-glow: rgba(124, 58, 237, 0.08);
+  --background: #f5f5f7; /* Apple Light Gray 6 */
+  --foreground: #000000; /* Apple Light Black Text */
+  --foreground-light: #1c1c1e;
+  --foreground-muted: #3a3a3c;
+  --card: #ffffff;       /* Apple Light White Surface */
+  --card-border: #e5e5ea; /* Apple Light Border */
+  --card-border-hover: #d1d1d6;
+  --muted: #8e8e93;      /* Apple Light Gray */
+  --muted-light: #aeaeb2;
+  --accent: #5856d6;      /* Apple Light Indigo */
+  --accent-hover: #4f46e5;
+  --accent-muted: rgba(88, 86, 214, 0.1);
+  --danger: #ff3b30; /* Apple Light Red */
+  --sidebar: #ffffff;
+  --sidebar-hover: #f5f5f7;
+  --ai-primary: #af52de;  /* Apple Light Purple */
+  --ai-secondary: #5856d6;
+  --ai-glow: rgba(175, 82, 222, 0.08);
 
-  /* Adjusted semantic financial colors for light mode contrast */
-  --income: #059669;       /* Emerald-600 */
-  --expense: #dc2626;      /* Red-600 */
-  --savings: #4f46e5;      /* Indigo-600 */
-  --ai-accent: #d97706;    /* Amber-600 */
+  /* Adjusted semantic financial colors for light mode contrast - Apple Light HIG Adaptive */
+  --income: #34c759;       /* Apple Light Green */
+  --expense: #ff3b30;      /* Apple Light Red */
+  --savings: #5856d6;      /* Apple Light Indigo */
+  --ai-accent: #ff9500;    /* Apple Light Orange */
 
   /* Glassmorphism styling variables for light mode */
   --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-border: rgba(15, 23, 42, 0.06);
+  --glass-border: rgba(0, 0, 0, 0.06);
   --glass-card-bg: rgba(255, 255, 255, 0.75);
-  --glass-card-border: rgba(226, 232, 240, 0.8);
+  --glass-card-border: rgba(229, 229, 234, 0.8);
 }
 
 

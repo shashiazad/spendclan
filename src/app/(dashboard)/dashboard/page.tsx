@@ -60,6 +60,25 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const currency = session?.user?.currency ?? "INR";
 
+  // Dynamic Theme state for SVG Charts alignment
+  const [isLight, setIsLight] = useState(false);
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsLight(document.documentElement.classList.contains("light"));
+    };
+    checkTheme();
+
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
+  const gridStroke = isLight ? "#e5e5ea" : "#2c2c2e";
+  const textFill = "#8e8e93"; // Apple System Adaptive Gray
+  const tooltipBg = isLight ? "#ffffff" : "#1c1c1e";
+  const tooltipBorder = isLight ? "#e5e5ea" : "#2c2c2e";
+  const tooltipLabel = isLight ? "#000000" : "#ffffff";
+
   useEffect(() => {
     fetch("/api/personal/dashboard")
       .then((r) => r.json())
@@ -80,12 +99,12 @@ export default function DashboardPage() {
   }
 
   const summaryCards = [
-    { label: "Total Income", value: data.summary.totalIncome, color: "text-teal-400", icon: "↑" },
-    { label: "Total Expenses", value: data.summary.totalExpenses, color: "text-red-400", icon: "↓" },
-    { label: "Remaining", value: data.summary.remaining, color: data.summary.remaining >= 0 ? "text-teal-300" : "text-red-300", icon: "◎" },
-    { label: "Net Worth", value: data.summary.netWorth, color: "text-violet-400", icon: "★" },
-    { label: "Others Owe You", value: data.summary.othersOweYou, color: "text-blue-400", icon: "←" },
-    { label: "You Owe", value: data.summary.youOwe, color: "text-orange-400", icon: "→" },
+    { label: "Total Income", value: data.summary.totalIncome, color: "text-income", icon: "↑" },
+    { label: "Total Expenses", value: data.summary.totalExpenses, color: "text-expense", icon: "↓" },
+    { label: "Remaining", value: data.summary.remaining, color: data.summary.remaining >= 0 ? "text-income" : "text-expense", icon: "◎" },
+    { label: "Net Worth", value: data.summary.netWorth, color: "text-savings", icon: "★" },
+    { label: "Others Owe You", value: data.summary.othersOweYou, color: "text-savings", icon: "←" },
+    { label: "You Owe", value: data.summary.youOwe, color: "text-ai-accent", icon: "→" },
   ];
 
   const totalTypeSpend = data.typeBreakdown.daily + data.typeBreakdown.monthly + data.typeBreakdown.large;
@@ -108,14 +127,14 @@ export default function DashboardPage() {
           <Card key={card.label} padding="sm" className="hover-lift">
             <div className="flex items-center gap-2">
               <span className={`text-lg ${card.color}`}>{card.icon}</span>
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
                 {card.label}
               </p>
             </div>
             <AnimatedCounter
               value={card.value}
               currency={currency}
-              className={`mt-2 block text-xl font-bold ${card.color}`}
+              className={`mt-2 block text-2xl sm:text-3xl font-semibold tracking-tight text-slate-100`}
             />
           </Card>
         ))}
@@ -138,7 +157,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-slate-600">{pct.toFixed(0)}%</p>
+                  <p className="text-2xl font-bold text-slate-400">{pct.toFixed(0)}%</p>
                 </div>
               </div>
               <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800">
@@ -156,26 +175,26 @@ export default function DashboardPage() {
       {data.quickStats && (
         <div className="grid gap-4 sm:grid-cols-3">
           <Card padding="sm" className="hover-lift">
-            <p className="text-xs uppercase text-slate-500">Avg Daily Spend</p>
-            <p className="mt-1 text-lg font-bold text-amber-400">
+            <p className="text-xs uppercase text-slate-400">Avg Daily Spend</p>
+            <p className="mt-1 text-lg font-bold text-ai-accent">
               {formatCurrency(data.quickStats.avgDailySpend, currency)}
             </p>
           </Card>
           <Card padding="sm" className="hover-lift">
-            <p className="text-xs uppercase text-slate-500">Top Category</p>
+            <p className="text-xs uppercase text-slate-400">Top Category</p>
             <p className="mt-1 text-lg font-bold text-slate-200">
               {data.quickStats.topCategory ?? "—"}
             </p>
           </Card>
           <Card padding="sm" className="hover-lift">
-            <p className="text-xs uppercase text-slate-500">Biggest Expense</p>
-            <p className="mt-1 text-lg font-bold text-red-400">
+            <p className="text-xs uppercase text-slate-400">Biggest Expense</p>
+            <p className="mt-1 text-lg font-bold text-expense">
               {data.quickStats.biggestExpense
                 ? `${formatCurrency(data.quickStats.biggestExpense.amount, currency)}`
                 : "—"}
             </p>
             {data.quickStats.biggestExpense && (
-              <p className="text-xs text-slate-500">{data.quickStats.biggestExpense.category}</p>
+              <p className="text-xs text-slate-400">{data.quickStats.biggestExpense.category}</p>
             )}
           </Card>
         </div>
@@ -188,16 +207,16 @@ export default function DashboardPage() {
           <CardBody>
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={data.trends}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="month" tick={{ fill: "#94a3b8", fontSize: 12 }} />
-                <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                <XAxis dataKey="month" tick={{ fill: textFill, fontSize: 12 }} />
+                <YAxis tick={{ fill: textFill, fontSize: 12 }} />
                 <Tooltip
-                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8 }}
-                  labelStyle={{ color: "#e2e8f0" }}
+                  contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 12 }}
+                  labelStyle={{ color: tooltipLabel }}
                 />
-                <Area type="monotone" dataKey="income" stackId="1" stroke="#10b981" fill="#10b98133" name="Income" />
-                <Area type="monotone" dataKey="expenses" stackId="2" stroke="#ef4444" fill="#ef444433" name="Expenses" />
-                <Area type="monotone" dataKey="savings" stackId="3" stroke="#3b82f6" fill="#3b82f633" name="Savings" />
+                <Area type="monotone" dataKey="income" stackId="1" stroke="#30d158" fill="#30d15833" name="Income" />
+                <Area type="monotone" dataKey="expenses" stackId="2" stroke="#ff453a" fill="#ff453a33" name="Expenses" />
+                <Area type="monotone" dataKey="savings" stackId="3" stroke="#5e5ce6" fill="#5e5ce633" name="Savings" />
               </AreaChart>
             </ResponsiveContainer>
           </CardBody>
@@ -208,7 +227,7 @@ export default function DashboardPage() {
           <CardHeader title="Category Breakdown" description="Current month" />
           <CardBody>
             {data.categoryBreakdown.length === 0 ? (
-              <p className="py-12 text-center text-slate-500">No expenses this month</p>
+              <p className="py-12 text-center text-slate-400">No expenses this month</p>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
@@ -228,7 +247,7 @@ export default function DashboardPage() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8 }}
+                    contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 12 }}
                     formatter={(value) => formatCurrency(Number(value), currency)}
                   />
                 </PieChart>
@@ -246,7 +265,7 @@ export default function DashboardPage() {
         <CardHeader title="Recent Expenses" description="Last 5 transactions" />
         <CardBody>
           {data.recentExpenses.length === 0 ? (
-            <p className="text-slate-500">No expenses yet.</p>
+            <p className="text-slate-400">No expenses yet.</p>
           ) : (
             <div className="divide-y divide-slate-800">
               {data.recentExpenses.map((exp) => {
@@ -258,13 +277,13 @@ export default function DashboardPage() {
                         {typeColor.label}
                       </span>
                       <div>
-                        <p className="font-medium text-slate-200">{exp.category}</p>
-                        <p className="text-sm text-slate-500">
+                        <p className="font-medium text-slate-100">{exp.category}</p>
+                        <p className="text-sm text-slate-400">
                           {format(new Date(exp.date), "MMM d, yyyy")} · {exp.paymentMethod}
                         </p>
                       </div>
                     </div>
-                    <p className="font-semibold text-red-400">
+                    <p className="font-semibold text-expense">
                       -{formatCurrency(exp.amount, currency)}
                     </p>
                   </div>

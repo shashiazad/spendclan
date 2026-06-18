@@ -50,9 +50,9 @@ export function CardHeader({
       className={`mb-4 flex items-start justify-between gap-4 ${className}`}
     >
       <div>
-        <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">{title}</h3>
+        <h3 className="text-lg font-semibold tracking-tight text-slate-100">{title}</h3>
         {description && (
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p>
+          <p className="mt-1 text-sm text-slate-400">{description}</p>
         )}
       </div>
       {action}

@@ -173,10 +173,10 @@ export default function ExpensesPage() {
       </Card>
 
       <Card padding="none">
-        <div className="border-b border-slate-800 px-6 py-4">
+        <div className="border-b border-zinc-200 dark:border-zinc-800 px-6 py-4">
           <p className="text-sm text-slate-400">
-            Total: <span className="font-bold text-red-400">{formatCurrency(total, currency)}</span>
-            <span className="ml-4 text-slate-600">({expenses.length} entries)</span>
+            Total: <span className="font-bold text-expense">{formatCurrency(total, currency)}</span>
+            <span className="ml-4 text-slate-400">({expenses.length} entries)</span>
           </p>
         </div>
         {loading ? (
@@ -195,7 +195,7 @@ export default function ExpensesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800 text-left text-slate-400">
+                <tr className="border-b border-zinc-200 dark:border-zinc-800 text-left text-slate-400">
                   <th className="px-6 py-3">Date</th>
                   <th className="px-6 py-3">Category</th>
                   <th className="px-6 py-3">Type</th>
@@ -208,7 +208,7 @@ export default function ExpensesPage() {
                 {expenses.map((exp) => {
                   const tc = TYPE_COLORS[exp.type] ?? TYPE_COLORS.DAILY;
                   return (
-                    <tr key={exp.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                    <tr key={exp.id} className="border-b border-zinc-200/50 dark:border-zinc-800/30 hover:bg-slate-800/30 transition-colors">
                       <td className="px-6 py-3">{format(new Date(exp.date), "MMM d, yyyy")}</td>
                       <td className="px-6 py-3">{exp.category}</td>
                       <td className="px-6 py-3">
@@ -217,7 +217,7 @@ export default function ExpensesPage() {
                         </span>
                       </td>
                       <td className="px-6 py-3">{exp.paymentMethod}</td>
-                      <td className="px-6 py-3 text-right text-red-400">{formatCurrency(exp.amount, currency)}</td>
+                      <td className="px-6 py-3 text-right text-expense">{formatCurrency(exp.amount, currency)}</td>
                       <td className="px-6 py-3">
                         <div className="flex gap-2">
                           <Button size="sm" variant="ghost" onClick={() => startEdit(exp)}>Edit</Button>

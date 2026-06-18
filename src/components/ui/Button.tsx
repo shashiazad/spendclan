@@ -23,9 +23,9 @@ const variantClasses: Record<ButtonVariant, string> = {
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2 text-sm",
-  lg: "px-6 py-2.5 text-base",
+  sm: "px-3 py-1.5 text-sm min-h-[36px]",
+  md: "px-4 py-2 text-sm min-h-[44px]",
+  lg: "px-6 py-2.5 text-base min-h-[44px]",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -45,7 +45,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || loading}
-        className={`inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+        className={`inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
         {...props}
       >
         {loading && (

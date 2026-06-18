@@ -47,8 +47,8 @@ export default async function AboutPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Strict Financial Isolation</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Our Core Philosophy</p>
+                <h2 className="text-xl font-bold text-slate-100">Strict Financial Isolation</h2>
+                <p className="text-sm text-slate-400">Our Core Philosophy</p>
               </div>
             </div>
 
@@ -60,7 +60,7 @@ export default async function AboutPage() {
               {isLoggedIn ? (
                 <Link
                   href="/dashboard"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-400 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-400 transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98]"
                 >
                   Go to Dashboard
                 </Link>
@@ -68,13 +68,13 @@ export default async function AboutPage() {
                 <>
                   <Link
                     href="/login"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-400 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-400 transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98]"
                   >
                     Log In
                   </Link>
                   <Link
                     href="/register"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800/80 px-6 py-3 text-sm font-semibold text-slate-900 dark:text-white shadow-sm hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800/80 px-6 py-3 text-sm font-semibold text-slate-100 shadow-sm hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98]"
                   >
                     Get Started Free
                   </Link>

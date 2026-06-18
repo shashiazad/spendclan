@@ -82,7 +82,7 @@ export function formatCurrency(amount: number, currency = "INR") {
 }
 
 export const TYPE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  DAILY: { bg: "bg-emerald-500/10", text: "text-emerald-400", label: "Daily" },
-  MONTHLY: { bg: "bg-blue-500/10", text: "text-blue-400", label: "Monthly" },
-  LARGE: { bg: "bg-orange-500/10", text: "text-orange-400", label: "Large" },
+  DAILY: { bg: "bg-income/10", text: "text-income", label: "Daily" },
+  MONTHLY: { bg: "bg-savings/10", text: "text-savings", label: "Monthly" },
+  LARGE: { bg: "bg-ai-accent/10", text: "text-ai-accent", label: "Large" },
 };

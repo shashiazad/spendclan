@@ -102,7 +102,7 @@ export default function GroupsPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
           {groups.map((group) => {
             const balance = group.userBalance ?? 0;
-            const balanceColor = balance > 0 ? "text-emerald-400" : balance < 0 ? "text-red-400" : "text-slate-500";
+            const balanceColor = balance > 0 ? "text-income" : balance < 0 ? "text-expense" : "text-slate-400";
             const balanceLabel = balance > 0
               ? `You are owed ${formatCurrency(balance, currency)}`
               : balance < 0
@@ -136,11 +136,11 @@ export default function GroupsPage() {
                         );
                       })}
                       {(group.members?.length ?? 0) > 5 && (
-                        <span className="text-xs text-slate-500">+{(group.members?.length ?? 0) - 5}</span>
+                        <span className="text-xs text-slate-400">+{(group.members?.length ?? 0) - 5}</span>
                       )}
                     </div>
                     <div className="mt-3 flex items-center justify-between">
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-slate-400">
                         {group.members?.length ?? 0} members · {group.expenseCount ?? group._count?.expenses ?? 0} expenses
                       </p>
                     </div>
