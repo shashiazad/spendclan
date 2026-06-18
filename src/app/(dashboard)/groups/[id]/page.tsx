@@ -259,6 +259,72 @@ export default function GroupDetailPage() {
     ? members
     : balances.map((b) => ({ userId: b.userId, name: b.name }));
 
+  const totalAmount = Number(expForm.amount) || 0;
+  const splitType = expForm.splitType;
+
+  let validationResult = {
+    isValid: true,
+    message: "",
+    isWarning: false,
+  };
+
+  if (totalAmount <= 0) {
+    validationResult = {
+      isValid: false,
+      message: "Please enter an amount greater than 0",
+      isWarning: false,
+    };
+  } else if (splitType === "CUSTOM") {
+    const sum = memberList.reduce((acc, m) => {
+      const uid = m.userId ?? m.user?.id ?? "";
+      return acc + (Number(expForm.splits[uid]) || 0);
+    }, 0);
+    const roundedSum = Math.round(sum * 100) / 100;
+    const roundedTotal = Math.round(totalAmount * 100) / 100;
+    const diff = Math.round(Math.abs(roundedTotal - roundedSum) * 100) / 100;
+
+    if (roundedSum !== roundedTotal) {
+      validationResult = {
+        isValid: false,
+        message: `✕ Splits sum up to ${roundedSum}, but total is ${roundedTotal} (Mismatch of ${diff})`,
+        isWarning: true,
+      };
+    } else {
+      validationResult = {
+        isValid: true,
+        message: "✓ Splits match total amount exactly",
+        isWarning: false,
+      };
+    }
+  } else if (splitType === "PERCENTAGE") {
+    const sum = memberList.reduce((acc, m) => {
+      const uid = m.userId ?? m.user?.id ?? "";
+      return acc + (Number(expForm.splits[uid]) || 0);
+    }, 0);
+    const roundedSum = Math.round(sum * 100) / 100;
+    const diff = Math.round(Math.abs(100 - roundedSum) * 100) / 100;
+
+    if (roundedSum !== 100) {
+      validationResult = {
+        isValid: false,
+        message: `✕ Splits sum up to ${roundedSum}%, but total is 100% (Mismatch of ${diff}%)`,
+        isWarning: true,
+      };
+    } else {
+      validationResult = {
+        isValid: true,
+        message: "✓ Splits match total percentage (100%) exactly",
+        isWarning: false,
+      };
+    }
+  } else if (splitType === "EQUAL") {
+    validationResult = {
+      isValid: totalAmount > 0,
+      message: totalAmount > 0 ? "✓ Splits match total amount exactly" : "Please enter an amount greater than 0",
+      isWarning: false,
+    };
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -325,8 +391,27 @@ export default function GroupDetailPage() {
                     })}
                   </div>
                 )}
+                {expForm.amount && (
+                  <div className="sm:col-span-2 lg:col-span-3 text-sm font-medium animate-fade-in">
+                    {validationResult.isWarning ? (
+                      <span className="text-amber-500 dark:text-amber-400 flex items-center gap-1.5">
+                        {validationResult.message}
+                      </span>
+                    ) : validationResult.isValid ? (
+                      <span className="text-emerald-500 dark:text-emerald-400 flex items-center gap-1.5">
+                        {validationResult.message}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">
+                        {validationResult.message}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="sm:col-span-2 lg:col-span-3">
-                  <Button type="submit">Add Expense</Button>
+                  <Button type="submit" disabled={!validationResult.isValid}>
+                    Add Expense
+                  </Button>
                 </div>
               </form>
             </CardBody>

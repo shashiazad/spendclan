@@ -118,13 +118,13 @@ export function Sidebar() {
 
   const sidebarContent = (
     <>
-      <div className="flex h-16 items-center gap-3 border-b border-slate-800 px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/30">
+      <div className="flex h-16 items-center gap-3 border-b border-zinc-200/50 dark:border-zinc-800/50 px-6">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/30">
           <BrandIcon className="h-5 w-5 text-emerald-400" />
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-100">SpendClan</p>
-          <p className="text-xs text-slate-500">Finance tracker</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">SpendClan</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">Finance tracker</p>
         </div>
       </div>
 
@@ -136,10 +136,10 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
                 active
-                  ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/25"
+                  : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/50 hover:text-slate-900 dark:hover:text-slate-100"
               }`}
             >
               {item.icon}
@@ -149,21 +149,21 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="border-t border-slate-800 p-4">
+      <div className="border-t border-zinc-200/50 dark:border-zinc-800/50 p-4">
         <div className="flex items-center justify-between mb-3 px-1 gap-2">
           {session?.user && (
             <Link
               href="/profile"
-              className="flex items-center gap-2.5 min-w-0 flex-1 hover:bg-slate-800/60 rounded-lg p-1.5 transition-colors group"
+              className="flex items-center gap-2.5 min-w-0 flex-1 hover:bg-slate-100 dark:hover:bg-zinc-800/50 rounded-xl p-1.5 transition-colors group"
             >
               {session.user.profilePhoto ? (
                 <img
                   src={session.user.profilePhoto}
                   alt={session.user.name ?? "User"}
-                  className="w-8 h-8 rounded-full object-cover border border-slate-700/80 group-hover:border-emerald-500/50 transition-colors"
+                  className="w-8 h-8 rounded-full object-cover border border-zinc-200 dark:border-zinc-700/80 group-hover:border-emerald-500/50 transition-colors"
                 />
               ) : (
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 font-bold text-xs border border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/20 transition-all">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/20 transition-all">
                   {session.user.name
                     ? session.user.name
                         .split(" ")
@@ -175,10 +175,10 @@ export function Sidebar() {
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-slate-200 group-hover:text-emerald-400 transition-colors leading-snug">
+                <p className="truncate text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-emerald-500 transition-colors leading-snug">
                   {session.user.name}
                 </p>
-                <p className="truncate text-[10px] text-slate-500 leading-normal">
+                <p className="truncate text-[10px] text-slate-400 dark:text-slate-500 leading-normal">
                   {session.user.email}
                 </p>
               </div>
@@ -189,7 +189,7 @@ export function Sidebar() {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start text-slate-400"
+          className="w-full justify-start text-slate-500 dark:text-slate-400 hover:scale-[1.02] active:scale-[0.98]"
           onClick={() => signOut({ callbackUrl: "/login" })}
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -204,16 +204,16 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile header */}
-      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-slate-800 bg-sidebar/95 px-4 backdrop-blur-md lg:hidden">
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white/85 dark:bg-zinc-900/85 px-4 backdrop-blur-md lg:hidden">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10">
             <BrandIcon className="h-4 w-4 text-emerald-400" />
           </div>
-          <span className="text-sm font-bold text-slate-100">SpendClan</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">SpendClan</span>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100"
+          className="rounded-xl p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-slate-100"
           aria-label="Toggle menu"
         >
           {mobileOpen ? (
@@ -231,7 +231,7 @@ export function Sidebar() {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
@@ -239,7 +239,7 @@ export function Sidebar() {
 
       {/* Mobile sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-800 bg-sidebar transition-transform duration-200 lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-zinc-200/50 dark:border-zinc-800/50 bg-white/80 dark:bg-zinc-905/80 backdrop-blur-xl transition-transform duration-200 lg:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -247,7 +247,7 @@ export function Sidebar() {
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-slate-800 bg-sidebar lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-zinc-200/50 dark:border-zinc-800/50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl lg:flex">
         {sidebarContent}
       </aside>
     </>
