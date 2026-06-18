@@ -1,7 +1,26 @@
 import { getServerSession } from "next-auth";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { authOptions } from "./auth-options";
 import { prisma } from "./prisma";
+
+export async function getBaseUrl(): Promise<string> {
+  const h = await headers();
+  const origin = h.get("origin");
+  if (origin) return origin;
+
+  const referer = h.get("referer");
+  if (referer) {
+    try {
+      const url = new URL(referer);
+      return url.origin;
+    } catch {
+      // Malformed referer — fall through
+    }
+  }
+
+  return process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+}
 
 export async function getSession() {
   return getServerSession(authOptions);

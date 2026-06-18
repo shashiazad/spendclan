@@ -34,7 +34,7 @@ function createPrismaClient() {
   const adapter = new PrismaPg(pool);
   const client = new PrismaClient({
     adapter,
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
   globalForPrisma.pool = pool;
@@ -42,8 +42,61 @@ function createPrismaClient() {
   return client;
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+// Export the raw base client to be used inside db-security.ts (prevents recursive loops)
+export const basePrisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+  globalForPrisma.prisma = basePrisma;
 }
+
+// Export a secure Prisma Proxy that intercepts model delegates to enforce RLS / Tenant Isolation
+export const prisma = new Proxy(basePrisma, {
+  get(target, prop, receiver) {
+    const delegate = Reflect.get(target, prop, receiver);
+
+    // Intercept model delegates dynamically (exclude built-in connection/utility methods)
+    if (
+      delegate &&
+      typeof delegate === "object" &&
+      !["$connect", "$disconnect", "$executeRaw", "$queryRaw", "$transaction"].includes(prop as string)
+    ) {
+      return new Proxy(delegate, {
+        get(modelTarget, modelProp) {
+          const originalMethod = Reflect.get(modelTarget, modelProp);
+          if (typeof originalMethod === "function") {
+            return async function (...args: any[]) {
+              try {
+                // Dynamic imports to prevent module initialization circular dependency loops
+                const { getSession } = await import("./auth");
+                const { getIsolatedClient } = await import("./db-security");
+
+                const session = await getSession();
+                const userId = session?.user?.id;
+
+                if (userId) {
+                  const isolatedClient = getIsolatedClient(userId);
+                  const isolatedModelDelegate = (isolatedClient as any)[prop];
+                  
+                  if (isolatedModelDelegate && modelProp in isolatedModelDelegate) {
+                    const isolatedMethod = isolatedModelDelegate[modelProp];
+                    if (typeof isolatedMethod === "function") {
+                      return isolatedMethod.apply(isolatedModelDelegate, args);
+                    }
+                  }
+                }
+              } catch (e) {
+                // Next.js will throw an error if headers/cookies are read outside of a request context
+                // (e.g. during build-time page generation or background seeding). We fall back to raw query execution.
+              }
+
+              return originalMethod.apply(modelTarget, args);
+            };
+          }
+          return originalMethod;
+        },
+      });
+    }
+
+    return delegate;
+  },
+});

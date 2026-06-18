@@ -23,29 +23,178 @@ function getTransporter() {
   });
 }
 
+interface TemplateParams {
+  title: string;
+  preheader?: string;
+  contentHtml: string;
+  ctaText?: string;
+  ctaUrl?: string;
+}
+
+/**
+ * Renders a premium, responsive HTML email wrapper template matching the SpendClan design system.
+ */
+function renderEmailTemplate({
+  title,
+  preheader,
+  contentHtml,
+  ctaText,
+  ctaUrl,
+}: TemplateParams): string {
+  const ctaBlock = (ctaText && ctaUrl)
+    ? `
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 28px 0; text-align: center;">
+        <tr>
+          <td align="center">
+            <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+              <tr>
+                <td align="center" bgcolor="#10b981" style="border-radius: 6px;">
+                  <a href="${ctaUrl}" target="_blank" style="display: inline-block; background-color: #10b981; color: #ffffff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold; font-family: Inter, system-ui, -apple-system, sans-serif; font-size: 15px; border: 1px solid #10b981;">
+                    ${ctaText}
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    `
+    : "";
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>${title}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100% !important;
+      background-color: #f8fafc;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    
+    img {
+      border: 0;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Inter, system-ui, -apple-system, sans-serif; color: #0f172a; -webkit-font-smoothing: antialiased;">
+  ${preheader ? `<span style="display: none; max-height: 0px; overflow: hidden; mso-hide: all;">${preheader}</span>` : ""}
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; padding: 40px 0;">
+    <tr>
+      <td align="center">
+        <!-- Main Wrapper Container -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; width: 100%; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+          
+          <!-- Logo / Header -->
+          <tr>
+            <td align="center" style="padding: 40px 40px 20px 40px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <img src="https://spendclan.vercel.app/icon-192x192.png" width="48" height="48" alt="SpendClan Logo" style="display: block; width: 48px; height: 48px;" />
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top: 12px;">
+                    <span style="font-size: 20px; font-weight: bold; color: #0f172a; letter-spacing: -0.5px;">SpendClan</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding: 0 40px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px solid #f1f5f9;">
+                <tr><td></td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Main Content -->
+          <tr>
+            <td style="padding: 30px 40px 40px 40px; font-size: 15px; line-height: 1.6; color: #334155;">
+              ${contentHtml}
+              ${ctaBlock}
+              
+              <!-- Signature Matrix -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 32px; border-top: 1px solid #f1f5f9; padding-top: 24px;">
+                <tr>
+                  <td style="font-size: 14px; color: #475569; line-height: 1.5;">
+                    Best regards,<br>
+                    <strong>The SpendClan Team</strong><br>
+                    <span style="font-size: 12px; color: #94a3b8; font-weight: normal; margin-top: 4px; display: block;">—<br>Personal Tracking Meets Seamless Group Splits</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer Legal -->
+          <tr>
+            <td align="center" bgcolor="#f8fafc" style="padding: 24px 40px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; line-height: 1.5; text-align: center;">
+              <p style="margin: 0;">This email was sent to you as part of your SpendClan account updates.</p>
+              <p style="margin: 4px 0 0 0;">© ${new Date().getFullYear()} SpendClan. All rights reserved.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
+
 export async function sendPasswordResetEmail(
   email: string,
   token: string,
+  baseUrl: string,
 ): Promise<boolean> {
   const transporter = getTransporter();
-  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
+  const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
   if (!transporter) {
     console.log(`[DEV] Password reset link for ${email}: ${resetUrl}`);
     return true;
   }
 
+  const title = "Reset your SpendClan password";
+  const preheader = "You requested a password reset for your SpendClan account.";
+  const contentHtml = `
+    <p style="margin: 0 0 16px 0;">Hello,</p>
+    <p style="margin: 0 0 16px 0;">We received a request to reset the password associated with your SpendClan account. Click the button below to set a new password:</p>
+    <p style="margin: 28px 0 0 0; font-size: 13px; color: #64748b;">This password reset link is valid for <strong>1 hour</strong>. If you did not make this request, you can safely ignore this email; your account security remains fully intact.</p>
+    <p style="margin: 12px 0 0 0; font-size: 11px; color: #94a3b8; word-break: break-all;">If the button above does not work, copy and paste this URL into your browser:<br>${resetUrl}</p>
+  `;
+
   try {
     await transporter.sendMail({
       from: process.env.SMTP_FROM ?? "SpendClan <noreply@example.com>",
       to: email,
-      subject: "Reset your SpendClan password",
-      html: `
-        <p>You requested a password reset for your SpendClan account.</p>
-        <p><a href="${resetUrl}">Click here to reset your password</a></p>
-        <p>This link expires in 1 hour.</p>
-        <p>If you did not request this, you can ignore this email.</p>
-      `,
+      subject: title,
+      html: renderEmailTemplate({
+        title,
+        preheader,
+        contentHtml,
+        ctaText: "Reset Your Password",
+        ctaUrl: resetUrl,
+      }),
     });
   } catch (error) {
     console.error("Failed to send email via SMTP, falling back to console log:", error);
@@ -69,27 +218,79 @@ export async function sendVerificationEmail(
     return true;
   }
 
+  const title = "Verify your SpendClan email address";
+  const preheader = "Verify your email to complete your registration on SpendClan.";
+  const contentHtml = `
+    <p style="margin: 0 0 16px 0;">Hello ${name},</p>
+    <p style="margin: 0 0 16px 0;">Welcome to SpendClan! We're excited to help you track personal spending and split group expenses effortlessly.</p>
+    <p style="margin: 0 0 20px 0;">Please verify your email address by entering the following 6-digit confirmation code on the verification screen:</p>
+    <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #0f172a; margin: 24px 0; font-family: Courier, monospace;">
+      ${token}
+    </div>
+    <p style="margin: 20px 0 0 0; font-size: 13px; color: #64748b;">This verification code is valid for <strong>1 hour</strong>. If you did not sign up for SpendClan, please ignore this email.</p>
+  `;
+
   try {
     await transporter.sendMail({
       from: process.env.SMTP_FROM ?? "SpendClan <noreply@example.com>",
       to: email,
-      subject: "Verify your SpendClan email address",
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h2 style="color: #4f46e5; margin-bottom: 20px;">Welcome to SpendClan, ${name}!</h2>
-          <p>Thank you for signing up. Please verify your email address by entering the following 6-digit code on the verification screen:</p>
-          <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #1e293b; margin: 24px 0;">
-            ${token}
-          </div>
-          <p style="color: #64748b; font-size: 14px;">This code is valid for 1 hour. If you did not sign up for SpendClan, please ignore this email.</p>
-        </div>
-      `,
+      subject: title,
+      html: renderEmailTemplate({
+        title,
+        preheader,
+        contentHtml,
+      }),
     });
   } catch (error) {
     console.error("Failed to send verification email via SMTP, falling back to console log:", error);
     console.log(`\n==================================================`);
     console.log(`[DEV-FALLBACK] Email verification code for ${name} (${email}): ${token}`);
     console.log(`==================================================\n`);
+  }
+
+  return true;
+}
+
+export async function sendGroupInvitationEmail(
+  email: string,
+  groupName: string,
+  invitedByName: string,
+  baseUrl: string,
+): Promise<boolean> {
+  const transporter = getTransporter();
+  const registerUrl = `${baseUrl}/register?email=${encodeURIComponent(email)}`;
+
+  if (!transporter) {
+    console.log(`[DEV] Group invitation email for ${email} to join group "${groupName}" by ${invitedByName}: ${registerUrl}`);
+    return true;
+  }
+
+  const title = `Invitation to join "${groupName}" on SpendClan`;
+  const preheader = `${invitedByName} has invited you to join the group "${groupName}" on SpendClan.`;
+  const contentHtml = `
+    <p style="margin: 0 0 16px 0;">Hello,</p>
+    <p style="margin: 0 0 16px 0;"><strong>${invitedByName}</strong> has invited you to join their pocket group <strong>"${groupName}"</strong> on SpendClan.</p>
+    <p style="margin: 0 0 16px 0;">SpendClan makes it incredibly simple to split bills, track shared expenses, and settle up with friends and family instantly.</p>
+    <p style="margin: 0 0 20px 0;">Click the button below to accept the invitation and sign up using this email address. Once registered, you will be automatically added to the group.</p>
+    <p style="margin: 28px 0 0 0; font-size: 13px; color: #64748b;">If the button above does not work, copy and paste this URL into your browser:<br>${registerUrl}</p>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM ?? "SpendClan <noreply@example.com>",
+      to: email,
+      subject: title,
+      html: renderEmailTemplate({
+        title,
+        preheader,
+        contentHtml,
+        ctaText: `Join "${groupName}" Now`,
+        ctaUrl: registerUrl,
+      }),
+    });
+  } catch (error) {
+    console.error("Failed to send group invitation email via SMTP, falling back to console log:", error);
+    console.log(`[DEV-FALLBACK] Group invitation email for ${email} to join group "${groupName}" by ${invitedByName}: ${registerUrl}`);
   }
 
   return true;

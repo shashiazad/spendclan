@@ -4,9 +4,12 @@ import {
   requireGroupAdmin,
   requireGroupMember,
   handleZodError,
+  getBaseUrl,
 } from "@/lib/auth";
+import { invalidateDashboard, invalidateGroupMemberDashboards } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
-import { addMemberSchema } from "@/lib/validators";
+import { addMemberByIdSchema } from "@/lib/validators";
+import { sendGroupInvitationEmail } from "@/lib/email";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -21,14 +24,61 @@ export async function POST(request: Request, context: RouteContext) {
 
   try {
     const body = await request.json();
-    const { email } = addMemberSchema.parse(body);
+    const { id, email } = addMemberByIdSchema.parse(body);
 
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+    if (!id && !email) {
+      return NextResponse.json({ error: "Either id or email is required" }, { status: 400 });
+    }
+
+    let user = null;
+    if (id) {
+      user = await prisma.user.findUnique({
+        where: { id },
+      });
+    } else if (email) {
+      user = await prisma.user.findUnique({
+        where: { email: email.toLowerCase() },
+      });
+    }
+
+    const group = await prisma.group.findUnique({
+      where: { id: groupId },
     });
 
+    if (!group) {
+      return NextResponse.json({ error: "Group not found" }, { status: 404 });
+    }
+
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      if (!email) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+
+      const targetEmail = email.toLowerCase();
+      await prisma.groupInvitation.upsert({
+        where: {
+          email_groupId: { email: targetEmail, groupId },
+        },
+        create: {
+          email: targetEmail,
+          groupId,
+          invitedBy: auth.session.user.name || "A friend",
+        },
+        update: {},
+      });
+
+      const baseUrl = await getBaseUrl();
+      await sendGroupInvitationEmail(
+        targetEmail,
+        group.name,
+        auth.session.user.name || "A friend",
+        baseUrl
+      );
+
+      return NextResponse.json(
+        { invited: true, email: targetEmail, message: "Invitation sent successfully" },
+        { status: 201 }
+      );
     }
 
     const existing = await prisma.groupMember.findUnique({
@@ -51,10 +101,12 @@ export async function POST(request: Request, context: RouteContext) {
         role: "MEMBER",
       },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, profilePhoto: true } },
       },
     });
 
+    // Invalidate dashboard for all existing members and the new member
+    await invalidateGroupMemberDashboards(groupId);
     return NextResponse.json({ member }, { status: 201 });
   } catch (error) {
     return handleZodError(error);
@@ -106,6 +158,10 @@ export async function DELETE(request: Request, context: RouteContext) {
   await prisma.groupMember.delete({
     where: { userId_groupId: { userId, groupId } },
   });
+
+  // Invalidate all remaining members' dashboards and the removed member's dashboard
+  await invalidateGroupMemberDashboards(groupId);
+  invalidateDashboard(userId);
 
   return NextResponse.json({ message: "Member removed" });
 }

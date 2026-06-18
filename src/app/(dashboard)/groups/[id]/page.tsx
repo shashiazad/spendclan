@@ -11,8 +11,19 @@ import { Select } from "@/components/ui/Select";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { SPLIT_TYPES, formatCurrency } from "@/lib/constants";
 import { format } from "date-fns";
+import { MemberSearch, type SelectedMember } from "@/components/ui/MemberSearch";
 
-type Member = { userId: string; name: string; role?: string; user?: { id: string; name: string; email: string } };
+type Member = {
+  userId: string;
+  name: string;
+  role?: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    profilePhoto?: string | null;
+  };
+};
 type Expense = {
   id: string;
   amount: number;
@@ -33,6 +44,11 @@ type Settlement = {
 };
 
 type Tab = "expenses" | "balances" | "settlements";
+
+function initials(name: string) {
+  if (!name) return "?";
+  return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+}
 
 export default function GroupDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -60,7 +76,7 @@ export default function GroupDetailPage() {
     splits: {} as Record<string, string>,
   });
   const [settleForm, setSettleForm] = useState({ amount: "", toId: "" });
-  const [memberEmail, setMemberEmail] = useState("");
+  const [selectedMemberToAdd, setSelectedMemberToAdd] = useState<SelectedMember[]>([]);
 
   const loadGroup = useCallback(async () => {
     const res = await fetch(`/api/groups/${id}`);
@@ -176,13 +192,24 @@ export default function GroupDetailPage() {
 
   async function addMember(e: React.FormEvent) {
     e.preventDefault();
-    await fetch(`/api/groups/${id}/members`, {
+    if (selectedMemberToAdd.length === 0) return;
+    const member = selectedMemberToAdd[0];
+
+    const res = await fetch(`/api/groups/${id}/members`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: memberEmail }),
+      body: JSON.stringify({
+        id: member.id,
+        email: member.email,
+      }),
     });
-    setMemberEmail("");
-    loadAll();
+    if (res.ok) {
+      setSelectedMemberToAdd([]);
+      loadAll();
+    } else {
+      const err = await res.json();
+      alert(err.error ?? "Failed to add member");
+    }
   }
 
   async function removeMember(memberId: string) {
@@ -376,9 +403,26 @@ export default function GroupDetailPage() {
           <Card>
             <CardHeader title="Add Member" />
             <CardBody>
-              <form onSubmit={addMember} className="flex gap-4">
-                <Input label="Email" type="email" required value={memberEmail} onChange={(e) => setMemberEmail(e.target.value)} className="flex-1" />
-                <div className="flex items-end"><Button type="submit">Add</Button></div>
+              <form onSubmit={addMember} className="space-y-4">
+                <div className="space-y-1.5">
+                  <MemberSearch
+                    selectedMembers={selectedMemberToAdd}
+                    onAddMember={(member) => setSelectedMemberToAdd([member])}
+                    onRemoveMember={() => setSelectedMemberToAdd([])}
+                    excludeEmails={
+                      session?.user?.email
+                        ? [session.user.email, ...memberList.map((m) => m.user?.email || "").filter(Boolean)]
+                        : memberList.map((m) => m.user?.email || "").filter(Boolean)
+                    }
+                    placeholder="Search by name or type email..."
+                    singleSelect={true}
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={selectedMemberToAdd.length === 0}>
+                    Add Member
+                  </Button>
+                </div>
               </form>
             </CardBody>
           </Card>
@@ -386,12 +430,27 @@ export default function GroupDetailPage() {
           <Card>
             <CardHeader title="Members" />
             <CardBody>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {memberList.map((m) => {
                   const uid = m.userId ?? m.user?.id ?? "";
+                  const photo = m.user?.profilePhoto;
+                  const initialsName = m.name ?? m.user?.name ?? "";
                   return (
-                    <div key={uid} className="flex items-center justify-between">
-                      <span className="text-slate-200">{m.name ?? m.user?.name}</span>
+                    <div key={uid} className="flex items-center justify-between border-b border-slate-800/40 pb-2 last:border-0 last:pb-0">
+                      <div className="flex items-center gap-3">
+                        {photo ? (
+                          <img
+                            src={photo}
+                            alt={initialsName}
+                            className="h-8 w-8 rounded-full object-cover border border-slate-700/80 ring-1 ring-emerald-500/20"
+                          />
+                        ) : (
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-400 ring-1 ring-emerald-500/20">
+                            {initials(initialsName)}
+                          </div>
+                        )}
+                        <span className="text-slate-200 text-sm font-medium">{initialsName}</span>
+                      </div>
                       {isAdmin && uid !== userId && (
                         <Button size="sm" variant="danger" onClick={() => removeMember(uid)}>Remove</Button>
                       )}

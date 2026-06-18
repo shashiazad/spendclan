@@ -4,6 +4,7 @@ import {
   subMonths,
   format,
 } from "date-fns";
+import { unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
 import { computeMemberBalances } from "./group-balances";
 
@@ -32,38 +33,79 @@ export async function getDashboardData(userId: string) {
   const now = new Date();
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
-  const current = await getMonthlyTotals(userId, month, year);
-
-  const trends = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = subMonths(now, i);
-    const m = d.getMonth() + 1;
-    const y = d.getFullYear();
-    const totals = await getMonthlyTotals(userId, m, y);
-    trends.push({
-      month: format(d, "MMM yyyy"),
-      income: totals.income,
-      expenses: totals.expenses,
-      savings: totals.savings,
-    });
-  }
-
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
 
-  const categoryExpenses = await prisma.personalExpense.groupBy({
-    by: ["category"],
-    where: { userId, date: { gte: monthStart, lte: monthEnd } },
-    _sum: { amount: true },
-  });
+  // Run ALL independent queries concurrently instead of sequentially
+  const [
+    trends,
+    categoryExpenses,
+    typeExpenses,
+    recentExpenses,
+    manualSaving,
+    groups,
+    biggestExpense,
+  ] = await Promise.all([
+    // Trends: run all 6 months concurrently (was sequential — 12 queries in a loop)
+    Promise.all(
+      Array.from({ length: 6 }, (_, i) => {
+        const d = subMonths(now, 5 - i);
+        const m = d.getMonth() + 1;
+        const y = d.getFullYear();
+        return getMonthlyTotals(userId, m, y).then((totals) => ({
+          month: format(d, "MMM yyyy"),
+          income: totals.income,
+          expenses: totals.expenses,
+          savings: totals.savings,
+        }));
+      })
+    ),
+    // Category breakdown
+    prisma.personalExpense.groupBy({
+      by: ["category"],
+      where: { userId, date: { gte: monthStart, lte: monthEnd } },
+      _sum: { amount: true },
+    }),
+    // Type breakdown
+    prisma.personalExpense.groupBy({
+      by: ["type"],
+      where: { userId, date: { gte: monthStart, lte: monthEnd } },
+      _sum: { amount: true },
+    }),
+    // Recent expenses
+    prisma.personalExpense.findMany({
+      where: { userId },
+      orderBy: { date: "desc" },
+      take: 5,
+    }),
+    // Manual saving
+    prisma.saving.findFirst({
+      where: { userId, month, year },
+    }),
+    // Groups with balances
+    prisma.groupMember.findMany({
+      where: { userId },
+      include: {
+        group: {
+          include: {
+            members: { include: { user: true } },
+            expenses: { include: { splits: true } },
+            settlements: true,
+          },
+        },
+      },
+    }),
+    // Biggest expense this month
+    prisma.personalExpense.findFirst({
+      where: { userId, date: { gte: monthStart, lte: monthEnd } },
+      orderBy: { amount: "desc" },
+    }),
+  ]);
 
-  // Type breakdown: Daily / Monthly / Large
-  const typeExpenses = await prisma.personalExpense.groupBy({
-    by: ["type"],
-    where: { userId, date: { gte: monthStart, lte: monthEnd } },
-    _sum: { amount: true },
-  });
+  // Current month totals from trends (last element is the current month)
+  const current = trends[trends.length - 1];
 
+  // Type breakdown
   const typeBreakdown = {
     daily: 0,
     monthly: 0,
@@ -75,29 +117,7 @@ export async function getDashboardData(userId: string) {
     else if (te.type === "LARGE") typeBreakdown.large = te._sum.amount ?? 0;
   }
 
-  const recentExpenses = await prisma.personalExpense.findMany({
-    where: { userId },
-    orderBy: { date: "desc" },
-    take: 5,
-  });
-
-  const manualSaving = await prisma.saving.findFirst({
-    where: { userId, month, year },
-  });
-
-  const groups = await prisma.groupMember.findMany({
-    where: { userId },
-    include: {
-      group: {
-        include: {
-          members: { include: { user: true } },
-          expenses: { include: { splits: true } },
-          settlements: true,
-        },
-      },
-    },
-  });
-
+  // Group balances
   let othersOweYou = 0;
   let youOwe = 0;
 
@@ -134,10 +154,6 @@ export async function getDashboardData(userId: string) {
   const topCategory = categoryExpenses.length > 0
     ? categoryExpenses.reduce((a, b) => ((a._sum.amount ?? 0) > (b._sum.amount ?? 0) ? a : b)).category
     : null;
-  const biggestExpense = await prisma.personalExpense.findFirst({
-    where: { userId, date: { gte: monthStart, lte: monthEnd } },
-    orderBy: { amount: "desc" },
-  });
 
   return {
     summary: {
@@ -162,4 +178,20 @@ export async function getDashboardData(userId: string) {
     })),
     recentExpenses,
   };
+}
+
+/**
+ * Cached version of getDashboardData.
+ * Uses Next.js unstable_cache with tag-based invalidation.
+ * The cache is invalidated when expenses, income, savings, or group data changes.
+ */
+export function getCachedDashboardData(userId: string) {
+  return unstable_cache(
+    () => getDashboardData(userId),
+    [`dashboard-${userId}`],
+    {
+      tags: [`dashboard-${userId}`],
+      revalidate: 3600, // Fallback: revalidate every hour even without explicit invalidation
+    }
+  )();
 }

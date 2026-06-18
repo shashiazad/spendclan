@@ -54,16 +54,23 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           currency: user.currency,
           role: user.role,
+          profilePhoto: user.profilePhoto,
         };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.currency = user.currency;
         token.role = user.role;
+        token.profilePhoto = user.profilePhoto;
+      }
+      if (trigger === "update" && session) {
+        if (session.profilePhoto !== undefined) {
+          token.profilePhoto = session.profilePhoto;
+        }
       }
       return token;
     },
@@ -72,6 +79,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.currency = token.currency as string;
         session.user.role = token.role as string;
+        session.user.profilePhoto = token.profilePhoto as string | null;
       }
       return session;
     },

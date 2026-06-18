@@ -2,6 +2,7 @@ import { endOfMonth, startOfMonth } from "date-fns";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, handleZodError } from "@/lib/auth";
+import { invalidateDashboard } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { incomeSchema } from "@/lib/validators";
 
@@ -60,6 +61,7 @@ export async function POST(request: Request) {
       },
     });
 
+    invalidateDashboard(auth.session.user.id);
     return NextResponse.json({ income }, { status: 201 });
   } catch (error) {
     return handleZodError(error);
@@ -87,6 +89,7 @@ export async function PUT(request: Request) {
       data,
     });
 
+    invalidateDashboard(auth.session.user.id);
     return NextResponse.json({ income });
   } catch (error) {
     return handleZodError(error);
@@ -112,5 +115,6 @@ export async function DELETE(request: Request) {
 
   await prisma.income.delete({ where: { id } });
 
+  invalidateDashboard(auth.session.user.id);
   return NextResponse.json({ message: "Income deleted" });
 }
