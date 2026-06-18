@@ -30,8 +30,10 @@ export async function POST(request: Request) {
 
     const goal = await prisma.savingsGoal.create({
       data: {
-        ...data,
-        currentAmount: data.currentAmount ?? 0,
+        name: data.name,
+        targetAmount: data.targetAmount,
+        deadline: data.deadline,
+        currentAmount: 0,
         userId: auth.session.user.id,
       },
     });
@@ -48,7 +50,7 @@ export async function PUT(request: Request) {
 
   try {
     const body = await request.json();
-    const { id, ...data } = updateGoalSchema.parse(body);
+    const { id, name, targetAmount, deadline } = updateGoalSchema.parse(body);
 
     const existing = await prisma.savingsGoal.findFirst({
       where: { id, userId: auth.session.user.id },
@@ -60,7 +62,11 @@ export async function PUT(request: Request) {
 
     const goal = await prisma.savingsGoal.update({
       where: { id },
-      data,
+      data: {
+        name,
+        targetAmount,
+        deadline,
+      },
     });
 
     return NextResponse.json({ goal });

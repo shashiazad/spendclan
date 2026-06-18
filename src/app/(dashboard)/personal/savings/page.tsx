@@ -86,7 +86,6 @@ export default function SavingsPage() {
     const body = {
       name: goalForm.name,
       targetAmount: Number(goalForm.targetAmount),
-      currentAmount: Number(goalForm.currentAmount),
       deadline: goalForm.deadline || null,
     };
     await fetch("/api/personal/savings/goals", {
@@ -96,15 +95,6 @@ export default function SavingsPage() {
     });
     setGoalForm({ name: "", targetAmount: "", currentAmount: "0", deadline: "" });
     setEditGoalId(null);
-    load();
-  }
-
-  async function updateGoalProgress(id: string, currentAmount: number) {
-    await fetch("/api/personal/savings/goals", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, currentAmount }),
-    });
     load();
   }
 
@@ -169,12 +159,11 @@ export default function SavingsPage() {
         <Card>
           <CardHeader title={editGoalId ? "Edit Goal" : "New Goal"} />
           <CardBody>
-            <form onSubmit={saveGoal} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <form onSubmit={saveGoal} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Input label="Name" required value={goalForm.name} onChange={(e) => setGoalForm({ ...goalForm, name: e.target.value })} />
               <Input label="Target Amount" type="number" step="0.01" required value={goalForm.targetAmount} onChange={(e) => setGoalForm({ ...goalForm, targetAmount: e.target.value })} />
-              <Input label="Current Amount" type="number" step="0.01" value={goalForm.currentAmount} onChange={(e) => setGoalForm({ ...goalForm, currentAmount: e.target.value })} />
               <Input label="Deadline" type="date" value={goalForm.deadline} onChange={(e) => setGoalForm({ ...goalForm, deadline: e.target.value })} />
-              <div className="flex gap-2 sm:col-span-2 lg:col-span-4">
+              <div className="flex gap-2 sm:col-span-2 lg:col-span-3">
                 <Button type="submit">{editGoalId ? "Update" : "Add"} Goal</Button>
                 {editGoalId && <Button type="button" variant="secondary" onClick={() => setEditGoalId(null)}>Cancel</Button>}
               </div>
@@ -211,19 +200,6 @@ export default function SavingsPage() {
                       <div className="h-full rounded-full bg-teal-500 transition-all" style={{ width: `${pct}%` }} />
                     </div>
                     <p className="mt-1 text-xs text-slate-500">{pct.toFixed(0)}% complete</p>
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Update progress"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          const val = Number((e.target as HTMLInputElement).value);
-                          if (!isNaN(val)) updateGoalProgress(goal.id, val);
-                        }
-                      }}
-                    />
                   </div>
                 </Card>
               );

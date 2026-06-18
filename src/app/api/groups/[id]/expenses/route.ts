@@ -16,10 +16,28 @@ function computeSplits(
   splitType: SplitType,
   amount: number,
   memberIds: string[],
-  splits?: { userId: string; amount: number }[],
+  paidById: string,
+  splits?: { userId: string; amount: number; percentage?: number }[],
 ): { splits: { userId: string; amount: number }[] } | { error: string } {
+  const totalCents = Math.round(amount * 100);
+
   if (splitType === "EQUAL") {
-    return { splits: buildEqualSplits(memberIds, amount) };
+    const n = memberIds.length;
+    if (n === 0) return { error: "No members in group" };
+
+    const baseCents = Math.floor(totalCents / n);
+    const remainderCents = totalCents - baseCents * n;
+
+    const computed = memberIds.map((userId) => {
+      const isPayer = userId === paidById;
+      const shareCents = baseCents + (isPayer ? remainderCents : 0);
+      return {
+        userId,
+        amount: shareCents / 100,
+      };
+    });
+
+    return { splits: computed };
   }
 
   if (!splits?.length) {
@@ -32,32 +50,91 @@ function computeSplits(
     }
   }
 
+  const splitUserIds = new Set(splits.map((s) => s.userId));
+  if (splitUserIds.size !== memberIds.length) {
+    return { error: "Splits must include all group members" };
+  }
+
   if (splitType === "PERCENTAGE") {
-    const totalPercent = splits.reduce((sum, s) => sum + s.amount, 0);
-    if (Math.abs(totalPercent - 100) > 0.01) {
-      return { error: "Percentage splits must sum to 100%" };
+    const hasPercentages = splits.some((s) => s.percentage !== undefined);
+
+    if (hasPercentages) {
+      const totalPercentCents = splits.reduce(
+        (sum, s) => sum + Math.round((s.percentage ?? 0) * 100),
+        0,
+      );
+      if (totalPercentCents !== 10000) {
+        return { error: "Percentage splits must sum to exactly 100.00%" };
+      }
+
+      let sumSharesCents = 0;
+      for (const s of splits) {
+        const pct = s.percentage ?? 0;
+        const expectedCents = Math.round((pct / 100) * totalCents);
+        const actualCents = Math.round(s.amount * 100);
+
+        if (Math.abs(actualCents - expectedCents) > 1) {
+          const expectedVal = (expectedCents / 100).toFixed(2);
+          return {
+            error: `Split share for user ${s.userId} ($${s.amount.toFixed(
+              2,
+            )}) does not match calculated share from percentage ${pct}% ($${expectedVal})`,
+          };
+        }
+        sumSharesCents += actualCents;
+      }
+
+      if (sumSharesCents !== totalCents) {
+        const expected = amount.toFixed(2);
+        const actual = (sumSharesCents / 100).toFixed(2);
+        return {
+          error: `Percentage split shares sum ($${actual}) must equal the total expense amount ($${expected}) exactly`,
+        };
+      }
+
+      return { splits: splits.map(({ userId, amount }) => ({ userId, amount })) };
+    } else {
+      const totalPercentCents = splits.reduce(
+        (sum, s) => sum + Math.round(s.amount * 100),
+        0,
+      );
+      if (totalPercentCents !== 10000) {
+        return { error: "Percentage splits must sum to exactly 100.00%" };
+      }
+
+      let computedCentsSum = 0;
+      const computed = splits.map((s) => {
+        const shareCents = Math.round((s.amount / 100) * totalCents);
+        computedCentsSum += shareCents;
+        return {
+          userId: s.userId,
+          amount: shareCents / 100,
+          cents: shareCents,
+        };
+      });
+
+      const remainderCents = totalCents - computedCentsSum;
+      if (remainderCents !== 0 && computed.length > 0) {
+        const payerSplit = computed.find((c) => c.userId === paidById);
+        const target = payerSplit || computed[0];
+        target.cents += remainderCents;
+        target.amount = target.cents / 100;
+      }
+
+      return { splits: computed.map(({ userId, amount }) => ({ userId, amount })) };
     }
-
-    const computed = splits.map((s) => ({
-      userId: s.userId,
-      amount: Math.round((amount * s.amount) / 100 * 100) / 100,
-    }));
-
-    const splitTotal = computed.reduce((sum, s) => sum + s.amount, 0);
-    const remainder = Math.round((amount - splitTotal) * 100) / 100;
-    if (remainder !== 0 && computed.length > 0) {
-      computed[0].amount =
-        Math.round((computed[0].amount + remainder) * 100) / 100;
-    }
-
-    return { splits: computed };
   }
 
   if (splitType === "CUSTOM") {
-    const total = splits.reduce((sum, s) => sum + s.amount, 0);
-    if (Math.abs(total - amount) > 0.01) {
-      return { error: "Custom splits must sum to the expense amount" };
+    const sumCents = splits.reduce((sum, s) => sum + Math.round(s.amount * 100), 0);
+    if (sumCents !== totalCents) {
+      const expected = amount.toFixed(2);
+      const actual = (sumCents / 100).toFixed(2);
+      return {
+        error: `Custom splits sum ($${actual}) must equal the total expense amount ($${expected}) exactly`,
+      };
     }
+
     return { splits };
   }
 
@@ -119,6 +196,7 @@ export async function POST(request: Request, context: RouteContext) {
       data.splitType,
       data.amount,
       memberIds,
+      data.paidById,
       data.splits,
     );
 

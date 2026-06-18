@@ -142,13 +142,40 @@ export default function GroupDetailPage() {
   async function addExpense(e: React.FormEvent) {
     e.preventDefault();
     const memberIds = members.map((m) => m.userId ?? m.user?.id ?? "");
-    const splits =
-      expForm.splitType === "EQUAL"
-        ? undefined
-        : memberIds.map((uid) => ({
+    let splits;
+    if (expForm.splitType !== "EQUAL") {
+      if (expForm.splitType === "PERCENTAGE") {
+        const totalAmount = Number(expForm.amount);
+        const totalCents = Math.round(totalAmount * 100);
+        let computedCentsSum = 0;
+        const tempSplits = memberIds.map((uid) => {
+          const val = Number(expForm.splits[uid] ?? 0);
+          const shareCents = Math.round((val / 100) * totalCents);
+          computedCentsSum += shareCents;
+          return {
             userId: uid,
-            amount: Number(expForm.splits[uid] ?? 0),
-          }));
+            cents: shareCents,
+            percentage: val,
+          };
+        });
+        const remainderCents = totalCents - computedCentsSum;
+        if (remainderCents !== 0 && tempSplits.length > 0) {
+          const payerIdx = tempSplits.findIndex((s) => s.userId === expForm.paidById);
+          const target = payerIdx !== -1 ? tempSplits[payerIdx] : tempSplits[0];
+          target.cents += remainderCents;
+        }
+        splits = tempSplits.map((s) => ({
+          userId: s.userId,
+          amount: s.cents / 100,
+          percentage: s.percentage,
+        }));
+      } else {
+        splits = memberIds.map((uid) => ({
+          userId: uid,
+          amount: Number(expForm.splits[uid] ?? 0),
+        }));
+      }
+    }
 
     await fetch(`/api/groups/${id}/expenses`, {
       method: "POST",

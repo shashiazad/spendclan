@@ -57,6 +57,9 @@ export async function GET(request: Request) {
   return NextResponse.json({ expenses, total });
 }
 
+import { basePrisma } from "@/lib/prisma";
+import { updateActiveSavingsGoal } from "@/lib/savings-sync";
+
 export async function POST(request: Request) {
   const auth = await requireAuth();
   if ("error" in auth) return auth.error;
@@ -65,11 +68,15 @@ export async function POST(request: Request) {
     const body = await request.json();
     const data = expenseSchema.parse(body);
 
-    const expense = await prisma.personalExpense.create({
-      data: {
-        ...data,
-        userId: auth.session.user.id,
-      },
+    const expense = await basePrisma.$transaction(async (tx) => {
+      const created = await tx.personalExpense.create({
+        data: {
+          ...data,
+          userId: auth.session.user.id,
+        },
+      });
+      await updateActiveSavingsGoal(tx, auth.session.user.id, -data.amount);
+      return created;
     });
 
     invalidateDashboard(auth.session.user.id);
@@ -87,18 +94,32 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { id, ...data } = updateExpenseSchema.parse(body);
 
-    const existing = await prisma.personalExpense.findFirst({
-      where: { id, userId: auth.session.user.id },
-    });
+    let expense;
+    try {
+      expense = await basePrisma.$transaction(async (tx) => {
+        const existing = await tx.personalExpense.findFirst({
+          where: { id, userId: auth.session.user.id },
+        });
 
-    if (!existing) {
-      return NextResponse.json({ error: "Expense not found" }, { status: 404 });
+        if (!existing) {
+          throw new Error("NOT_FOUND");
+        }
+
+        const delta = existing.amount - data.amount;
+        const updated = await tx.personalExpense.update({
+          where: { id },
+          data,
+        });
+
+        await updateActiveSavingsGoal(tx, auth.session.user.id, delta);
+        return updated;
+      });
+    } catch (txError: any) {
+      if (txError.message === "NOT_FOUND") {
+        return NextResponse.json({ error: "Expense not found" }, { status: 404 });
+      }
+      throw txError;
     }
-
-    const expense = await prisma.personalExpense.update({
-      where: { id },
-      data,
-    });
 
     invalidateDashboard(auth.session.user.id);
     return NextResponse.json({ expense });
@@ -116,16 +137,30 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Missing expense id" }, { status: 400 });
   }
 
-  const existing = await prisma.personalExpense.findFirst({
-    where: { id, userId: auth.session.user.id },
-  });
+  try {
+    try {
+      await basePrisma.$transaction(async (tx) => {
+        const existing = await tx.personalExpense.findFirst({
+          where: { id, userId: auth.session.user.id },
+        });
 
-  if (!existing) {
-    return NextResponse.json({ error: "Expense not found" }, { status: 404 });
+        if (!existing) {
+          throw new Error("NOT_FOUND");
+        }
+
+        await tx.personalExpense.delete({ where: { id } });
+        await updateActiveSavingsGoal(tx, auth.session.user.id, existing.amount);
+      });
+    } catch (txError: any) {
+      if (txError.message === "NOT_FOUND") {
+        return NextResponse.json({ error: "Expense not found" }, { status: 404 });
+      }
+      throw txError;
+    }
+
+    invalidateDashboard(auth.session.user.id);
+    return NextResponse.json({ message: "Expense deleted" });
+  } catch (error) {
+    return handleZodError(error);
   }
-
-  await prisma.personalExpense.delete({ where: { id } });
-
-  invalidateDashboard(auth.session.user.id);
-  return NextResponse.json({ message: "Expense deleted" });
 }
