@@ -32,7 +32,7 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`rounded-xl border border-slate-800 bg-slate-900/50 shadow-lg shadow-black/20 backdrop-blur-sm ${paddingClasses[padding]} ${className}`}
+      className={`rounded-2xl border border-zinc-100 dark:border-zinc-800/50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl shadow-sm dark:shadow-md hover:shadow-md transition-all duration-300 ${paddingClasses[padding]} ${className}`}
     >
       {children}
     </div>
@@ -50,9 +50,9 @@ export function CardHeader({
       className={`mb-4 flex items-start justify-between gap-4 ${className}`}
     >
       <div>
-        <h3 className="text-lg font-semibold text-slate-100">{title}</h3>
+        <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">{title}</h3>
         {description && (
-          <p className="mt-1 text-sm text-slate-400">{description}</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p>
         )}
       </div>
       {action}

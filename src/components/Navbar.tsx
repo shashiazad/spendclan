@@ -43,7 +43,7 @@ export function Navbar() {
           {["Features", "Why SpendClan", "Security"].map((item) => (
             <a
               key={item}
-              href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+              href={`/#${item.toLowerCase().replace(/\s+/g, "-")}`}
               className="text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-slate-100"
             >
               {item}
