@@ -40,18 +40,22 @@ export const resetPasswordQaSchema = z.object({
 });
 
 export const expenseSchema = z.object({
-  amount: z.coerce.number().positive(),
+  amount: z.coerce.number().positive({ message: "Amount must be a positive number" }),
   category: z.enum(EXPENSE_CATEGORIES),
-  date: z.coerce.date(),
+  date: z.coerce.date().refine((d) => d <= new Date(Date.now() + 5 * 60 * 1000), {
+    message: "Expense date cannot be in the future",
+  }),
   paymentMethod: z.enum(PAYMENT_METHODS),
   notes: z.string().max(500).optional().nullable(),
   type: z.enum(EXPENSE_TYPES),
 });
 
 export const incomeSchema = z.object({
-  amount: z.coerce.number().positive(),
+  amount: z.coerce.number().positive({ message: "Amount must be a positive number" }),
   source: z.enum(INCOME_SOURCES),
-  date: z.coerce.date(),
+  date: z.coerce.date().refine((d) => d <= new Date(Date.now() + 5 * 60 * 1000), {
+    message: "Income date cannot be in the future",
+  }),
   notes: z.string().max(500).optional().nullable(),
 });
 
@@ -104,6 +108,7 @@ export const groupExpenseSchema = z.object({
       z.object({
         userId: z.string().uuid(),
         amount: z.coerce.number().min(0),
+        percentage: z.coerce.number().min(0).optional(),
       }),
     )
     .optional(),
