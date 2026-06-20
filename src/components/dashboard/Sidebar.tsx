@@ -117,17 +117,22 @@ export function Sidebar() {
   const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
   const sidebarContent = (
-    <>
-      <div className="flex h-16 items-center gap-3 border-b border-zinc-200/50 dark:border-zinc-800/50 px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 ring-1 ring-accent/30">
-          <BrandIcon className="h-5 w-5 text-accent" />
+    <div className="flex h-full flex-col">
+      {/* Brand Logo & Title (macOS style) */}
+      <div className="flex h-16 items-center gap-3 border-b border-apple-border/50 px-6">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-apple-blue/10 border border-apple-blue/20">
+          <svg className="h-4 w-4 text-apple-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+            <rect x="3" y="3" width="18" height="18" rx="5" />
+            <path d="M9 17V7l6 10V7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </div>
         <div>
-          <p className="text-sm font-semibold text-foreground">SpendClan</p>
-          <p className="text-[10px] text-muted uppercase tracking-wider">Finance Tracker</p>
+          <h2 className="text-sm font-extrabold tracking-tight text-apple-text-primary leading-none">SpendClan</h2>
+          <span className="text-[9px] font-medium tracking-[0.15em] text-apple-text-tertiary uppercase block mt-1">FINANCE TRACKER</span>
         </div>
       </div>
 
+      {/* Navigation list */}
       <nav className="flex-1 space-y-1 px-3 py-4">
         {visibleItems.map((item) => {
           const active = isActive(pathname, item.href);
@@ -136,34 +141,37 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 min-h-[44px] text-sm font-medium transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98] ${
+              className={`flex items-center gap-3 rounded-xl px-3 py-2 min-h-[40px] text-xs font-medium transition-all duration-300 ${
                 active
-                  ? "bg-accent/10 text-accent ring-1 ring-accent/25"
-                  : "text-muted hover:bg-white/5 dark:hover:bg-zinc-800/50 hover:text-foreground"
+                  ? "bg-black/5 dark:bg-white/5 text-apple-text-primary"
+                  : "text-apple-text-secondary hover:bg-black/[0.02] dark:hover:bg-white/[0.02] hover:text-apple-text-primary"
               }`}
             >
-              {item.icon}
+              <span className={`transition-colors duration-300 ${active ? "text-apple-blue" : "text-apple-text-tertiary"}`}>
+                {item.icon}
+              </span>
               {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="border-t border-zinc-200/50 dark:border-zinc-800/50 p-4">
-        <div className="flex items-center justify-between mb-3 px-1 gap-2">
+      {/* User profile card (No rigid frame) */}
+      <div className="p-4 border-t border-apple-border/30 mt-auto">
+        <div className="flex items-center justify-between px-1 gap-2">
           {session?.user && (
             <Link
               href="/profile"
-              className="flex items-center gap-2.5 min-w-0 flex-1 hover:bg-slate-100 dark:hover:bg-zinc-800/50 rounded-xl p-1.5 transition-colors group"
+              className="flex items-center gap-2.5 min-w-0 flex-1 rounded-xl p-1 transition-colors group"
             >
               {session.user.profilePhoto ? (
                 <img
                   src={session.user.profilePhoto}
                   alt={session.user.name ?? "User"}
-                  className="w-8 h-8 rounded-full object-cover border border-zinc-200 dark:border-zinc-700/80 group-hover:border-accent/50 transition-colors"
+                  className="w-7.5 h-7.5 rounded-full object-cover border border-apple-border/50"
                 />
               ) : (
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent/10 text-accent font-bold text-xs border border-accent/20 group-hover:border-accent/40 group-hover:bg-accent/20 transition-all duration-300">
+                <div className="flex items-center justify-center w-7.5 h-7.5 rounded-full bg-apple-blue/10 text-apple-blue font-bold text-xs border border-apple-blue/20">
                   {session.user.name
                     ? session.user.name
                         .split(" ")
@@ -175,10 +183,10 @@ export function Sidebar() {
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-foreground group-hover:text-accent transition-colors leading-snug">
+                <p className="truncate text-xs font-semibold text-apple-text-primary leading-tight group-hover:text-apple-blue transition-colors">
                   {session.user.name}
                 </p>
-                <p className="truncate text-[10px] text-muted leading-normal">
+                <p className="truncate text-[9px] text-apple-text-tertiary font-normal tracking-wide leading-none mt-0.5">
                   {session.user.email}
                 </p>
               </div>
@@ -186,34 +194,26 @@ export function Sidebar() {
           )}
           <ThemeToggle />
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start text-slate-400 hover:scale-[1.01] active:scale-[0.98] transition-all duration-200 ease-out"
-          onClick={() => signOut({ callbackUrl: "/login" })}
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-          </svg>
-          Sign out
-        </Button>
       </div>
-    </>
+    </div>
   );
 
   return (
     <>
-      {/* Mobile header */}
-      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-zinc-200/60 dark:border-white/[0.06] bg-white/75 dark:bg-black/60 px-4 backdrop-blur-md lg:hidden">
+      {/* Mobile header (translucent blur) */}
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-apple-border/50 bg-apple-sidebar backdrop-blur-apple px-4 lg:hidden transition-all duration-300">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent/10">
-            <BrandIcon className="h-4 w-4 text-accent" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-apple-blue/10">
+            <svg className="h-4 w-4 text-apple-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <path d="M9 17V7l6 10V7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
-          <span className="text-sm font-semibold tracking-tight text-foreground">SpendClan</span>
+          <span className="text-sm font-semibold tracking-tight text-apple-text-primary">SpendClan</span>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="rounded-xl p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-slate-100"
+          className="rounded-xl p-2 text-apple-text-secondary hover:bg-black/5 dark:hover:bg-white/5 hover:text-apple-text-primary"
           aria-label="Toggle menu"
         >
           {mobileOpen ? (
@@ -231,7 +231,7 @@ export function Sidebar() {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 dark:bg-black/60 lg:hidden"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
@@ -239,7 +239,7 @@ export function Sidebar() {
 
       {/* Mobile sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-zinc-200/50 dark:border-zinc-800/50 bg-white/80 dark:bg-zinc-905/80 backdrop-blur-xl transition-transform duration-200 lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-apple-border/50 bg-apple-sidebar backdrop-blur-apple transition-transform duration-300 lg:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -247,7 +247,7 @@ export function Sidebar() {
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-zinc-200/50 dark:border-zinc-800/50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-apple-border/50 bg-apple-sidebar backdrop-blur-apple lg:flex">
         {sidebarContent}
       </aside>
     </>
