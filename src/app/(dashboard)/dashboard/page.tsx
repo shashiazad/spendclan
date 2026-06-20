@@ -116,53 +116,71 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-100">Dashboard</h1>
-        <p className="mt-1 text-slate-400">Your financial overview</p>
+      {/* Title */}
+      <div className="mb-8">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-apple-text-primary">Dashboard</h1>
+        <p className="mt-1.5 text-[10px] text-apple-text-secondary font-medium uppercase tracking-[0.15em]">Your Financial Overview</p>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards (Bento Grid) */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 stagger-children">
         {summaryCards.map((card) => (
-          <Card key={card.label} padding="sm" className="hover-lift">
-            <div className="flex items-center gap-2">
-              <span className={`text-lg ${card.color}`}>{card.icon}</span>
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+          <Card
+            key={card.label}
+            padding="sm"
+            className="transition-apple hover:scale-[1.01] hover:border-zinc-300 dark:hover:border-[#3a3a3c] bg-apple-card border border-apple-border shadow-none"
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-apple-text-tertiary">
                 {card.label}
               </p>
+              <span className={`text-[11px] font-semibold ${
+                card.color.includes("income") ? "text-apple-green" : 
+                card.color.includes("expense") ? "text-apple-red" : 
+                card.color.includes("savings") ? "text-apple-blue" : "text-apple-text-secondary"
+              }`}>{card.icon}</span>
             </div>
             <AnimatedCounter
               value={card.value}
               currency={currency}
-              className={`mt-2 block text-2xl sm:text-3xl font-semibold tracking-tight text-slate-100`}
+              className="mt-3.5 block text-2xl font-bold tracking-tight text-apple-text-primary"
             />
           </Card>
         ))}
       </div>
 
-      {/* Type Breakdown */}
+      {/* Type Breakdown (iOS Storage/Battery style progress tracks) */}
       <div className="grid gap-4 sm:grid-cols-3">
         {typeCards.map((tc) => {
           const colors = TYPE_COLORS[tc.key.toUpperCase()] ?? TYPE_COLORS.DAILY;
           const pct = totalTypeSpend > 0 ? (tc.value / totalTypeSpend) * 100 : 0;
+          
+          let barColor = "bg-apple-blue";
+          if (tc.key === "daily") barColor = "bg-apple-green";
+          if (tc.key === "large") barColor = "bg-apple-red";
+
           return (
-            <Card key={tc.key} padding="sm" className="hover-lift">
-              <div className="flex items-center justify-between">
+            <Card
+              key={tc.key}
+              padding="sm"
+              className="transition-apple hover:scale-[1.01] bg-apple-card border border-apple-border shadow-none"
+            >
+              <div className="flex items-center justify-between mb-3.5">
                 <div>
-                  <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${colors.bg} ${colors.text}`}>
-                    {colors.label}
+                  <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-apple-text-tertiary block mb-1">
+                    {tc.label}
                   </span>
-                  <p className={`mt-2 text-lg font-bold ${colors.text}`}>
+                  <p className="text-xl font-bold text-apple-text-primary">
                     {formatCurrency(tc.value, currency)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-slate-400">{pct.toFixed(0)}%</p>
+                  <p className="text-xl font-semibold tracking-tight text-apple-text-secondary">{pct.toFixed(0)}%</p>
                 </div>
               </div>
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800">
+              <div className="h-1.5 overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
                 <div
-                  className={`h-full rounded-full transition-all duration-700 ${colors.bg.replace("/10", "/60")}`}
+                  className={`h-full rounded-full transition-all duration-700 ${barColor}`}
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -174,60 +192,76 @@ export default function DashboardPage() {
       {/* Quick Stats */}
       {data.quickStats && (
         <div className="grid gap-4 sm:grid-cols-3">
-          <Card padding="sm" className="hover-lift">
-            <p className="text-xs uppercase text-slate-400">Avg Daily Spend</p>
-            <p className="mt-1 text-lg font-bold text-ai-accent">
+          <Card padding="sm" className="transition-apple hover:scale-[1.01] bg-apple-card border border-apple-border shadow-none">
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-apple-text-tertiary mb-1.5">Avg Daily Spend</p>
+            <p className="text-lg font-bold text-apple-blue">
               {formatCurrency(data.quickStats.avgDailySpend, currency)}
             </p>
           </Card>
-          <Card padding="sm" className="hover-lift">
-            <p className="text-xs uppercase text-slate-400">Top Category</p>
-            <p className="mt-1 text-lg font-bold text-slate-200">
+          <Card padding="sm" className="transition-apple hover:scale-[1.01] bg-apple-card border border-apple-border shadow-none">
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-apple-text-tertiary mb-1.5">Top Category</p>
+            <p className="text-lg font-bold text-apple-text-primary">
               {data.quickStats.topCategory ?? "—"}
             </p>
           </Card>
-          <Card padding="sm" className="hover-lift">
-            <p className="text-xs uppercase text-slate-400">Biggest Expense</p>
-            <p className="mt-1 text-lg font-bold text-expense">
+          <Card padding="sm" className="transition-apple hover:scale-[1.01] bg-apple-card border border-apple-border shadow-none">
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-apple-text-tertiary mb-1.5">Biggest Expense</p>
+            <p className="text-lg font-bold text-apple-red">
               {data.quickStats.biggestExpense
                 ? `${formatCurrency(data.quickStats.biggestExpense.amount, currency)}`
                 : "—"}
             </p>
             {data.quickStats.biggestExpense && (
-              <p className="text-xs text-slate-400">{data.quickStats.biggestExpense.category}</p>
+              <p className="text-[10px] text-apple-text-secondary mt-0.5">{data.quickStats.biggestExpense.category}</p>
             )}
           </Card>
         </div>
       )}
 
+      {/* Graphical Insights */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Spending Trends */}
-        <Card>
+        <Card className="transition-apple bg-apple-card border border-apple-border shadow-none">
           <CardHeader title="Spending Trends" description="Last 6 months" />
           <CardBody>
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={data.trends}>
-                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
-                <XAxis dataKey="month" tick={{ fill: textFill, fontSize: 12 }} />
-                <YAxis tick={{ fill: textFill, fontSize: 12 }} />
+                <defs>
+                  <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--apple-green)" stopOpacity={0.12}/>
+                    <stop offset="95%" stopColor="var(--apple-green)" stopOpacity={0.0}/>
+                  </linearGradient>
+                  <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--apple-red)" stopOpacity={0.12}/>
+                    <stop offset="95%" stopColor="var(--apple-red)" stopOpacity={0.0}/>
+                  </linearGradient>
+                  <linearGradient id="savingsGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--apple-blue)" stopOpacity={0.12}/>
+                    <stop offset="95%" stopColor="var(--apple-blue)" stopOpacity={0.0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="2 4" stroke={gridStroke} />
+                <XAxis dataKey="month" tick={{ fill: textFill, fontSize: 10, fontWeight: 500 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: textFill, fontSize: 10, fontWeight: 500 }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 12 }}
-                  labelStyle={{ color: tooltipLabel }}
+                  contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 12, boxShadow: "none" }}
+                  labelStyle={{ color: tooltipLabel, fontSize: 11, fontWeight: 600 }}
+                  itemStyle={{ fontSize: 11 }}
                 />
-                <Area type="monotone" dataKey="income" stackId="1" stroke="#30d158" fill="#30d15833" name="Income" />
-                <Area type="monotone" dataKey="expenses" stackId="2" stroke="#ff453a" fill="#ff453a33" name="Expenses" />
-                <Area type="monotone" dataKey="savings" stackId="3" stroke="#5e5ce6" fill="#5e5ce633" name="Savings" />
+                <Area type="monotone" dataKey="income" stroke="var(--apple-green)" fill="url(#incomeGrad)" strokeWidth={1.8} name="Income" />
+                <Area type="monotone" dataKey="expenses" stroke="var(--apple-red)" fill="url(#expenseGrad)" strokeWidth={1.8} name="Expenses" />
+                <Area type="monotone" dataKey="savings" stroke="var(--apple-blue)" fill="url(#savingsGrad)" strokeWidth={1.8} name="Savings" />
               </AreaChart>
             </ResponsiveContainer>
           </CardBody>
         </Card>
 
-        {/* Category Breakdown */}
-        <Card>
+        {/* Category Breakdown (Donut style) */}
+        <Card className="transition-apple bg-apple-card border border-apple-border shadow-none">
           <CardHeader title="Category Breakdown" description="Current month" />
           <CardBody>
             {data.categoryBreakdown.length === 0 ? (
-              <p className="py-12 text-center text-slate-400">No expenses this month</p>
+              <p className="py-12 text-center text-apple-text-secondary text-xs">No expenses this month</p>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
@@ -237,7 +271,9 @@ export default function DashboardPage() {
                     nameKey="category"
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
+                    outerRadius={85}
+                    innerRadius={60}
+                    paddingAngle={3}
                     label={({ name, percent }) =>
                       `${name ?? ""} ${((percent ?? 0) * 100).toFixed(0)}%`
                     }
@@ -247,8 +283,9 @@ export default function DashboardPage() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 12 }}
+                    contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 12, boxShadow: "none" }}
                     formatter={(value) => formatCurrency(Number(value), currency)}
+                    itemStyle={{ fontSize: 11 }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -261,29 +298,34 @@ export default function DashboardPage() {
       <AIInsightsCard />
 
       {/* Recent Expenses */}
-      <Card>
+      <Card className="bg-apple-card border border-apple-border shadow-none">
         <CardHeader title="Recent Expenses" description="Last 5 transactions" />
         <CardBody>
           {data.recentExpenses.length === 0 ? (
-            <p className="text-slate-400">No expenses yet.</p>
+            <p className="text-apple-text-secondary text-xs">No expenses yet.</p>
           ) : (
-            <div className="divide-y divide-slate-800">
+            <div className="divide-y divide-apple-border/50">
               {data.recentExpenses.map((exp) => {
                 const typeColor = TYPE_COLORS[exp.type] ?? TYPE_COLORS.DAILY;
+                
+                let badgeColor = "bg-apple-blue/10 text-apple-blue border border-apple-blue/20";
+                if (exp.type === "DAILY") badgeColor = "bg-apple-green/10 text-apple-green border border-apple-green/20";
+                if (exp.type === "LARGE") badgeColor = "bg-apple-red/10 text-apple-red border border-apple-red/20";
+
                 return (
-                  <div key={exp.id} className="flex items-center justify-between py-3">
+                  <div key={exp.id} className="flex items-center justify-between py-3.5">
                     <div className="flex items-center gap-3">
-                      <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${typeColor.bg} ${typeColor.text}`}>
+                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${badgeColor}`}>
                         {typeColor.label}
                       </span>
                       <div>
-                        <p className="font-medium text-slate-100">{exp.category}</p>
-                        <p className="text-sm text-slate-400">
+                        <p className="font-semibold text-apple-text-primary text-xs sm:text-sm">{exp.category}</p>
+                        <p className="text-[10px] text-apple-text-tertiary mt-0.5">
                           {format(new Date(exp.date), "MMM d, yyyy")} · {exp.paymentMethod}
                         </p>
                       </div>
                     </div>
-                    <p className="font-semibold text-expense">
+                    <p className="font-semibold text-apple-red text-xs sm:text-sm">
                       -{formatCurrency(exp.amount, currency)}
                     </p>
                   </div>
