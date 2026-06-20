@@ -18,7 +18,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { AIInsightsCard } from "@/components/dashboard/AIInsightsCard";
-import { formatCurrency, TYPE_COLORS } from "@/lib/constants";
+import { formatCurrency } from "@/lib/constants";
 import { format } from "date-fns";
 
 type DashboardData = {
@@ -50,9 +50,40 @@ type DashboardData = {
 };
 
 const CHART_COLORS = [
-  "#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6",
-  "#ec4899", "#06b6d4", "#84cc16", "#f97316", "#6366f1", "#64748b",
+  "#2997ff", "#30d158", "#ff9f0a", "#ff453a", "#bf5af2",
+  "#0a84ff", "#64d2ff", "#bf5af2", "#ffd60a", "#ff375f", "#30d158",
 ];
+
+const barColors = {
+  daily: { bg: "bg-accent", text: "text-accent", label: "Daily Expenses" },
+  monthly: { bg: "bg-income", text: "text-income", label: "Monthly Fixed" },
+  large: { bg: "bg-muted-light", text: "text-foreground", label: "Large Purchases" },
+};
+
+const getBadgeStyles = (type: string) => {
+  switch (type) {
+    case "DAILY":
+      return "bg-accent/10 text-accent border border-accent/20";
+    case "MONTHLY":
+      return "bg-income/10 text-income border border-income/20";
+    case "LARGE":
+    default:
+      return "bg-white/5 text-muted border border-white/10 dark:border-white/5";
+  }
+};
+
+const getBadgeLabel = (type: string) => {
+  switch (type) {
+    case "DAILY":
+      return "Daily";
+    case "MONTHLY":
+      return "Monthly Fixed";
+    case "LARGE":
+      return "Large Purchase";
+    default:
+      return type;
+  }
+};
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -73,10 +104,10 @@ export default function DashboardPage() {
     return () => observer.disconnect();
   }, []);
 
-  const gridStroke = isLight ? "#e5e5ea" : "#2c2c2e";
-  const textFill = "#8e8e93"; // Apple System Adaptive Gray
-  const tooltipBg = isLight ? "#ffffff" : "#1c1c1e";
-  const tooltipBorder = isLight ? "#e5e5ea" : "#2c2c2e";
+  const gridStroke = isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.04)";
+  const textFill = isLight ? "#8e8e93" : "#8e8e93";
+  const tooltipBg = isLight ? "rgba(255, 255, 255, 0.8)" : "rgba(28, 28, 30, 0.8)";
+  const tooltipBorder = isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.08)";
   const tooltipLabel = isLight ? "#000000" : "#ffffff";
 
   useEffect(() => {
@@ -95,92 +126,73 @@ export default function DashboardPage() {
   }
 
   if (!data) {
-    return <p className="text-slate-400">Failed to load dashboard.</p>;
+    return <p className="text-muted">Failed to load dashboard.</p>;
   }
 
   const summaryCards = [
     { label: "Total Income", value: data.summary.totalIncome, color: "text-income", icon: "↑" },
     { label: "Total Expenses", value: data.summary.totalExpenses, color: "text-expense", icon: "↓" },
     { label: "Remaining", value: data.summary.remaining, color: data.summary.remaining >= 0 ? "text-income" : "text-expense", icon: "◎" },
-    { label: "Net Worth", value: data.summary.netWorth, color: "text-savings", icon: "★" },
-    { label: "Others Owe You", value: data.summary.othersOweYou, color: "text-savings", icon: "←" },
+    { label: "Net Worth", value: data.summary.netWorth, color: "text-accent", icon: "★" },
+    { label: "Others Owe", value: data.summary.othersOweYou, color: "text-accent", icon: "←" },
     { label: "You Owe", value: data.summary.youOwe, color: "text-ai-accent", icon: "→" },
   ];
 
   const totalTypeSpend = data.typeBreakdown.daily + data.typeBreakdown.monthly + data.typeBreakdown.large;
   const typeCards = [
-    { key: "daily" as const, label: "Daily", value: data.typeBreakdown.daily },
-    { key: "monthly" as const, label: "Monthly Fixed", value: data.typeBreakdown.monthly },
-    { key: "large" as const, label: "Large Purchases", value: data.typeBreakdown.large },
+    { key: "daily" as const, value: data.typeBreakdown.daily },
+    { key: "monthly" as const, value: data.typeBreakdown.monthly },
+    { key: "large" as const, value: data.typeBreakdown.large },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Title */}
-      <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-apple-text-primary">Dashboard</h1>
-        <p className="mt-1.5 text-[10px] text-apple-text-secondary font-medium uppercase tracking-[0.15em]">Your Financial Overview</p>
+    <div className="space-y-8 max-w-6xl mx-auto">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">Dashboard</h1>
+        <p className="mt-1 text-[10px] sm:text-[11px] font-semibold text-muted tracking-widest uppercase">Your Financial Overview</p>
       </div>
 
-      {/* Summary Cards (Bento Grid) */}
+      {/* Summary Bento Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 stagger-children">
         {summaryCards.map((card) => (
-          <Card
-            key={card.label}
-            padding="sm"
-            className="transition-apple hover:scale-[1.01] hover:border-zinc-300 dark:hover:border-[#3a3a3c] bg-apple-card border border-apple-border shadow-none"
-          >
-            <div className="flex items-center justify-between">
-              <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-apple-text-tertiary">
+          <Card key={card.label} padding="md" className="hover-lift hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
+            <div className="flex items-center gap-2">
+              <span className={`text-base font-semibold ${card.color}`}>{card.icon}</span>
+              <p className="text-[9px] font-semibold uppercase tracking-wider text-muted">
                 {card.label}
               </p>
-              <span className={`text-[11px] font-semibold ${
-                card.color.includes("income") ? "text-apple-green" : 
-                card.color.includes("expense") ? "text-apple-red" : 
-                card.color.includes("savings") ? "text-apple-blue" : "text-apple-text-secondary"
-              }`}>{card.icon}</span>
             </div>
             <AnimatedCounter
               value={card.value}
               currency={currency}
-              className="mt-3.5 block text-2xl font-bold tracking-tight text-apple-text-primary"
+              className="mt-3 block text-xl sm:text-2xl font-semibold tracking-tight text-foreground leading-none"
             />
           </Card>
         ))}
       </div>
 
-      {/* Type Breakdown (iOS Storage/Battery style progress tracks) */}
+      {/* Velocity / Type Breakdown Progress Bars (iOS System battery/storage look) */}
       <div className="grid gap-4 sm:grid-cols-3">
         {typeCards.map((tc) => {
-          const colors = TYPE_COLORS[tc.key.toUpperCase()] ?? TYPE_COLORS.DAILY;
           const pct = totalTypeSpend > 0 ? (tc.value / totalTypeSpend) * 100 : 0;
-          
-          let barColor = "bg-apple-blue";
-          if (tc.key === "daily") barColor = "bg-apple-green";
-          if (tc.key === "large") barColor = "bg-apple-red";
-
           return (
-            <Card
-              key={tc.key}
-              padding="sm"
-              className="transition-apple hover:scale-[1.01] bg-apple-card border border-apple-border shadow-none"
-            >
-              <div className="flex items-center justify-between mb-3.5">
-                <div>
-                  <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-apple-text-tertiary block mb-1">
-                    {tc.label}
-                  </span>
-                  <p className="text-xl font-bold text-apple-text-primary">
-                    {formatCurrency(tc.value, currency)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xl font-semibold tracking-tight text-apple-text-secondary">{pct.toFixed(0)}%</p>
-                </div>
+            <Card key={tc.key} padding="md" className="hover-lift hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
+              <div className="flex justify-between items-baseline mb-2">
+                <span className="text-[9px] font-semibold text-muted uppercase tracking-widest">
+                  {barColors[tc.key].label}
+                </span>
+                <span className="text-sm font-semibold tracking-tight text-foreground tabular-nums">
+                  {pct.toFixed(0)}%
+                </span>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
+              <p className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground mb-4 leading-none">
+                {formatCurrency(tc.value, currency)}
+              </p>
+              {/* iOS-Style system storage/battery bar */}
+              <div className="w-full bg-black/5 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-700 ${barColor}`}
+                  className={`h-full rounded-full transition-all duration-700 ease-[var(--ease-apple)] ${barColors[tc.key].bg}`}
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -189,79 +201,87 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Quick Stats */}
+      {/* Quick Stats Bento Cards */}
       {data.quickStats && (
         <div className="grid gap-4 sm:grid-cols-3">
-          <Card padding="sm" className="transition-apple hover:scale-[1.01] bg-apple-card border border-apple-border shadow-none">
-            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-apple-text-tertiary mb-1.5">Avg Daily Spend</p>
-            <p className="text-lg font-bold text-apple-blue">
+          <Card padding="md" className="hover-lift hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
+            <p className="text-[9px] font-semibold text-muted uppercase tracking-widest">Avg Daily Spend</p>
+            <p className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
               {formatCurrency(data.quickStats.avgDailySpend, currency)}
             </p>
           </Card>
-          <Card padding="sm" className="transition-apple hover:scale-[1.01] bg-apple-card border border-apple-border shadow-none">
-            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-apple-text-tertiary mb-1.5">Top Category</p>
-            <p className="text-lg font-bold text-apple-text-primary">
+          <Card padding="md" className="hover-lift hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
+            <p className="text-[9px] font-semibold text-muted uppercase tracking-widest">Top Category</p>
+            <p className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight text-foreground truncate">
               {data.quickStats.topCategory ?? "—"}
             </p>
           </Card>
-          <Card padding="sm" className="transition-apple hover:scale-[1.01] bg-apple-card border border-apple-border shadow-none">
-            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-apple-text-tertiary mb-1.5">Biggest Expense</p>
-            <p className="text-lg font-bold text-apple-red">
+          <Card padding="md" className="hover-lift hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
+            <p className="text-[9px] font-semibold text-muted uppercase tracking-widest">Biggest Expense</p>
+            <p className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight text-expense">
               {data.quickStats.biggestExpense
                 ? `${formatCurrency(data.quickStats.biggestExpense.amount, currency)}`
                 : "—"}
             </p>
             {data.quickStats.biggestExpense && (
-              <p className="text-[10px] text-apple-text-secondary mt-0.5">{data.quickStats.biggestExpense.category}</p>
+              <p className="text-[10px] text-muted mt-1 tracking-tight">{data.quickStats.biggestExpense.category}</p>
             )}
           </Card>
         </div>
       )}
 
-      {/* Graphical Insights */}
+      {/* Charts Bento Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Spending Trends */}
-        <Card className="transition-apple bg-apple-card border border-apple-border shadow-none">
-          <CardHeader title="Spending Trends" description="Last 6 months" />
-          <CardBody>
+        {/* Spending Trends with high-fidelity gradient & dotted grid lines */}
+        <Card className="hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
+          <CardHeader title="Spending Trends" description="Last 6 months breakdown" />
+          <CardBody className="pt-2">
             <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={data.trends}>
+              <AreaChart data={data.trends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--apple-green)" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="var(--apple-green)" stopOpacity={0.0}/>
+                  {/* Subtle translucent gradient fills */}
+                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#30d158" stopOpacity={0.12}/>
+                    <stop offset="95%" stopColor="#30d158" stopOpacity={0.005}/>
                   </linearGradient>
-                  <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--apple-red)" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="var(--apple-red)" stopOpacity={0.0}/>
+                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ff453a" stopOpacity={0.12}/>
+                    <stop offset="95%" stopColor="#ff453a" stopOpacity={0.005}/>
                   </linearGradient>
-                  <linearGradient id="savingsGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--apple-blue)" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="var(--apple-blue)" stopOpacity={0.0}/>
+                  <linearGradient id="colorSavings" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#2997ff" stopOpacity={0.12}/>
+                    <stop offset="95%" stopColor="#2997ff" stopOpacity={0.005}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="2 4" stroke={gridStroke} />
-                <XAxis dataKey="month" tick={{ fill: textFill, fontSize: 10, fontWeight: 500 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: textFill, fontSize: 10, fontWeight: 500 }} axisLine={false} tickLine={false} />
+                {/* Hair-thin dotted grid lines */}
+                <CartesianGrid strokeDasharray="1 5" stroke={gridStroke} vertical={false} />
+                <XAxis dataKey="month" tick={{ fill: textFill, fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: textFill, fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 12, boxShadow: "none" }}
-                  labelStyle={{ color: tooltipLabel, fontSize: 11, fontWeight: 600 }}
-                  itemStyle={{ fontSize: 11 }}
+                  contentStyle={{
+                    background: tooltipBg,
+                    border: `1px solid ${tooltipBorder}`,
+                    borderRadius: "16px",
+                    backdropFilter: "blur(20px)",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
+                  }}
+                  labelStyle={{ color: tooltipLabel, fontSize: "11px", fontWeight: "600" }}
+                  itemStyle={{ fontSize: "11px" }}
                 />
-                <Area type="monotone" dataKey="income" stroke="var(--apple-green)" fill="url(#incomeGrad)" strokeWidth={1.8} name="Income" />
-                <Area type="monotone" dataKey="expenses" stroke="var(--apple-red)" fill="url(#expenseGrad)" strokeWidth={1.8} name="Expenses" />
-                <Area type="monotone" dataKey="savings" stroke="var(--apple-blue)" fill="url(#savingsGrad)" strokeWidth={1.8} name="Savings" />
+                <Area type="monotone" dataKey="income" stroke="#30d158" strokeWidth={1.8} fill="url(#colorIncome)" name="Income" />
+                <Area type="monotone" dataKey="expenses" stroke="#ff453a" strokeWidth={1.8} fill="url(#colorExpenses)" name="Expenses" />
+                <Area type="monotone" dataKey="savings" stroke="#2997ff" strokeWidth={1.8} fill="url(#colorSavings)" name="Savings" />
               </AreaChart>
             </ResponsiveContainer>
           </CardBody>
         </Card>
 
-        {/* Category Breakdown (Donut style) */}
-        <Card className="transition-apple bg-apple-card border border-apple-border shadow-none">
-          <CardHeader title="Category Breakdown" description="Current month" />
-          <CardBody>
+        {/* Category Breakdown */}
+        <Card className="hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
+          <CardHeader title="Category Breakdown" description="Current month expense distribution" />
+          <CardBody className="pt-2">
             {data.categoryBreakdown.length === 0 ? (
-              <p className="py-12 text-center text-apple-text-secondary text-xs">No expenses this month</p>
+              <p className="py-24 text-center text-muted text-xs">No expenses logged this month</p>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
@@ -272,20 +292,26 @@ export default function DashboardPage() {
                     cx="50%"
                     cy="50%"
                     outerRadius={85}
-                    innerRadius={60}
+                    innerRadius={50} // Clean donut layout
                     paddingAngle={3}
                     label={({ name, percent }) =>
                       `${name ?? ""} ${((percent ?? 0) * 100).toFixed(0)}%`
                     }
+                    labelLine={false}
                   >
                     {data.categoryBreakdown.map((_, i) => (
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 12, boxShadow: "none" }}
+                    contentStyle={{
+                      background: tooltipBg,
+                      border: `1px solid ${tooltipBorder}`,
+                      borderRadius: "16px",
+                      backdropFilter: "blur(20px)",
+                    }}
+                    itemStyle={{ fontSize: "11px", color: tooltipLabel }}
                     formatter={(value) => formatCurrency(Number(value), currency)}
-                    itemStyle={{ fontSize: 11 }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -294,38 +320,33 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* AI Insights */}
+      {/* AI Insights Panel */}
       <AIInsightsCard />
 
-      {/* Recent Expenses */}
-      <Card className="bg-apple-card border border-apple-border shadow-none">
-        <CardHeader title="Recent Expenses" description="Last 5 transactions" />
+      {/* Recent Expenses Ledger List */}
+      <Card className="hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
+        <CardHeader title="Recent Expenses" description="Last 5 transactions logged" />
         <CardBody>
           {data.recentExpenses.length === 0 ? (
-            <p className="text-apple-text-secondary text-xs">No expenses yet.</p>
+            <p className="text-muted text-xs">No expenses yet.</p>
           ) : (
-            <div className="divide-y divide-apple-border/50">
+            <div className="divide-y divide-zinc-200/40 dark:divide-white/[0.04]">
               {data.recentExpenses.map((exp) => {
-                const typeColor = TYPE_COLORS[exp.type] ?? TYPE_COLORS.DAILY;
-                
-                let badgeColor = "bg-apple-blue/10 text-apple-blue border border-apple-blue/20";
-                if (exp.type === "DAILY") badgeColor = "bg-apple-green/10 text-apple-green border border-apple-green/20";
-                if (exp.type === "LARGE") badgeColor = "bg-apple-red/10 text-apple-red border border-apple-red/20";
-
                 return (
-                  <div key={exp.id} className="flex items-center justify-between py-3.5">
+                  <div key={exp.id} className="flex items-center justify-between py-4 transition-colors hover:bg-white/[0.01]">
                     <div className="flex items-center gap-3">
-                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${badgeColor}`}>
-                        {typeColor.label}
+                      {/* Apple HIG custom styled muted tag */}
+                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-[9px] font-semibold ${getBadgeStyles(exp.type)}`}>
+                        {getBadgeLabel(exp.type)}
                       </span>
                       <div>
-                        <p className="font-semibold text-apple-text-primary text-xs sm:text-sm">{exp.category}</p>
-                        <p className="text-[10px] text-apple-text-tertiary mt-0.5">
+                        <p className="text-xs sm:text-sm font-semibold text-foreground">{exp.category}</p>
+                        <p className="text-[10px] text-muted mt-0.5">
                           {format(new Date(exp.date), "MMM d, yyyy")} · {exp.paymentMethod}
                         </p>
                       </div>
                     </div>
-                    <p className="font-semibold text-apple-red text-xs sm:text-sm">
+                    <p className="text-xs sm:text-sm font-bold text-foreground">
                       -{formatCurrency(exp.amount, currency)}
                     </p>
                   </div>
