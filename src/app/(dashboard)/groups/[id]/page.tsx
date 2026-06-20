@@ -1,10 +1,8 @@
 "use client";
-
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -265,14 +263,14 @@ export default function GroupDetailPage() {
   let validationResult = {
     isValid: true,
     message: "",
-    colorClass: "text-[#30d158]", // Apple Dark/Light Adaptive HIG Green
+    colorClass: "text-[#30d158]",
   };
 
   if (totalAmount <= 0) {
     validationResult = {
       isValid: false,
       message: "Please enter an amount greater than 0",
-      colorClass: "text-slate-400",
+      colorClass: "text-muted",
     };
   } else if (splitType === "CUSTOM") {
     const sum = memberList.reduce((acc, m) => {
@@ -286,7 +284,7 @@ export default function GroupDetailPage() {
       validationResult = {
         isValid: false,
         message: "✕ Split totals mismatch the main expense allocation",
-        colorClass: "text-[#ff453a]", // Apple Dark/Light Adaptive HIG Red
+        colorClass: "text-[#ff453a]",
       };
     } else {
       validationResult = {
@@ -319,16 +317,18 @@ export default function GroupDetailPage() {
     validationResult = {
       isValid: totalAmount > 0,
       message: totalAmount > 0 ? "✓ Values match total perfectly" : "Please enter an amount greater than 0",
-      colorClass: totalAmount > 0 ? "text-[#30d158]" : "text-slate-400",
+      colorClass: totalAmount > 0 ? "text-[#30d158]" : "text-muted",
     };
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-5xl mx-auto animate-fade-in">
+      {/* Header Panel */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">{group?.name ?? "Pocket Details"}</h1>
-          <p className="mt-1 text-slate-400">{group?.description ?? "Manage shared expenses and settlements"}</p>
+          <span className="text-[10px] font-semibold text-muted uppercase tracking-widest">Pocket Detail Panel</span>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground mt-1">{group?.name ?? "Pocket Details"}</h1>
+          <p className="text-xs text-muted mt-1 font-normal">{group?.description ?? "Manage shared expenses and settlements"}</p>
         </div>
         {isAdmin && (
           <Button variant="danger" size="sm" onClick={deleteGroup}>
@@ -337,15 +337,16 @@ export default function GroupDetailPage() {
         )}
       </div>
 
-      <div className="flex gap-2 border-b border-zinc-200 dark:border-zinc-800">
+      {/* macOS segmented control tab bar */}
+      <div className="flex bg-[#F5F5F7] dark:bg-[#1C1C1E] p-0.5 rounded-lg inline-flex select-none border border-[#E8E8ED]/30 dark:border-[#2C2C2E]/20">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 ${
               tab === t.key
-                ? "border-emerald-500 text-emerald-500"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "bg-white dark:bg-zinc-800 text-foreground shadow-sm"
+                : "text-muted hover:text-foreground"
             }`}
           >
             {t.label}
@@ -353,6 +354,7 @@ export default function GroupDetailPage() {
         ))}
       </div>
 
+      {/* Tab: Expenses */}
       {tab === "expenses" && (
         <div className="space-y-6">
           <Card>
@@ -370,9 +372,9 @@ export default function GroupDetailPage() {
                   options={memberList.map((m) => ({ value: m.userId ?? m.user?.id ?? "", label: m.name ?? m.user?.name ?? "" }))}
                 />
                 {expForm.splitType !== "EQUAL" && (
-                  <div className="sm:col-span-2 lg:col-span-3 grid gap-3 sm:grid-cols-2">
-                    <p className="sm:col-span-2 text-sm text-slate-400">
-                      {expForm.splitType === "PERCENTAGE" ? "Enter percentage per member (must sum to 100)" : "Enter exact amount per member"}
+                  <div className="sm:col-span-2 lg:col-span-3 grid gap-3 sm:grid-cols-2 pt-2 border-t border-[#E8E8ED]/60 dark:border-[#2C2C2E]/40">
+                    <p className="sm:col-span-2 text-[10px] font-semibold text-muted uppercase tracking-widest">
+                      {expForm.splitType === "PERCENTAGE" ? "Percentage Allocation (must sum to 100)" : "Exact Share Allocation"}
                     </p>
                     {memberList.map((m) => {
                       const uid = m.userId ?? m.user?.id ?? "";
@@ -390,13 +392,13 @@ export default function GroupDetailPage() {
                   </div>
                 )}
                 {expForm.amount && (
-                  <div className="sm:col-span-2 lg:col-span-3 text-sm font-medium animate-fade-in">
+                  <div className="sm:col-span-2 lg:col-span-3 text-xs font-semibold animate-fade-in pt-1">
                     <span className={`${validationResult.colorClass} flex items-center gap-1.5`}>
                       {validationResult.message}
                     </span>
                   </div>
                 )}
-                <div className="sm:col-span-2 lg:col-span-3">
+                <div className="sm:col-span-2 lg:col-span-3 pt-2">
                   <Button type="submit" disabled={!validationResult.isValid} className="disabled:opacity-40 disabled:select-none">
                     Add Expense
                   </Button>
@@ -406,25 +408,28 @@ export default function GroupDetailPage() {
           </Card>
 
           {expenses.length === 0 ? (
-            <p className="text-slate-500">No expenses yet.</p>
+            <p className="text-center py-12 text-muted text-xs">No expenses yet.</p>
           ) : (
             <div className="space-y-4">
               {expenses.map((exp) => (
-                <Card key={exp.id} padding="sm">
-                  <div className="flex items-start justify-between">
-                    <div>
+                <Card key={exp.id} padding="sm" className="hover-lift hover:border-accent/40 dark:hover:border-accent/40 transition-all duration-400 ease-[cubic-bezier(0.25,1,0.5,1)]">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <p className="font-semibold text-slate-200">{exp.description}</p>
-                        <Badge>{exp.splitType}</Badge>
+                        <p className="font-semibold text-foreground">{exp.description}</p>
+                        <span className="inline-block rounded-full bg-accent/10 text-accent text-[9px] font-semibold px-2 py-0.5 border border-accent/20 select-none">
+                          {exp.splitType}
+                        </span>
                       </div>
-                      <p className="mt-1 text-lg font-bold text-income">{formatCurrency(exp.amount, currency)}</p>
-                      <p className="text-sm text-slate-400">
-                        Paid by {exp.paidBy.name} · {format(new Date(exp.date), "MMM d, yyyy")}
+                      <p className="text-xl font-bold text-[#1D1D1F] dark:text-white">{formatCurrency(exp.amount, currency)}</p>
+                      <p className="text-[10px] text-muted">
+                        Paid by <span className="font-semibold text-foreground">{exp.paidBy.name}</span> · {format(new Date(exp.date), "MMM d, yyyy")}
                       </p>
-                      <div className="mt-2 space-y-1">
+                      <div className="mt-3 grid gap-1.5 pl-3 border-l border-[#E8E8ED] dark:border-[#2C2C2E]">
                         {exp.splits.map((s, i) => (
-                          <p key={i} className="text-sm text-slate-400">
-                            {s.user.name}: {formatCurrency(s.amount, currency)}
+                          <p key={i} className="text-xs text-muted flex items-center justify-between max-w-xs gap-6">
+                            <span>{s.user.name}</span>
+                            <span className="font-medium text-foreground">{formatCurrency(s.amount, currency)}</span>
                           </p>
                         ))}
                       </div>
@@ -438,21 +443,22 @@ export default function GroupDetailPage() {
         </div>
       )}
 
+      {/* Tab: Balances */}
       {tab === "balances" && (
         <div className="space-y-6">
-          <Card padding="sm">
-            <p className="text-sm text-slate-400">Total Group Spend</p>
-            <p className="text-2xl font-bold text-slate-100">{formatCurrency(totalSpend, currency)}</p>
+          <Card padding="md" className="hover-lift transition-all duration-300">
+            <p className="text-[9px] font-semibold text-muted uppercase tracking-widest">Total Group Spend</p>
+            <p className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-[#1D1D1F] dark:text-white leading-none">{formatCurrency(totalSpend, currency)}</p>
           </Card>
 
           <Card>
-            <CardHeader title="Member Balances" description="Positive = owed to them" />
+            <CardHeader title="Member Balances" description="Positive = owed to them, Negative = they owe" />
             <CardBody>
-              <div className="space-y-3">
+              <div className="space-y-3.5 divide-y divide-[#E8E8ED]/60 dark:divide-[#2C2C2E]/40">
                 {balances.map((b) => (
-                  <div key={b.userId} className="flex items-center justify-between">
-                    <span className="text-slate-200">{b.name}</span>
-                    <span className={b.balance >= 0 ? "text-income" : "text-expense"}>
+                  <div key={b.userId} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
+                    <span className="text-foreground font-medium text-sm">{b.name}</span>
+                    <span className={`font-semibold ${b.balance >= 0 ? "text-income" : "text-expense"}`}>
                       {formatCurrency(b.balance, currency)}
                     </span>
                   </div>
@@ -465,14 +471,14 @@ export default function GroupDetailPage() {
             <CardHeader title="Simplified Debts" />
             <CardBody>
               {debts.length === 0 ? (
-                <p className="text-slate-400">All settled up!</p>
+                <p className="text-muted text-xs">All settled up!</p>
               ) : (
                 <div className="space-y-3">
                   {debts.map((d, i) => (
-                    <p key={i} className="text-slate-300">
-                      <span className="text-expense">{d.fromName}</span> owes{" "}
-                      <span className="text-income">{d.toName}</span>{" "}
-                      <span className="font-bold">{formatCurrency(d.amount, currency)}</span>
+                    <p key={i} className="text-sm text-foreground">
+                      <span className="font-semibold text-expense">{d.fromName}</span> owes{" "}
+                      <span className="font-semibold text-income">{d.toName}</span>{" "}
+                      <span className="font-bold text-[#1D1D1F] dark:text-white ml-1">{formatCurrency(d.amount, currency)}</span>
                     </p>
                   ))}
                 </div>
@@ -482,6 +488,7 @@ export default function GroupDetailPage() {
         </div>
       )}
 
+      {/* Tab: Settlements */}
       {tab === "settlements" && (
         <div className="space-y-6">
           <Card>
@@ -528,28 +535,28 @@ export default function GroupDetailPage() {
           </Card>
 
           <Card>
-            <CardHeader title="Members" />
+            <CardHeader title="Pocket Members" />
             <CardBody>
-              <div className="space-y-3">
+              <div className="space-y-3.5 divide-y divide-[#E8E8ED]/60 dark:divide-[#2C2C2E]/40">
                 {memberList.map((m) => {
                   const uid = m.userId ?? m.user?.id ?? "";
                   const photo = m.user?.profilePhoto;
                   const initialsName = m.name ?? m.user?.name ?? "";
                   return (
-                    <div key={uid} className="flex items-center justify-between border-b border-slate-800/40 pb-2 last:border-0 last:pb-0">
+                    <div key={uid} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
                       <div className="flex items-center gap-3">
                         {photo ? (
                           <img
                             src={photo}
                             alt={initialsName}
-                            className="h-8 w-8 rounded-full object-cover border border-slate-700/80 ring-1 ring-emerald-500/20"
+                            className="h-8 w-8 rounded-full object-cover border border-[#E8E8ED] dark:border-[#2C2C2E]"
                           />
                         ) : (
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-400 ring-1 ring-emerald-500/20">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 text-accent text-[10px] font-bold border border-accent/20 ring-1 ring-accent/15 select-none">
                             {initials(initialsName)}
                           </div>
                         )}
-                        <span className="text-slate-200 text-sm font-medium">{initialsName}</span>
+                        <span className="text-foreground text-sm font-medium">{initialsName}</span>
                       </div>
                       {isAdmin && uid !== userId && (
                         <Button size="sm" variant="danger" onClick={() => removeMember(uid)}>Remove</Button>
@@ -565,16 +572,18 @@ export default function GroupDetailPage() {
             <CardHeader title="Settlement History" />
             <CardBody>
               {settlements.length === 0 ? (
-                <p className="text-slate-400">No settlements recorded.</p>
+                <p className="text-muted text-xs">No settlements recorded.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {settlements.map((s) => (
-                    <div key={s.id} className="flex items-center justify-between text-sm">
-                      <span className="text-slate-300">
+                    <div key={s.id} className="flex items-center justify-between text-sm border-b border-[#E8E8ED]/60 dark:border-[#2C2C2E]/40 py-2.5 last:border-b-0 last:pb-0">
+                      <span className="text-foreground">
                         {s.from.name} paid {s.to.name}
                       </span>
-                      <span className="font-medium text-income">{formatCurrency(s.amount, currency)}</span>
-                      <span className="text-slate-400">{format(new Date(s.createdAt), "MMM d, yyyy")}</span>
+                      <div className="flex items-center gap-4">
+                        <span className="font-semibold text-income">{formatCurrency(s.amount, currency)}</span>
+                        <span className="text-xs text-muted">{format(new Date(s.createdAt), "MMM d, yyyy")}</span>
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -19,7 +19,7 @@ export default async function DashboardLayout({
 
   return (
     <ToastProvider>
-      <div className="dashboard-gradient min-h-screen">
+      <div className="bg-background min-h-screen text-foreground transition-colors duration-300">
         <Sidebar />
         <div className="flex min-h-screen flex-col lg:pl-64">
           <main className="flex-1 px-4 pb-8 pt-20 lg:px-8 lg:pt-8">
