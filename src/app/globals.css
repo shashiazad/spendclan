@@ -1,123 +1,71 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  :root {
-    /* Light Mode Archetype (Apple Store / Support style) */
-    --background: #FFFFFF;
-    --canvas-background: #FFFFFF;
-    --card-background: #F5F5F7;
-    --card-border: #E8E8ED;
-    
-    /* Typography */
-    --text-primary: #1D1D1F;
-    --text-secondary: #6E6E73;
-    --text-tertiary: #86868B;
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+  --foreground-light: #f2f2f7;
+  --foreground-muted: #e5e5ea;
+  --card: #1c1c1e;
+  --card-border: #2c2c2e;
+  --card-border-hover: #3a3a3c;
+  --muted: #8e8e93;
+  --muted-light: #636366;
+  --accent: #2997ff; /* Apple Dark Blue */
+  --accent-hover: #147ce5;
+  --accent-muted: rgba(41, 151, 255, 0.15);
+  --danger: #ff453a; /* Apple Dark Red */
+  --sidebar: rgba(28, 28, 30, 0.8); /* Apple Dark Translucent Sidebar */
+  --sidebar-hover: rgba(255, 255, 255, 0.05);
+  --ai-primary: #bf5af2; /* Apple Dark Purple */
+  --ai-secondary: #2997ff;
+  --ai-glow: rgba(191, 90, 242, 0.15);
 
-    /* Apple System Colors */
-    --apple-blue: #0071E3;
-    --apple-green: #34C759;
-    --apple-red: #FF3B30;
-    
-    /* Translucent Materials */
-    --sidebar-surface: rgba(245, 245, 247, 0.7);
+  /* Semantic financial colors - Apple Dark HIG Adaptive */
+  --income: #30d158;       /* Apple Dark Green */
+  --expense: #ff453a;      /* Apple Dark Red */
+  --savings: #2997ff;      /* Apple Dark Blue */
+  --ai-accent: #ff9f0a;    /* Apple Dark Orange */
 
-    /* Semantic Financial Variables & Theme mappings */
-    --foreground: var(--text-primary);
-    --foreground-light: var(--text-primary);
-    --foreground-muted: var(--text-secondary);
-    --card: var(--card-background);
-    --card-border: var(--card-border);
-    --card-border-hover: #d1d1d6;
-    --muted: var(--text-tertiary);
-    --muted-light: var(--text-secondary);
-    --accent: var(--apple-blue);
-    --accent-hover: #147ce5;
-    --accent-muted: rgba(0, 113, 227, 0.1);
-    --danger: var(--apple-red);
-    --sidebar: var(--sidebar-surface);
-    --sidebar-hover: rgba(245, 245, 247, 0.9);
-    --ai-primary: #bf5af2;
-    --ai-secondary: #5e5ce6;
-    --ai-glow: rgba(191, 90, 242, 0.08);
-    --ai-accent: #ff9f0a;
-
-    --income: var(--apple-green);
-    --expense: var(--apple-red);
-    --savings: var(--apple-blue);
-
-    --glass-bg: var(--sidebar-surface);
-    --glass-border: rgba(0, 0, 0, 0.06);
-    --glass-card-bg: rgba(245, 245, 247, 0.8);
-    --glass-card-border: rgba(232, 232, 237, 0.8);
-  }
-
-  .dark {
-    /* Dark Mode Archetype (Pro Canvas / Apple Card style) */
-    --background: #000000;
-    --canvas-background: #000000;
-    --card-background: #1C1C1E;
-    --card-border: #2C2C2E;
-    
-    /* Typography */
-    --text-primary: #F5F5F7;
-    --text-secondary: #86868B;
-    --text-tertiary: #6E6E73;
-
-    /* Apple System Colors */
-    --apple-blue: #2997FF;
-    --apple-green: #30D158;
-    --apple-red: #FF453A;
-    
-    /* Translucent Materials */
-    --sidebar-surface: rgba(28, 28, 30, 0.8);
-
-    /* Semantic Dark Theme mappings */
-    --foreground: var(--text-primary);
-    --foreground-light: var(--text-primary);
-    --foreground-muted: var(--text-secondary);
-    --card: var(--card-background);
-    --card-border: var(--card-border);
-    --card-border-hover: #3a3a3c;
-    --muted: var(--text-tertiary);
-    --muted-light: var(--text-secondary);
-    --accent: var(--apple-blue);
-    --accent-hover: #147ce5;
-    --accent-muted: rgba(41, 151, 255, 0.15);
-    --danger: var(--apple-red);
-    --sidebar: var(--sidebar-surface);
-    --sidebar-hover: rgba(28, 28, 30, 0.9);
-    --ai-primary: #bf5af2;
-    --ai-secondary: #5e5ce6;
-    --ai-glow: rgba(191, 90, 242, 0.15);
-    --ai-accent: #ff9f0a;
-
-    --income: var(--apple-green);
-    --expense: var(--apple-red);
-    --savings: var(--apple-blue);
-
-    --glass-bg: var(--sidebar-surface);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-card-bg: rgba(28, 28, 30, 0.7);
-    --glass-card-border: rgba(44, 44, 46, 0.7);
-  }
+  /* Glassmorphism styling variables */
+  --glass-bg: rgba(28, 28, 30, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-card-bg: rgba(28, 28, 30, 0.7);
+  --glass-card-border: rgba(44, 44, 46, 0.7);
 }
 
-@layer utilities {
-  /* Apple Signature Custom Fluid Easing Functions */
-  .transition-apple {
-    transition-property: all;
-    transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
-    transition-duration: 400ms;
-  }
-  
-  .transition-apple-spring {
-    transition-property: all;
-    transition-timing-function: cubic-bezier(0.4, 0, 0px, 1);
-    transition-duration: 500ms;
-  }
+.light {
+  --background: #f5f5f7; /* Apple Light Gray 6 */
+  --foreground: #000000; /* Apple Light Black Text */
+  --foreground-light: #1c1c1e;
+  --foreground-muted: #3a3a3c;
+  --card: #ffffff;       /* Apple Light White Surface */
+  --card-border: #e8e8ed; /* Apple Light Border (Faint Gray #E8E8ED) */
+  --card-border-hover: #d1d1d6;
+  --muted: #8e8e93;      /* Apple Light Gray */
+  --muted-light: #aeaeb2;
+  --accent: #0071e3;      /* Apple Light Blue */
+  --accent-hover: #147ce5;
+  --accent-muted: rgba(0, 113, 227, 0.1);
+  --danger: #ff3b30; /* Apple Light Red */
+  --sidebar: rgba(245, 245, 247, 0.7); /* Apple Light Translucent Sidebar */
+  --sidebar-hover: rgba(0, 0, 0, 0.04);
+  --ai-primary: #af52de;  /* Apple Light Purple */
+  --ai-secondary: #0071e3;
+  --ai-glow: rgba(175, 82, 222, 0.08);
+
+  /* Adjusted semantic financial colors for light mode contrast - Apple Light HIG Adaptive */
+  --income: #34c759;       /* Apple Light Green */
+  --expense: #ff3b30;      /* Apple Light Red */
+  --savings: #0071e3;      /* Apple Light Blue */
+  --ai-accent: #ff9500;    /* Apple Light Orange */
+
+  /* Glassmorphism styling variables for light mode */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-card-bg: rgba(255, 255, 255, 0.75);
+  --glass-card-border: rgba(229, 229, 234, 0.8);
 }
+
 
 @theme inline {
   --color-background: var(--background);
