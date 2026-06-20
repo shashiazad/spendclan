@@ -139,13 +139,13 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2 min-h-[40px] text-xs font-normal transition-all duration-300 ease-[var(--ease-apple)] hover:scale-[1.01] active:scale-[0.98] ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 min-h-[40px] text-xs font-normal transition-all duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] hover:scale-[1.01] active:scale-[0.98] ${
                 active
-                  ? "bg-sidebar-hover text-foreground font-medium shadow-[0_2px_8px_rgba(0,0,0,0.01)]"
+                  ? "bg-sidebar-hover text-foreground font-semibold"
                   : "text-muted hover:bg-sidebar-hover hover:text-foreground"
               }`}
             >
-              <span className={`transition-colors duration-300 ${active ? "text-accent" : "text-muted/70 group-hover:text-foreground"}`}>
+              <span className={`transition-colors duration-400 ${active ? "text-accent" : "text-muted/70 group-hover:text-foreground"}`}>
                 {item.icon}
               </span>
               {item.label}
@@ -211,7 +211,7 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile header */}
-      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-zinc-200/60 dark:border-white/[0.06] bg-sidebar backdrop-blur-[20px] px-4 lg:hidden">
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-zinc-200/60 dark:border-white/[0.06] bg-sidebar backdrop-blur-[30px] px-4 lg:hidden">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent/10 border border-accent/25">
             <svg className="h-4 w-4 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
@@ -249,7 +249,7 @@ export function Sidebar() {
 
       {/* Mobile sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-zinc-200/60 dark:border-white/[0.06] bg-sidebar backdrop-blur-[20px] transition-transform duration-300 lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-zinc-200/60 dark:border-white/[0.06] bg-sidebar backdrop-blur-[30px] transition-transform duration-300 lg:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -257,7 +257,7 @@ export function Sidebar() {
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-zinc-200/60 dark:border-white/[0.06] bg-sidebar backdrop-blur-[20px] transition-colors duration-500 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-zinc-200/60 dark:border-white/[0.06] bg-sidebar backdrop-blur-[30px] transition-colors duration-500 lg:flex">
         {sidebarContent}
       </aside>
     </>
