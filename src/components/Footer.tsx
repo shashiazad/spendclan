@@ -81,31 +81,30 @@ export function Footer() {
   ];
 
   return (
-    <footer className="border-t border-slate-800/40 bg-slate-950 py-12">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-          
+    <footer className="border-t border-white/[0.08] dark:border-white/[0.08] light:border-zinc-200/80 bg-black dark:bg-black light:bg-[#f5f5f7] py-16 transition-colors duration-500">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           {/* Left Column / Brand Attribution */}
           <div className="flex flex-col space-y-4 max-w-md">
-            <div className="flex items-center gap-2.5">
-              <BrandIcon className="h-6 w-6 text-emerald-400" />
-              <span className="text-lg font-bold tracking-tight text-slate-200">
+            <div className="flex items-center gap-2">
+              <BrandIcon className="h-6 w-6 text-accent" />
+              <span className="text-base font-semibold tracking-tight text-foreground">
                 SpendClan
               </span>
             </div>
-            
-            <p className="text-sm text-slate-400 leading-relaxed">
+
+            <p className="text-xs text-muted leading-relaxed max-w-sm">
               Track personal expenses, build sustainable savings habits, and settle group bills effortlessly with bank-grade isolated records.
             </p>
-            
-            <div className="flex flex-col space-y-1 pt-2">
-              <span className="text-xs text-slate-500 font-medium">
+
+            <div className="flex flex-col space-y-1 pt-4 border-t border-white/[0.04] dark:border-white/[0.04] light:border-zinc-200/40">
+              <span className="text-[11px] text-muted font-normal">
                 Crafted with precision by{" "}
-                <span className="text-slate-300 hover:text-emerald-400 transition-colors duration-200 cursor-default">
+                <span className="text-foreground font-medium hover:text-accent transition-colors duration-200 cursor-default">
                   Shashi Shekhar Azad
                 </span>
               </span>
-              <span className="text-xs text-slate-500">
+              <span className="text-[11px] text-muted/80">
                 &copy; {currentYear} SpendClan. All rights reserved.
               </span>
             </div>
@@ -113,19 +112,19 @@ export function Footer() {
 
           {/* Right Column / Professional Links Array */}
           <div className="flex flex-col space-y-4 md:items-end">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">
               Developer Connections
             </span>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:flex-wrap sm:gap-6">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-3 sm:flex sm:flex-wrap sm:gap-6">
               {socialLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-400 transition-colors duration-200"
+                  className="flex items-center gap-1.5 text-xs text-muted hover:text-foreground transition-colors duration-300"
                 >
-                  <span className="text-slate-500 hover:text-emerald-400 transition-colors duration-200 shrink-0">
+                  <span className="text-muted/60 hover:text-foreground transition-colors duration-300 shrink-0">
                     {link.icon}
                   </span>
                   <span>{link.name}</span>
@@ -133,7 +132,6 @@ export function Footer() {
               ))}
             </div>
           </div>
-          
         </div>
       </div>
     </footer>
