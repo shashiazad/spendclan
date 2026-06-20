@@ -119,12 +119,12 @@ export function Sidebar() {
   const sidebarContent = (
     <>
       <div className="flex h-16 items-center gap-3 border-b border-zinc-200/50 dark:border-zinc-800/50 px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/30">
-          <BrandIcon className="h-5 w-5 text-emerald-400" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 ring-1 ring-accent/30">
+          <BrandIcon className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-slate-100">SpendClan</p>
-          <p className="text-xs text-slate-400">Finance tracker</p>
+          <p className="text-sm font-semibold text-foreground">SpendClan</p>
+          <p className="text-[10px] text-muted uppercase tracking-wider">Finance Tracker</p>
         </div>
       </div>
 
@@ -138,8 +138,8 @@ export function Sidebar() {
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 min-h-[44px] text-sm font-medium transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98] ${
                 active
-                  ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 ring-1 ring-emerald-500/25"
-                  : "text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/50 hover:text-slate-100"
+                  ? "bg-accent/10 text-accent ring-1 ring-accent/25"
+                  : "text-muted hover:bg-white/5 dark:hover:bg-zinc-800/50 hover:text-foreground"
               }`}
             >
               {item.icon}
@@ -160,10 +160,10 @@ export function Sidebar() {
                 <img
                   src={session.user.profilePhoto}
                   alt={session.user.name ?? "User"}
-                  className="w-8 h-8 rounded-full object-cover border border-zinc-200 dark:border-zinc-700/80 group-hover:border-emerald-500/50 transition-colors"
+                  className="w-8 h-8 rounded-full object-cover border border-zinc-200 dark:border-zinc-700/80 group-hover:border-accent/50 transition-colors"
                 />
               ) : (
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/20 transition-all">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent/10 text-accent font-bold text-xs border border-accent/20 group-hover:border-accent/40 group-hover:bg-accent/20 transition-all duration-300">
                   {session.user.name
                     ? session.user.name
                         .split(" ")
@@ -175,10 +175,10 @@ export function Sidebar() {
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-slate-100 group-hover:text-emerald-500 transition-colors leading-snug">
+                <p className="truncate text-xs font-semibold text-foreground group-hover:text-accent transition-colors leading-snug">
                   {session.user.name}
                 </p>
-                <p className="truncate text-[10px] text-slate-400 leading-normal">
+                <p className="truncate text-[10px] text-muted leading-normal">
                   {session.user.email}
                 </p>
               </div>
@@ -204,12 +204,12 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile header */}
-      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white/85 dark:bg-zinc-900/85 px-4 backdrop-blur-md lg:hidden">
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-zinc-200/60 dark:border-white/[0.06] bg-white/75 dark:bg-black/60 px-4 backdrop-blur-md lg:hidden">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10">
-            <BrandIcon className="h-4 w-4 text-emerald-400" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent/10">
+            <BrandIcon className="h-4 w-4 text-accent" />
           </div>
-          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">SpendClan</span>
+          <span className="text-sm font-semibold tracking-tight text-foreground">SpendClan</span>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}

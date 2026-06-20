@@ -27,14 +27,30 @@ export function BrandIcon({ className = "h-8 w-8" }: { className?: string }) {
 }
 
 export function Navbar() {
+  const [isScrolled, setIsScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${
+        isScrolled
+          ? "py-3 bg-black/70 dark:bg-black/70 light:bg-white/75 backdrop-blur-md border-white/[0.08] dark:border-white/[0.08] light:border-zinc-200/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)]"
+          : "py-5 bg-transparent border-transparent"
+      }`}
+    >
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <BrandIcon className="h-8 w-8 text-emerald-400 transition-transform duration-300 group-hover:scale-110" />
-          <span className="text-xl font-bold tracking-tight text-slate-100 animate-fade-in">
-            Spend<span className="text-emerald-400">Clan</span>
+        <Link href="/" className="flex items-center gap-2 group">
+          <BrandIcon className="h-7 w-7 text-accent transition-transform duration-500 ease-[var(--ease-apple)] group-hover:scale-105" />
+          <span className="text-lg font-semibold tracking-tight text-foreground transition-colors duration-300">
+            Spend<span className="font-normal text-muted">Clan</span>
           </span>
         </Link>
 
@@ -44,7 +60,7 @@ export function Navbar() {
             <a
               key={item}
               href={`/#${item.toLowerCase().replace(/\s+/g, "-")}`}
-              className="text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-slate-100"
+              className="text-xs font-normal text-muted hover:text-foreground transition-colors duration-300"
             >
               {item}
             </a>
@@ -52,19 +68,19 @@ export function Navbar() {
         </div>
 
         {/* Auth Buttons + Theme Toggle */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <ThemeToggle />
           <Link
             href="/login"
-            className="text-sm font-medium text-slate-300 transition-colors duration-200 hover:text-slate-100"
+            className="text-xs font-normal text-muted hover:text-foreground transition-colors duration-300"
           >
-            Login
+            Sign In
           </Link>
           <Link
             href="/register"
-            className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:bg-emerald-400 hover:shadow-emerald-500/30 hover:-translate-y-0.5"
+            className="apple-button-primary !px-4 !py-1.5 !text-xs"
           >
-            Get Started Free
+            Get Started
           </Link>
         </div>
       </div>
