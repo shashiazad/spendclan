@@ -118,7 +118,7 @@ export function MemberSearch({
           {selectedMembers.map((member) => (
             <div
               key={member.email}
-              className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700 rounded-full pl-1.5 pr-2.5 py-1 text-xs text-slate-200"
+              className="flex items-center gap-1.5 bg-[var(--sidebar-hover)] border border-[var(--border)] rounded-full pl-1.5 pr-2.5 py-1 text-xs text-[var(--foreground)]"
             >
               {member.profilePhoto ? (
                 <img
@@ -127,7 +127,7 @@ export function MemberSearch({
                   className="w-5 h-5 rounded-full object-cover"
                 />
               ) : (
-                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">
+                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--accent-dim)] text-[var(--accent)] font-bold text-[10px] border border-[var(--accent)]/10">
                   {member.name ? getInitials(member.name) : "?"}
                 </div>
               )}
@@ -135,14 +135,14 @@ export function MemberSearch({
                 {member.name || member.email}
               </div>
               {member.isInvite && (
-                <span className="text-[9px] px-1 bg-indigo-500/20 text-indigo-300 rounded border border-indigo-500/30">
+                <span className="text-[9px] px-1 bg-[var(--accent-dim)] text-[var(--accent)] rounded border border-[var(--accent)]/20">
                   Invite
                 </span>
               )}
               <button
                 type="button"
                 onClick={() => onRemoveMember(member.email)}
-                className="text-slate-400 hover:text-slate-200 transition-colors ml-0.5 focus:outline-none"
+                className="text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors ml-0.5 focus:outline-none"
               >
                 &times;
               </button>
@@ -193,30 +193,30 @@ export function MemberSearch({
 
       {/* Dropdown Results */}
       {isOpen && (query.trim().length >= 2 || showInviteOption) && (
-        <div className="absolute z-50 w-full mt-1.5 bg-slate-900 border border-slate-700/80 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1.5 bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-[var(--shadow-lg)] max-h-60 overflow-y-auto">
           {filteredResults.map((user) => (
             <button
               key={user.id}
               type="button"
               onClick={() => handleSelect(user)}
-              className="flex items-center gap-3 w-full px-4 py-2.5 hover:bg-slate-800 text-left transition-colors border-b border-slate-800/60 last:border-0"
+              className="flex items-center gap-3 w-full px-4 py-2.5 hover:bg-[var(--sidebar-hover)] text-left transition-colors border-b border-[var(--border)] last:border-0"
             >
               {user.profilePhoto ? (
                 <img
                   src={user.profilePhoto}
                   alt={user.name}
-                  className="w-8 h-8 rounded-full object-cover border border-slate-700"
+                  className="w-8 h-8 rounded-full object-cover border border-[var(--border)]"
                 />
               ) : (
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold text-xs border border-emerald-500/30">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--accent-dim)] text-[var(--accent)] font-semibold text-xs border border-[var(--accent)]/20">
                   {user.name ? getInitials(user.name) : "?"}
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-200 truncate">
+                <p className="text-sm font-medium text-[var(--foreground)] truncate">
                   {user.name}
                 </p>
-                <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                <p className="text-xs text-[var(--foreground-muted)] truncate">{user.email}</p>
               </div>
             </button>
           ))}
@@ -230,23 +230,23 @@ export function MemberSearch({
                   isInvite: true,
                 })
               }
-              className="flex items-center gap-3 w-full px-4 py-3 hover:bg-indigo-950/40 text-left transition-colors text-indigo-400 font-medium border-t border-slate-800"
+              className="flex items-center gap-3 w-full px-4 py-3 hover:bg-[var(--accent-dim)] text-left transition-colors text-[var(--accent)] font-medium border-t border-[var(--border)]"
             >
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 text-sm font-bold border border-indigo-500/30">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--accent-dim)] text-[var(--accent)] text-sm font-bold border border-[var(--accent)]/20">
                 +
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm">Invite email to SpendClan</p>
-                <p className="text-xs text-slate-400 truncate">{query}</p>
+                <p className="text-xs text-[var(--foreground-muted)] truncate">{query}</p>
               </div>
             </button>
           )}
 
           {filteredResults.length === 0 && !showInviteOption && (
-            <div className="px-4 py-3 text-sm text-slate-400">
+            <div className="px-4 py-3 text-sm text-[var(--foreground-muted)]">
               No matching registered users found.
               {query.length > 0 && !isEmail(query) && (
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-[var(--foreground-subtle)] mt-1">
                   Type a full valid email address to invite them.
                 </p>
               )}

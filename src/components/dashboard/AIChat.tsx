@@ -78,18 +78,18 @@ export function AIChat() {
   }
 
   return (
-    <div className="flex h-[600px] flex-col rounded-xl border border-slate-800 bg-slate-900/50">
+    <div className="flex h-[600px] flex-col rounded-xl border border-[var(--border)] bg-[var(--card)]">
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-500/10 animate-float">
-              <svg className="h-8 w-8 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--accent-dim)] border border-[var(--accent)]/15">
+              <svg className="h-8 w-8 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-slate-200">AI Financial Advisor</h3>
-            <p className="mt-1 max-w-sm text-sm text-slate-400">
+            <h3 className="text-sm font-semibold text-[var(--foreground)]">AI Financial Advisor</h3>
+            <p className="mt-1 max-w-sm text-xs text-[var(--foreground-muted)]">
               Ask me anything about your finances. I'll analyze your spending data and provide personalized advice.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -97,7 +97,7 @@ export function AIChat() {
                 <button
                   key={q}
                   onClick={() => sendMessage(q)}
-                  className="rounded-full border border-slate-700 bg-slate-800/50 px-3 py-1.5 text-xs text-slate-300 transition-colors hover:border-violet-500/50 hover:text-violet-300"
+                  className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--foreground-muted)] transition-colors hover:border-[var(--border-hover)] hover:text-[var(--foreground)]"
                 >
                   {q}
                 </button>
@@ -112,12 +112,12 @@ export function AIChat() {
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-slide-up`}
           >
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+              className={`max-w-[80%] rounded-xl px-4 py-3 ${
                 msg.role === "user"
-                  ? "bg-emerald-500/20 text-emerald-100 rounded-br-md"
+                  ? "bg-[var(--accent-dim)] text-[var(--accent)] border border-[var(--accent)]/15 rounded-br-md"
                   : msg.isError
-                    ? "bg-amber-500/10 text-amber-200 rounded-bl-md border border-amber-500/30"
-                    : "bg-slate-800/80 text-slate-200 rounded-bl-md border border-slate-700/50"
+                    ? "bg-[var(--expense-dim)] text-[var(--expense)] rounded-bl-md border border-[var(--expense)]/20"
+                    : "bg-[var(--surface)] text-[var(--foreground)] rounded-bl-md border border-[var(--border)]"
               }`}
             >
               {msg.role === "assistant" ? (
@@ -131,10 +131,10 @@ export function AIChat() {
 
         {loading && (
           <div className="flex justify-start animate-slide-up">
-            <div className="flex items-center gap-1.5 rounded-2xl bg-slate-800/80 px-4 py-3 border border-slate-700/50">
-              <span className="h-2 w-2 rounded-full bg-violet-400 typing-dot" />
-              <span className="h-2 w-2 rounded-full bg-violet-400 typing-dot" />
-              <span className="h-2 w-2 rounded-full bg-violet-400 typing-dot" />
+            <div className="flex items-center gap-1.5 rounded-xl bg-[var(--surface)] px-4 py-3 border border-[var(--border)]">
+              <span className="h-2 w-2 rounded-full bg-[var(--accent)] typing-dot" />
+              <span className="h-2 w-2 rounded-full bg-[var(--accent)] typing-dot" />
+              <span className="h-2 w-2 rounded-full bg-[var(--accent)] typing-dot" />
             </div>
           </div>
         )}
@@ -142,14 +142,14 @@ export function AIChat() {
       </div>
 
       {/* Input area */}
-      <div className="border-t border-slate-800 p-4">
+      <div className="border-t border-[var(--border)] p-4">
         {messages.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-1.5">
             {SUGGESTED_QUESTIONS.slice(0, 3).map((q) => (
               <button
                 key={q}
                 onClick={() => sendMessage(q)}
-                className="rounded-full border border-slate-700/50 px-2.5 py-1 text-[11px] text-slate-400 transition-colors hover:border-violet-500/50 hover:text-violet-300"
+                className="rounded-lg border border-[var(--border)] px-2.5 py-1 text-[11px] text-[var(--foreground-muted)] transition-colors hover:border-[var(--border-hover)] hover:text-[var(--foreground)]"
               >
                 {q}
               </button>
@@ -164,13 +164,13 @@ export function AIChat() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask about your finances..."
-            className="flex-1 rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 outline-none transition-colors focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20"
+            className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--foreground)] placeholder-[var(--foreground-subtle)] outline-none transition-colors focus:border-[var(--border-focus)] focus:ring-1 focus:ring-[var(--accent-ring)]"
             disabled={loading}
           />
           <Button
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || loading}
-            className="rounded-xl"
+            className="rounded-lg"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />

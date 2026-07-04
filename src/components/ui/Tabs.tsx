@@ -20,15 +20,15 @@ export function Tabs({ tabs, defaultTab, children, className = "" }: TabsProps) 
 
   return (
     <div className={className}>
-      <div className="relative mb-6 flex gap-1 rounded-xl bg-slate-900/50 p-1 border border-slate-800">
+      <div className="relative mb-5 flex gap-1 rounded-lg bg-[var(--surface)] p-1 border border-[var(--border)]">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActive(tab.id)}
-            className={`relative flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+            className={`relative flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors duration-150 ${
               active === tab.id
-                ? "bg-slate-800 text-slate-100 shadow-lg shadow-black/20"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] shadow-[var(--shadow-sm)]"
+                : "text-[var(--foreground-muted)] hover:text-[var(--foreground)] border border-transparent"
             }`}
           >
             {tab.icon}

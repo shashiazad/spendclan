@@ -21,9 +21,9 @@ type InsightsData = {
 };
 
 const typeConfig = {
-  warning: { icon: "⚠️", color: "border-amber-500/30 bg-amber-500/5" },
-  tip: { icon: "💡", color: "border-blue-500/30 bg-blue-500/5" },
-  positive: { icon: "✅", color: "border-emerald-500/30 bg-emerald-500/5" },
+  warning: { icon: "⚠️", color: "border-[var(--warning)]/20 bg-[var(--warning-dim)]" },
+  tip: { icon: "💡", color: "border-[var(--accent)]/20 bg-[var(--accent-dim)]" },
+  positive: { icon: "✅", color: "border-[var(--income)]/20 bg-[var(--income-dim)]" },
 };
 
 export function AIInsightsCard() {
@@ -62,7 +62,7 @@ export function AIInsightsCard() {
           <div className="skeleton h-20 w-full" />
           <div className="skeleton h-16 w-full" />
           <div className="skeleton h-16 w-full" />
-          <p className="text-center text-xs text-slate-400 animate-pulse">
+          <p className="text-center text-xs text-[var(--foreground-muted)] animate-pulse">
             Analyzing your spending patterns...
           </p>
         </div>
@@ -73,11 +73,10 @@ export function AIInsightsCard() {
   if (error) {
     return (
       <Card className="relative overflow-hidden">
-        <div className="absolute inset-0 ai-gradient" />
         <div className="relative p-6 text-center">
           <p className="text-2xl mb-2">📊</p>
-          <p className="text-sm text-slate-300 font-medium mb-1">AI is taking a breather</p>
-          <p className="text-xs text-slate-400 max-w-xs mx-auto">{error}</p>
+          <p className="text-sm text-[var(--foreground)] font-medium mb-1">AI is taking a breather</p>
+          <p className="text-xs text-[var(--foreground-muted)] max-w-xs mx-auto">{error}</p>
           <Button size="sm" variant="ghost" onClick={fetchInsights} className="mt-3">
             Try Again
           </Button>
@@ -90,29 +89,28 @@ export function AIInsightsCard() {
   if (!data) {
     return (
       <Card className="relative overflow-hidden" padding="none">
-        <div className="absolute inset-0 ai-gradient" />
         <div className="relative">
-          <div className="flex items-center justify-between border-b border-slate-800/50 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-[var(--border)] px-6 py-4">
             <div className="flex items-center gap-2">
-              <svg className="h-5 w-5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <svg className="h-5 w-5 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
               </svg>
-              <h3 className="text-sm font-semibold text-slate-200">AI Insights</h3>
+              <h3 className="text-sm font-semibold text-[var(--foreground)]">AI Insights</h3>
             </div>
-            <Link href="/advisor" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
+            <Link href="/advisor" className="text-xs text-[var(--accent)] hover:underline transition-colors">
               Open Advisor →
             </Link>
           </div>
           <div className="p-6 text-center">
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10">
-              <svg className="h-6 w-6 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent-dim)]">
+              <svg className="h-6 w-6 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
               </svg>
             </div>
-            <p className="text-sm font-medium text-slate-200 mb-1">
+            <p className="text-sm font-medium text-[var(--foreground)] mb-1">
               Ready to analyze your spending
             </p>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto mb-4">
+            <p className="text-xs text-[var(--foreground-muted)] max-w-sm mx-auto mb-4">
               Click below to get AI-powered insights on your income, expenses, and savings patterns.
             </p>
             <Button onClick={fetchInsights} size="sm">
@@ -130,27 +128,26 @@ export function AIInsightsCard() {
   // Results state — only rendered after user clicked "Generate AI Insights"
   return (
     <Card className="relative overflow-hidden" padding="none">
-      <div className="absolute inset-0 ai-gradient" />
       <div className="relative">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800/50 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-6 py-4">
           <div className="flex items-center gap-2">
-            <svg className="h-5 w-5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="h-5 w-5 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
             </svg>
-            <h3 className="text-sm font-semibold text-slate-200">AI Insights</h3>
+            <h3 className="text-sm font-semibold text-[var(--foreground)]">AI Insights</h3>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={fetchInsights}
-              className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
+              className="rounded-lg p-1.5 text-[var(--foreground-muted)] transition-colors hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
               aria-label="Refresh insights"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
               </svg>
             </button>
-            <Link href="/advisor" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
+            <Link href="/advisor" className="text-xs text-[var(--accent)] hover:underline transition-colors">
               View All →
             </Link>
           </div>
@@ -163,8 +160,8 @@ export function AIInsightsCard() {
               <SpendingScore score={data.spendingScore} size={80} strokeWidth={6} />
             )}
             <div className="flex-1">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Top Suggestion</p>
-              <p className="mt-1 text-sm text-slate-300">{data.topSuggestion}</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--foreground-muted)]">Top Suggestion</p>
+              <p className="mt-1 text-sm text-[var(--foreground)]">{data.topSuggestion}</p>
             </div>
           </div>
 
@@ -175,13 +172,13 @@ export function AIInsightsCard() {
               return (
                 <div
                   key={i}
-                  className={`rounded-lg border p-3 transition-all hover:brightness-110 ${config.color}`}
+                  className={`rounded-lg border p-3 transition-colors ${config.color}`}
                 >
                   <div className="flex items-start gap-2">
                     <span className="text-sm">{config.icon}</span>
                     <div>
-                      <p className="text-sm font-medium text-slate-200">{insight.title}</p>
-                      <p className="mt-0.5 text-xs text-slate-400 line-clamp-2">{insight.description}</p>
+                      <p className="text-sm font-medium text-[var(--foreground)]">{insight.title}</p>
+                      <p className="mt-0.5 text-xs text-[var(--foreground-muted)] line-clamp-2">{insight.description}</p>
                     </div>
                   </div>
                 </div>
