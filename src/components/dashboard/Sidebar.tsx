@@ -140,11 +140,7 @@ export function Sidebar() {
     <div className="flex h-full flex-col">
       {/* Brand */}
       <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-[var(--border)] px-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--accent)] text-white">
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75" />
-          </svg>
-        </div>
+        <img src="/logo.png" alt="SpendClan Logo" className="h-7 w-7 object-contain" />
         <div>
           <p className="text-sm font-semibold text-[var(--foreground)]">SpendClan</p>
           <p className="text-[10px] text-[var(--foreground-subtle)] font-normal">Finance Tracker</p>
@@ -233,11 +229,7 @@ export function Sidebar() {
       {/* Mobile header */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--sidebar-bg)] px-4 lg:hidden">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--accent)] text-white">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75" />
-            </svg>
-          </div>
+          <img src="/logo.png" alt="SpendClan Logo" className="h-7 w-7 object-contain" />
           <span className="text-sm font-semibold text-[var(--foreground)]">SpendClan</span>
         </div>
         <button

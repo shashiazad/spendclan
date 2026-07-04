@@ -22,10 +22,10 @@ export function LoadingSpinner({
       aria-label={label}
     >
       <div
-        className={`animate-spin rounded-full border-emerald-500 border-t-transparent ${sizeClasses[size]}`}
+        className={`animate-spin rounded-full border-[var(--accent)] border-t-transparent ${sizeClasses[size]}`}
       />
       {label && (
-        <p className="text-sm text-slate-400">{label}</p>
+        <p className="text-xs text-[var(--foreground-muted)]">{label}</p>
       )}
     </div>
   );

@@ -9,21 +9,21 @@ interface AuthCardProps {
 
 export function AuthCard({ children, title, subtitle }: AuthCardProps) {
   return (
-    <div className="w-full max-w-md">
-      <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/30">
-          <BrandIcon className="h-6 w-6 text-emerald-400" />
+    <div className="w-full max-w-md animate-slide-up">
+      <div className="mb-6 text-center">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl">
+          <BrandIcon className="h-8 w-8" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100">
+        <h1 className="text-xl font-semibold tracking-tight text-[var(--foreground)]">
           SpendClan
         </h1>
-        <h2 className="mt-3 text-lg font-semibold text-slate-100">{title}</h2>
+        <h2 className="mt-2 text-base font-semibold text-[var(--foreground)]">{title}</h2>
         {subtitle && (
-          <p className="mt-1.5 text-sm text-slate-400">{subtitle}</p>
+          <p className="mt-1 text-xs text-[var(--foreground-muted)]">{subtitle}</p>
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-8 shadow-2xl shadow-black/30 backdrop-blur-md">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-7 shadow-[var(--shadow-lg)]">
         {children}
       </div>
     </div>
