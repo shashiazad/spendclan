@@ -21,8 +21,8 @@ interface CardBodyProps {
 const paddingClasses = {
   none: "",
   sm: "p-4",
-  md: "p-6",
-  lg: "p-8",
+  md: "p-5",
+  lg: "p-6",
 };
 
 export function Card({
@@ -32,7 +32,7 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`rounded-2xl border border-[#E8E8ED] dark:border-[#2C2C2E] bg-white/80 dark:bg-[#1C1C1E]/85 backdrop-blur-md transition-all duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] ${paddingClasses[padding]} ${className}`}
+      className={`rounded-xl border bg-[var(--card)] border-[var(--border)] shadow-[var(--shadow-sm)] transition-colors duration-200 ${paddingClasses[padding]} ${className}`}
     >
       {children}
     </div>
@@ -46,13 +46,15 @@ export function CardHeader({
   className = "",
 }: CardHeaderProps) {
   return (
-    <div
-      className={`mb-4 flex items-start justify-between gap-4 ${className}`}
-    >
+    <div className={`mb-4 flex items-start justify-between gap-4 ${className}`}>
       <div>
-        <h3 className="text-lg font-semibold tracking-tight text-foreground">{title}</h3>
+        <h3 className="text-sm font-semibold tracking-tight text-[var(--foreground)]">
+          {title}
+        </h3>
         {description && (
-          <p className="mt-1 text-sm text-muted">{description}</p>
+          <p className="mt-0.5 text-xs text-[var(--foreground-muted)]">
+            {description}
+          </p>
         )}
       </div>
       {action}

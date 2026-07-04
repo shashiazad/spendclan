@@ -45,29 +45,35 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
         onClick={onClose}
         aria-hidden="true"
       />
+      {/* Dialog */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`relative w-full rounded-xl border border-slate-800 bg-slate-900 shadow-2xl shadow-black/40 ${sizeClasses[size]}`}
+        className={`relative w-full rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-xl)] animate-scale-in ${sizeClasses[size]}`}
       >
-        <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
-          <h2 id="modal-title" className="text-lg font-semibold text-slate-100">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
+          <h2
+            id="modal-title"
+            className="text-sm font-semibold text-[var(--foreground)]"
+          >
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
+            className="rounded-lg p-1.5 text-[var(--foreground-muted)] transition-colors hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
             aria-label="Close modal"
           >
             <svg
-              className="h-5 w-5"
+              className="h-4 w-4"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -81,9 +87,11 @@ export function Modal({
             </svg>
           </button>
         </div>
-        <div className="px-6 py-4">{children}</div>
+        {/* Body */}
+        <div className="px-5 py-4">{children}</div>
+        {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 border-t border-slate-800 px-6 py-4">
+          <div className="flex items-center justify-end gap-2 border-t border-[var(--border)] px-5 py-4">
             {footer}
           </div>
         )}
@@ -107,10 +115,10 @@ export function ModalFooter({
 }) {
   return (
     <>
-      <Button variant="ghost" onClick={onCancel} disabled={loading}>
+      <Button variant="ghost" size="sm" onClick={onCancel} disabled={loading}>
         {cancelLabel}
       </Button>
-      <Button onClick={onConfirm} loading={loading}>
+      <Button size="sm" onClick={onConfirm} loading={loading}>
         {confirmLabel}
       </Button>
     </>

@@ -26,7 +26,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-[10px] font-semibold uppercase tracking-widest text-muted"
+            className="block text-xs font-medium text-[var(--foreground-muted)]"
           >
             {label}
           </label>
@@ -34,25 +34,25 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           id={selectId}
-          className={`w-full min-h-[40px] rounded-xl border bg-[#F5F5F7] dark:bg-[#1C1C1E] px-4 py-2.5 text-sm text-foreground transition-all duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`w-full min-h-[36px] rounded-lg border bg-[var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] transition-colors duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             error
-              ? "border-danger focus:border-danger focus:ring-danger/25"
-              : "border-transparent focus:border-accent focus:ring-accent/20"
+              ? "border-[var(--expense)] focus:border-[var(--expense)] focus:ring-[var(--expense-dim)]"
+              : "border-[var(--border)] focus:border-[var(--border-focus)] focus:ring-[var(--accent-ring)]"
           } ${className}`}
           {...props}
         >
           {placeholder && (
-            <option value="" disabled className="bg-card text-foreground">
+            <option value="" disabled className="bg-[var(--card)] text-[var(--foreground-muted)]">
               {placeholder}
             </option>
           )}
           {options.map((option) => (
-            <option key={option.value} value={option.value} className="bg-card text-foreground">
+            <option key={option.value} value={option.value} className="bg-[var(--card)] text-[var(--foreground)]">
               {option.label}
             </option>
           ))}
         </select>
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-[var(--expense)]">{error}</p>}
       </div>
     );
   },

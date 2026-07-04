@@ -1,260 +1,271 @@
 @import "tailwindcss";
 
+/* ─────────────────────── DARK MODE (DEFAULT) ─────────────────────── */
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --foreground-light: #f2f2f7;
-  --foreground-muted: #e5e5ea;
-  --card: #1c1c1e;
-  --card-border: #2c2c2e;
-  --card-border-hover: #3a3a3c;
-  --muted: #8e8e93;
-  --muted-light: #636366;
-  --accent: #2997ff; /* Apple Dark Blue */
-  --accent-hover: #147ce5;
-  --accent-muted: rgba(41, 151, 255, 0.15);
-  --danger: #ff453a; /* Apple Dark Red */
-  --sidebar: rgba(28, 28, 30, 0.8); /* Apple Dark Translucent Sidebar */
-  --sidebar-hover: rgba(255, 255, 255, 0.05);
-  --ai-primary: #bf5af2; /* Apple Dark Purple */
-  --ai-secondary: #2997ff;
-  --ai-glow: rgba(191, 90, 242, 0.15);
+  /* Surfaces */
+  --background:   #0A0A0B;
+  --surface:      #111113;
+  --card:         #161618;
+  --card-hover:   #1C1C1F;
+  --overlay:      #0A0A0B;
 
-  /* Semantic financial colors - Apple Dark HIG Adaptive */
-  --income: #30d158;       /* Apple Dark Green */
-  --expense: #ff453a;      /* Apple Dark Red */
-  --savings: #2997ff;      /* Apple Dark Blue */
-  --ai-accent: #ff9f0a;    /* Apple Dark Orange */
+  /* Borders */
+  --border:       #272729;
+  --border-hover: #38383B;
+  --border-focus: #4F46E5;
 
-  /* Glassmorphism styling variables */
-  --sidebar: rgba(28, 28, 30, 0.5); /* Apple Dark Translucent Sidebar */
-  --sidebar-hover: rgba(255, 255, 255, 0.06);
-  --sidebar-active: rgba(255, 255, 255, 0.06);
-  --ai-primary: #bf5af2; /* Apple Dark Purple */
-  --ai-secondary: #2997ff;
-  --ai-glow: rgba(191, 90, 242, 0.15);
+  /* Text */
+  --foreground:        #F5F5F6;
+  --foreground-muted:  #A0A0A8;
+  --foreground-subtle: #6B6B72;
 
-  --glass-bg: rgba(28, 28, 30, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-card-bg: rgba(28, 28, 30, 0.7);
-  --glass-card-border: rgba(44, 44, 46, 0.7);
+  /* Accent — Indigo */
+  --accent:       #6366F1;
+  --accent-hover: #4F46E5;
+  --accent-dim:   rgba(99, 102, 241, 0.12);
+  --accent-ring:  rgba(99, 102, 241, 0.25);
+
+  /* Sidebar */
+  --sidebar-bg:     #0F0F11;
+  --sidebar-hover:  rgba(255, 255, 255, 0.04);
+  --sidebar-active: rgba(99, 102, 241, 0.10);
+
+  /* Financial Semantic */
+  --income:        #22C55E;
+  --income-dim:    rgba(34, 197, 94, 0.12);
+  --expense:       #EF4444;
+  --expense-dim:   rgba(239, 68, 68, 0.12);
+  --savings:       #6366F1;
+  --savings-dim:   rgba(99, 102, 241, 0.12);
+  --warning:       #F59E0B;
+  --warning-dim:   rgba(245, 158, 11, 0.12);
+
+  /* Shadows */
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.5);
+  --shadow-xl:  0 24px 64px rgba(0, 0, 0, 0.6);
+
+  /* Scrollbar */
+  --scrollbar-thumb: #2A2A2D;
+  --scrollbar-thumb-hover: #38383B;
 }
 
+/* ─────────────────────── LIGHT MODE ─────────────────────── */
 .light {
-  --background: #ffffff; /* Apple Light White Surface */
-  --foreground: #000000; /* Apple Light Black Text */
-  --foreground-light: #1c1c1e;
-  --foreground-muted: #3a3a3c;
-  --card: #ffffff;       /* Apple Light White Surface */
-  --card-border: #e8e8ed; /* Apple Light Border (Faint Gray #E8E8ED) */
-  --card-border-hover: #d1d1d6;
-  --muted: #8e8e93;      /* Apple Light Gray */
-  --muted-light: #aeaeb2;
-  --accent: #0071e3;      /* Apple Light Blue */
-  --accent-hover: #147ce5;
-  --accent-muted: rgba(0, 113, 227, 0.1);
-  --danger: #ff3b30; /* Apple Light Red */
-  --sidebar: rgba(245, 245, 247, 0.6); /* Apple Light Translucent Sidebar */
-  --sidebar-hover: rgba(0, 0, 0, 0.04);
-  --sidebar-active: rgba(0, 0, 0, 0.04);
-  --ai-primary: #af52de;  /* Apple Light Purple */
-  --ai-secondary: #0071e3;
-  --ai-glow: rgba(175, 82, 222, 0.08);
+  /* Surfaces */
+  --background:   #F7F7F8;
+  --surface:      #FFFFFF;
+  --card:         #FFFFFF;
+  --card-hover:   #F5F5F7;
+  --overlay:      #FFFFFF;
 
-  /* Adjusted semantic financial colors for light mode contrast - Apple Light HIG Adaptive */
-  --income: #34c759;       /* Apple Light Green */
-  --expense: #ff3b30;      /* Apple Light Red */
-  --savings: #0071e3;      /* Apple Light Blue */
-  --ai-accent: #ff9500;    /* Apple Light Orange */
+  /* Borders */
+  --border:       #E4E4E7;
+  --border-hover: #D1D1D6;
+  --border-focus: #4F46E5;
 
-  /* Glassmorphism styling variables for light mode */
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-border: rgba(0, 0, 0, 0.06);
-  --glass-card-bg: rgba(255, 255, 255, 0.75);
-  --glass-card-border: rgba(229, 229, 234, 0.8);
+  /* Text */
+  --foreground:        #0F0F11;
+  --foreground-muted:  #6B7280;
+  --foreground-subtle: #9CA3AF;
+
+  /* Accent — Indigo */
+  --accent:       #4F46E5;
+  --accent-hover: #4338CA;
+  --accent-dim:   rgba(79, 70, 229, 0.08);
+  --accent-ring:  rgba(79, 70, 229, 0.20);
+
+  /* Sidebar */
+  --sidebar-bg:     #FFFFFF;
+  --sidebar-hover:  rgba(0, 0, 0, 0.04);
+  --sidebar-active: rgba(79, 70, 229, 0.08);
+
+  /* Financial Semantic */
+  --income:        #16A34A;
+  --income-dim:    rgba(22, 163, 74, 0.08);
+  --expense:       #DC2626;
+  --expense-dim:   rgba(220, 38, 38, 0.08);
+  --savings:       #4F46E5;
+  --savings-dim:   rgba(79, 70, 229, 0.08);
+  --warning:       #D97706;
+  --warning-dim:   rgba(217, 119, 6, 0.08);
+
+  /* Shadows */
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.10);
+  --shadow-xl:  0 24px 64px rgba(0, 0, 0, 0.12);
+
+  /* Scrollbar */
+  --scrollbar-thumb: #D1D1D6;
+  --scrollbar-thumb-hover: #B0B0B8;
 }
 
-
+/* ─────────────────────── TAILWIND THEME BRIDGE ─────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-border: var(--card-border);
-  --color-muted: var(--muted);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-muted: var(--accent-muted);
-  --color-danger: var(--danger);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-hover: var(--sidebar-hover);
-  --color-ai-primary: var(--ai-primary);
-  --color-ai-secondary: var(--ai-secondary);
-  --color-ai-glow: var(--ai-glow);
+  --color-background:       var(--background);
+  --color-surface:          var(--surface);
+  --color-foreground:       var(--foreground);
+  --color-card:             var(--card);
+  --color-border:           var(--border);
+  --color-muted:            var(--foreground-muted);
+  --color-accent:           var(--accent);
+  --color-accent-hover:     var(--accent-hover);
+  --color-sidebar:          var(--sidebar-bg);
+  --color-income:           var(--income);
+  --color-expense:          var(--expense);
+  --color-savings:          var(--savings);
+  --color-warning:          var(--warning);
   --font-sans: var(--font-inter);
+}
 
-  /* Remap slate colors to make them theme-aware globally */
-  --color-slate-950: var(--background);
-  --color-slate-900: var(--card);
-  --color-slate-800: var(--card-border);
-  --color-slate-700: var(--card-border-hover);
-  --color-slate-500: var(--muted-light);
-  --color-slate-400: var(--muted);
-  --color-slate-300: var(--foreground-muted);
-  --color-slate-200: var(--foreground-light);
-  --color-slate-100: var(--foreground);
-
-  /* Semantic financial colors */
-  --color-income: var(--income);
-  --color-expense: var(--expense);
-  --color-savings: var(--savings);
-  --color-ai-accent: var(--ai-accent);
-
-  /* Override default emerald palette to use our royal indigo accent */
-  --color-emerald-500: var(--accent);
-  --color-emerald-600: var(--accent-hover);
-  --color-emerald-400: #818cf8; /* indigo-400 */
-  --color-emerald-300: #a5b4fc; /* indigo-300 */
-  --color-emerald-200: #c7d2fe; /* indigo-200 */
-  --color-emerald-100: #e0e7ff; /* indigo-100 */
+/* ─────────────────────── BASE STYLES ─────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.auth-gradient {
+/* ─────────────────────── SCROLLBAR ─────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* ─────────────────────── UTILITY CLASSES ─────────────────────── */
+
+/* Cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  border-color: var(--border-hover);
+}
+
+/* Page gradient for landing only */
+.page-gradient {
   background:
-    radial-gradient(ellipse 80% 60% at 50% -10%, var(--accent-muted), transparent),
-    radial-gradient(ellipse 60% 50% at 100% 100%, var(--ai-glow), transparent),
-    linear-gradient(to bottom, var(--background), var(--sidebar) 50%, var(--background));
+    radial-gradient(ellipse 70% 40% at 50% 0%, var(--accent-dim), transparent),
+    var(--background);
 }
 
-.dashboard-gradient {
-  background: linear-gradient(135deg, var(--background) 0%, var(--sidebar) 50%, var(--background) 100%);
-}
-
-/* AI theme gradient */
-.ai-gradient {
-  background: linear-gradient(135deg, var(--ai-glow), var(--accent-muted), transparent);
-}
-
-/* Glassmorphism */
-.glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-}
-
-.glass-card {
-  background: var(--glass-card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-card-border);
-}
-
-/* Animations */
+/* ─────────────────────── ANIMATIONS ─────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.3); }
-  50% { box-shadow: 0 0 16px 4px rgba(99, 102, 241, 0.15); }
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
+  0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
-@keyframes aiGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.3); }
-  50% { box-shadow: 0 0 20px 6px rgba(139, 92, 246, 0.1); }
+  to   { transform: rotate(360deg); }
 }
 
 @keyframes typing {
-  0% { opacity: 0.3; }
-  50% { opacity: 1; }
+  0%   { opacity: 0.3; }
+  50%  { opacity: 1; }
   100% { opacity: 0.3; }
 }
 
-.animate-fade-in { animation: fadeIn 0.3s ease-out; }
-.animate-slide-up { animation: slideUp 0.4s ease-out; }
-.animate-slide-down { animation: slideDown 0.3s ease-out; }
-.animate-slide-in-right { animation: slideInRight 0.3s ease-out; }
-.animate-scale-in { animation: scaleIn 0.2s ease-out; }
-.animate-pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
-.animate-float { animation: float 3s ease-in-out infinite; }
-.animate-ai-glow { animation: aiGlow 3s ease-in-out infinite; }
+@keyframes score-fill {
+  from { stroke-dashoffset: 283; }
+}
 
-/* Staggered children */
+.animate-fade-in     { animation: fadeIn 0.25s ease-out; }
+.animate-slide-up    { animation: slideUp 0.3s ease-out; }
+.animate-slide-down  { animation: slideDown 0.25s ease-out; }
+.animate-slide-in-right { animation: slideInRight 0.3s ease-out; }
+.animate-scale-in    { animation: scaleIn 0.2s ease-out; }
+
+/* Staggered entrance */
 .stagger-children > * {
-  animation: slideUp 0.4s ease-out both;
+  animation: slideUp 0.3s ease-out both;
 }
 .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
-.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
-.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
-.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
-.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
-.stagger-children > *:nth-child(7) { animation-delay: 360ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
 
-/* Shimmer loading skeleton */
+/* Skeleton loading */
 .skeleton {
-  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background: linear-gradient(
+    90deg,
+    var(--card) 25%,
+    var(--card-hover) 50%,
+    var(--card) 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
-/* Interactive hover effects */
+/* Scroll reveal */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hover lift — subtle */
 .hover-lift {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4);
-}
-
-.hover-glow {
-  transition: box-shadow 0.3s ease;
-}
-.hover-glow:hover {
-  box-shadow: 0 0 20px -4px rgba(16, 185, 129, 0.15);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 /* Typing indicator for AI chat */
@@ -267,154 +278,102 @@ body {
 /* Toast slide */
 @keyframes toast-in {
   from { opacity: 0; transform: translateX(100%); }
-  to { opacity: 1; transform: translateX(0); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes toast-out {
   from { opacity: 1; transform: translateX(0); }
-  to { opacity: 0; transform: translateX(100%); }
+  to   { opacity: 0; transform: translateX(100%); }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ─────────────────────── AUTH PAGE ─────────────────────── */
+.auth-gradient {
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, var(--accent-dim), transparent),
+    var(--background);
 }
 
-::-webkit-scrollbar-track {
+/* ─────────────────────── DASHBOARD ─────────────────────── */
+.dashboard-bg {
+  background: var(--background);
+}
+
+/* ─────────────────────── BUTTON STYLES ─────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 18px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+  white-space: nowrap;
+}
+.btn-primary:hover  { background: var(--accent-hover); }
+.btn-primary:active { opacity: 0.9; }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 18px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
   background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
 }
+.btn-secondary:hover { background: var(--sidebar-hover); border-color: var(--border-hover); }
 
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
+/* Keep legacy class names working for older landing page styles */
+.apple-button-primary  { @apply btn-primary; }
+.apple-button-secondary { @apply btn-secondary; }
+.apple-link {
+  color: var(--accent);
+  font-size: 0.875rem;
+  transition: opacity 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
+.apple-link:hover { opacity: 0.75; }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
-/* Score ring animation */
-@keyframes score-fill {
-  from { stroke-dashoffset: 283; }
-}
-
-/* Markdown in AI responses */
+/* ─────────────────────── MARKDOWN (AI chat) ─────────────────────── */
 .ai-markdown h1,
 .ai-markdown h2,
 .ai-markdown h3 {
-  color: #e2e8f0;
+  color: var(--foreground);
   font-weight: 600;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
 }
-.ai-markdown h1 { font-size: 1.25rem; }
-.ai-markdown h2 { font-size: 1.125rem; }
-.ai-markdown h3 { font-size: 1rem; }
-.ai-markdown p { margin-bottom: 0.75rem; line-height: 1.6; }
+.ai-markdown h1 { font-size: 1.125rem; }
+.ai-markdown h2 { font-size: 1rem; }
+.ai-markdown h3 { font-size: 0.9375rem; }
+.ai-markdown p { margin-bottom: 0.75rem; line-height: 1.65; }
 .ai-markdown ul, .ai-markdown ol { padding-left: 1.25rem; margin-bottom: 0.75rem; }
 .ai-markdown li { margin-bottom: 0.25rem; }
-.ai-markdown strong { color: #f1f5f9; font-weight: 600; }
+.ai-markdown strong { color: var(--foreground); font-weight: 600; }
 .ai-markdown code {
-  background: #1e293b;
+  background: var(--surface);
+  border: 1px solid var(--border);
   padding: 0.125rem 0.375rem;
   border-radius: 4px;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 .ai-markdown blockquote {
-  border-left: 3px solid #8b5cf6;
+  border-left: 2px solid var(--accent);
   padding-left: 1rem;
   margin: 0.75rem 0;
-  color: #94a3b8;
+  color: var(--foreground-muted);
 }
-
-/* ──────────────────────────── APPLE DESIGN EFFECTS ──────────────────────────── */
-
-:root {
-  --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Scroll reveal states */
-.reveal-on-scroll {
-  opacity: 0;
-  transform: translateY(30px) scale(0.98);
-  transition: opacity 1000ms var(--ease-apple), transform 1000ms var(--ease-apple);
-  will-change: transform, opacity;
-}
-
-.reveal-on-scroll.revealed {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-/* Apple text link hover effect */
-.apple-link {
-  color: #0071e3;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 400;
-  font-size: 0.95rem;
-  transition: opacity 0.2s var(--ease-apple);
-}
-
-.apple-link:hover {
-  opacity: 0.8;
-  text-decoration: underline;
-}
-
-.dark .apple-link {
-  color: #2997ff;
-}
-
-/* Apple buttons */
-.apple-button-primary {
-  background-color: #0071e3;
-  color: #ffffff;
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  border-radius: 9999px;
-  transition: background-color 0.2s var(--ease-apple), transform 0.2s var(--ease-apple);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.apple-button-primary:hover {
-  background-color: #147ce5;
-}
-
-.apple-button-primary:active {
-  transform: scale(0.98);
-}
-
-.apple-button-secondary {
-  border: 1px solid #0071e3;
-  color: #0071e3;
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  border-radius: 9999px;
-  transition: background-color 0.2s var(--ease-apple), color 0.2s var(--ease-apple), transform 0.2s var(--ease-apple);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.apple-button-secondary:hover {
-  background-color: rgba(0, 113, 227, 0.05);
-}
-
-.dark .apple-button-secondary {
-  border-color: #2997ff;
-  color: #2997ff;
-}
-
-.dark .apple-button-secondary:hover {
-  background-color: rgba(41, 151, 255, 0.05);
-}
-
-.apple-button-secondary:active {
-  transform: scale(0.98);
-}
-
