@@ -44,26 +44,171 @@ export function ExpenseReport() {
   function handlePrint() {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
+
+    const selectedMonthLabel = months.find((m) => m.value === month)?.label || "";
+    const printedDate = new Date().toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
     printWindow.document.write(`
       <html>
         <head>
-          <title>SpendClan Expense Report</title>
+          <title>SpendClan Expense Report — ${selectedMonthLabel} ${year}</title>
           <style>
-            body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1e293b; line-height: 1.6; }
-            h1, h2, h3 { color: #0f172a; }
-            h1 { font-size: 1.5rem; border-bottom: 2px solid #10b981; padding-bottom: 8px; }
-            h2 { font-size: 1.25rem; margin-top: 2rem; }
-            li { margin-bottom: 4px; }
-            blockquote { border-left: 3px solid #8b5cf6; padding-left: 1rem; color: #64748b; }
+            body {
+              font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+              color: #1f2937;
+              line-height: 1.6;
+              max-width: 800px;
+              margin: 40px auto;
+              padding: 0 20px;
+            }
+            .letterhead-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              border-bottom: 2px solid #4f46e5;
+              padding-bottom: 16px;
+              margin-bottom: 24px;
+            }
+            .brand-section {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            }
+            .brand-logo {
+              height: 36px;
+              width: 36px;
+              object-fit: contain;
+            }
+            .brand-name {
+              font-size: 20px;
+              font-weight: 700;
+              letter-spacing: -0.02em;
+              color: #111827;
+              margin: 0;
+            }
+            .brand-tagline {
+              font-size: 9px;
+              color: #6b7280;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              margin: 2px 0 0 0;
+            }
+            .meta-section {
+              text-align: right;
+              font-size: 11px;
+              color: #4b5563;
+            }
+            .meta-title {
+              font-weight: 600;
+              color: #111827;
+              margin: 0 0 4px 0;
+            }
+            .meta-item {
+              margin: 1px 0;
+            }
+            .report-content {
+              font-size: 13.5px;
+            }
+            .report-content h1 {
+              font-size: 18px;
+              font-weight: 700;
+              color: #111827;
+              margin-top: 0;
+              margin-bottom: 12px;
+              border-bottom: 1px solid #e5e7eb;
+              padding-bottom: 6px;
+            }
+            .report-content h2 {
+              font-size: 14.5px;
+              font-weight: 600;
+              color: #1f2937;
+              margin-top: 20px;
+              margin-bottom: 8px;
+            }
+            .report-content h3 {
+              font-size: 13px;
+              font-weight: 600;
+              color: #374151;
+              margin-top: 16px;
+              margin-bottom: 6px;
+            }
+            .report-content p {
+              margin-bottom: 10px;
+            }
+            .report-content ul, .report-content ol {
+              margin-top: 4px;
+              margin-bottom: 10px;
+              padding-left: 18px;
+            }
+            .report-content li {
+              margin-bottom: 3px;
+            }
+            .report-content blockquote {
+              border-left: 3px solid #4f46e5;
+              background: #f9fafb;
+              padding: 10px 14px;
+              margin: 14px 0;
+              color: #4b5563;
+              font-style: italic;
+              border-radius: 0 6px 6px 0;
+            }
+            .letterhead-footer {
+              margin-top: 48px;
+              border-top: 1px solid #e5e7eb;
+              padding-top: 12px;
+              text-align: center;
+              font-size: 9px;
+              color: #9ca3af;
+            }
+            @media print {
+              body {
+                margin: 20px;
+                padding: 0;
+              }
+              .report-content blockquote {
+                background: #f3f4f6 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+            }
           </style>
         </head>
         <body>
-          <div>${simpleMarkdown(report || "")}</div>
+          <div class="letterhead-header">
+            <div class="brand-section">
+              <img src="/logo.png" alt="SpendClan" class="brand-logo" />
+              <div>
+                <h1 class="brand-name">SpendClan</h1>
+                <p class="brand-tagline">Personal Finance Advisor</p>
+              </div>
+            </div>
+            <div class="meta-section">
+              <p class="meta-title">EXPENSE REPORT STATEMENT</p>
+              <p class="meta-item"><strong>Period:</strong> ${selectedMonthLabel} ${year}</p>
+              <p class="meta-item"><strong>Generated:</strong> ${printedDate}</p>
+            </div>
+          </div>
+
+          <div class="report-content">
+            ${simpleMarkdown(report || "")}
+          </div>
+
+          <div class="letterhead-footer">
+            <p>SpendClan Advisor Statement • Generated via SpendClan AI System</p>
+            <p>This statement is confidential and for personal reference only.</p>
+          </div>
         </body>
       </html>
     `);
     printWindow.document.close();
-    printWindow.print();
+    // Delay slightly to allow the logo image to render before printing window triggers
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
   }
 
   return (
