@@ -336,8 +336,42 @@ body {
 .btn-secondary:hover { background: var(--sidebar-hover); border-color: var(--border-hover); }
 
 /* Keep legacy class names working for older landing page styles */
-.apple-button-primary  { @apply btn-primary; }
-.apple-button-secondary { @apply btn-secondary; }
+.apple-button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 18px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+  white-space: nowrap;
+}
+.apple-button-primary:hover  { background: var(--accent-hover); }
+.apple-button-primary:active { opacity: 0.9; }
+
+.apple-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 18px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+}
+.apple-button-secondary:hover { background: var(--sidebar-hover); border-color: var(--border-hover); }
 .apple-link {
   color: var(--accent);
   font-size: 0.875rem;
