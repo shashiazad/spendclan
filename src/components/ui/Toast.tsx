@@ -23,15 +23,15 @@ export function useToast() {
 }
 
 const variantStyles: Record<ToastVariant, string> = {
-  success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-  error: "border-red-500/30 bg-red-500/10 text-red-300",
-  info: "border-blue-500/30 bg-blue-500/10 text-blue-300",
+  success: "border-[var(--income)]/25 bg-[var(--income-dim)] text-[var(--income)]",
+  error:   "border-[var(--expense)]/25 bg-[var(--expense-dim)] text-[var(--expense)]",
+  info:    "border-[var(--accent)]/25 bg-[var(--accent-dim)] text-[var(--accent)]",
 };
 
 const variantIcons: Record<ToastVariant, string> = {
   success: "✓",
-  error: "✕",
-  info: "ℹ",
+  error:   "✕",
+  info:    "ℹ",
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -52,13 +52,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-center gap-3 rounded-lg border px-4 py-3 shadow-xl shadow-black/30 backdrop-blur-md ${variantStyles[toast.variant]}`}
+            className={`pointer-events-auto flex items-center gap-3 rounded-lg border px-4 py-3 bg-[var(--card)] shadow-[var(--shadow-lg)] ${variantStyles[toast.variant]}`}
             style={{ animation: "toast-in 0.3s ease-out" }}
           >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/20 text-sm font-bold">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-current/10 text-xs font-bold shrink-0">
               {variantIcons[toast.variant]}
             </span>
-            <span className="text-sm font-medium">{toast.message}</span>
+            <span className="text-xs font-medium text-[var(--foreground)]">{toast.message}</span>
           </div>
         ))}
       </div>

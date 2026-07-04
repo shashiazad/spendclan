@@ -50,40 +50,103 @@ type DashboardData = {
 };
 
 const CHART_COLORS = [
-  "#2997ff", "#30d158", "#ff9f0a", "#ff453a", "#bf5af2",
-  "#0a84ff", "#64d2ff", "#bf5af2", "#ffd60a", "#ff375f", "#30d158",
+  "#6366F1", "#22C55E", "#F59E0B", "#EF4444", "#8B5CF6",
+  "#06B6D4", "#EC4899", "#14B8A6", "#F97316", "#84CC16",
 ];
 
-const barColors = {
-  daily: { bg: "bg-accent", text: "text-accent", label: "Daily Expenses" },
-  monthly: { bg: "bg-income", text: "text-income", label: "Monthly Fixed" },
-  large: { bg: "bg-muted-light", text: "text-foreground", label: "Large Purchases" },
+const typeConfig = {
+  daily:   { label: "Daily Expenses",   color: "var(--accent)" },
+  monthly: { label: "Monthly Fixed",    color: "var(--income)" },
+  large:   { label: "Large Purchases",  color: "var(--warning)" },
 };
 
-const getBadgeStyles = (type: string) => {
+const getBadgeStyle = (type: string) => {
   switch (type) {
-    case "DAILY":
-      return "bg-accent/10 text-accent border border-accent/20";
-    case "MONTHLY":
-      return "bg-income/10 text-income border border-income/20";
+    case "DAILY":   return "bg-[var(--accent-dim)] text-[var(--accent)] border border-[var(--accent)]/20";
+    case "MONTHLY": return "bg-[var(--income-dim)] text-[var(--income)] border border-[var(--income)]/20";
     case "LARGE":
-    default:
-      return "bg-white/5 text-muted border border-white/10 dark:border-white/5";
+    default:        return "bg-[var(--warning-dim)] text-[var(--warning)] border border-[var(--warning)]/20";
   }
 };
 
 const getBadgeLabel = (type: string) => {
   switch (type) {
-    case "DAILY":
-      return "Daily";
-    case "MONTHLY":
-      return "Monthly Fixed";
-    case "LARGE":
-      return "Large Purchase";
-    default:
-      return type;
+    case "DAILY":   return "Daily";
+    case "MONTHLY": return "Monthly";
+    case "LARGE":   return "Large";
+    default:        return type;
   }
 };
+
+// Summary card config
+const summaryConfig = [
+  {
+    key: "totalIncome" as const,
+    label: "Total Income",
+    color: "var(--income)",
+    dotColor: "bg-[var(--income)]",
+    icon: (
+      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+      </svg>
+    ),
+  },
+  {
+    key: "totalExpenses" as const,
+    label: "Total Expenses",
+    color: "var(--expense)",
+    dotColor: "bg-[var(--expense)]",
+    icon: (
+      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 4.5l-15 15m0 0h11.25m-11.25 0V8.25" />
+      </svg>
+    ),
+  },
+  {
+    key: "remaining" as const,
+    label: "Remaining",
+    color: "var(--foreground)",
+    dotColor: "bg-[var(--foreground-subtle)]",
+    icon: (
+      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+  {
+    key: "netWorth" as const,
+    label: "Net Worth",
+    color: "var(--accent)",
+    dotColor: "bg-[var(--accent)]",
+    icon: (
+      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
+      </svg>
+    ),
+  },
+  {
+    key: "othersOweYou" as const,
+    label: "Others Owe",
+    color: "var(--income)",
+    dotColor: "bg-[var(--income)]",
+    icon: (
+      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+      </svg>
+    ),
+  },
+  {
+    key: "youOwe" as const,
+    label: "You Owe",
+    color: "var(--warning)",
+    dotColor: "bg-[var(--warning)]",
+    icon: (
+      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+      </svg>
+    ),
+  },
+];
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -91,24 +154,22 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const currency = session?.user?.currency ?? "INR";
 
-  // Dynamic Theme state for SVG Charts alignment
   const [isLight, setIsLight] = useState(false);
   useEffect(() => {
     const checkTheme = () => {
       setIsLight(document.documentElement.classList.contains("light"));
     };
     checkTheme();
-
     const observer = new MutationObserver(checkTheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     return () => observer.disconnect();
   }, []);
 
-  const gridStroke = isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.04)";
-  const textFill = isLight ? "#8e8e93" : "#8e8e93";
-  const tooltipBg = isLight ? "rgba(255, 255, 255, 0.8)" : "rgba(28, 28, 30, 0.8)";
-  const tooltipBorder = isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.08)";
-  const tooltipLabel = isLight ? "#000000" : "#ffffff";
+  const gridStroke   = isLight ? "rgba(0,0,0,0.05)"     : "rgba(255,255,255,0.05)";
+  const textFill     = isLight ? "#9CA3AF"               : "#6B6B72";
+  const tooltipBg    = isLight ? "#FFFFFF"               : "#1A1A1D";
+  const tooltipBdr   = isLight ? "rgba(0,0,0,0.08)"     : "rgba(255,255,255,0.08)";
+  const tooltipColor = isLight ? "#0F0F11"               : "#F5F5F6";
 
   useEffect(() => {
     fetch("/api/personal/dashboard")
@@ -126,74 +187,80 @@ export default function DashboardPage() {
   }
 
   if (!data) {
-    return <p className="text-muted">Failed to load dashboard.</p>;
+    return <p className="text-[var(--foreground-muted)] text-sm">Failed to load dashboard.</p>;
   }
 
-  const summaryCards = [
-    { label: "Total Income", value: data.summary.totalIncome, color: "text-income", icon: "↑" },
-    { label: "Total Expenses", value: data.summary.totalExpenses, color: "text-expense", icon: "↓" },
-    { label: "Remaining", value: data.summary.remaining, color: data.summary.remaining >= 0 ? "text-income" : "text-expense", icon: "◎" },
-    { label: "Net Worth", value: data.summary.netWorth, color: "text-accent", icon: "★" },
-    { label: "Others Owe", value: data.summary.othersOweYou, color: "text-accent", icon: "←" },
-    { label: "You Owe", value: data.summary.youOwe, color: "text-ai-accent", icon: "→" },
-  ];
-
   const totalTypeSpend = data.typeBreakdown.daily + data.typeBreakdown.monthly + data.typeBreakdown.large;
-  const typeCards = [
-    { key: "daily" as const, value: data.typeBreakdown.daily },
-    { key: "monthly" as const, value: data.typeBreakdown.monthly },
-    { key: "large" as const, value: data.typeBreakdown.large },
-  ];
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">Dashboard</h1>
-        <p className="mt-1 text-[10px] sm:text-[11px] font-semibold text-muted tracking-widest uppercase">Your Financial Overview</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-[var(--foreground)]">Dashboard</h1>
+          <p className="mt-0.5 text-xs text-[var(--foreground-muted)]">
+            {new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          </p>
+        </div>
+        <div className="hidden sm:flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--income)]" />
+          <span className="text-xs text-[var(--foreground-muted)]">Live</span>
+        </div>
       </div>
 
-      {/* Summary Bento Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 stagger-children">
-        {summaryCards.map((card) => (
-          <Card key={card.label} padding="md" className="hover-lift hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
-            <div className="flex items-center gap-2">
-              <span className={`text-base font-semibold ${card.color}`}>{card.icon}</span>
-              <p className="text-[9px] font-semibold uppercase tracking-wider text-muted">
-                {card.label}
-              </p>
-            </div>
-            <AnimatedCounter
-              value={card.value}
-              currency={currency}
-              className="mt-3 block text-xl sm:text-2xl font-semibold tracking-tight text-foreground leading-none"
-            />
-          </Card>
-        ))}
-      </div>
-
-      {/* Velocity / Type Breakdown Progress Bars (iOS System battery/storage look) */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        {typeCards.map((tc) => {
-          const pct = totalTypeSpend > 0 ? (tc.value / totalTypeSpend) * 100 : 0;
+      {/* Summary Cards */}
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 stagger-children">
+        {summaryConfig.map((cfg) => {
+          const value = data.summary[cfg.key];
+          const isRemaining = cfg.key === "remaining";
+          const dynamicColor = isRemaining
+            ? value >= 0 ? "var(--income)" : "var(--expense)"
+            : cfg.color;
           return (
-            <Card key={tc.key} padding="md" className="hover-lift hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
-              <div className="flex justify-between items-baseline mb-2">
-                <span className="text-[9px] font-semibold text-muted uppercase tracking-widest">
-                  {barColors[tc.key].label}
+            <Card key={cfg.key} padding="sm" className="hover-lift">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
+                  {cfg.label}
+                </p>
+                <span style={{ color: dynamicColor }}>
+                  {cfg.icon}
                 </span>
-                <span className="text-sm font-semibold tracking-tight text-foreground tabular-nums">
+              </div>
+              <span className="block text-lg font-semibold tabular-nums tracking-tight mt-1" style={{ color: dynamicColor }}>
+                <AnimatedCounter
+                  value={value}
+                  currency={currency}
+                  className=""
+                />
+              </span>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Type Breakdown */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        {(["daily", "monthly", "large"] as const).map((key) => {
+          const value = data.typeBreakdown[key];
+          const pct = totalTypeSpend > 0 ? (value / totalTypeSpend) * 100 : 0;
+          const { label, color } = typeConfig[key];
+          return (
+            <Card key={key} padding="sm">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--foreground-muted)]">
+                  {label}
+                </p>
+                <span className="text-xs font-semibold text-[var(--foreground-muted)] tabular-nums">
                   {pct.toFixed(0)}%
                 </span>
               </div>
-              <p className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground mb-4 leading-none">
-                {formatCurrency(tc.value, currency)}
+              <p className="text-base font-semibold text-[var(--foreground)] tabular-nums mb-3">
+                {formatCurrency(value, currency)}
               </p>
-              {/* iOS-Style system storage/battery bar */}
-              <div className="w-full bg-black/5 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
+              <div className="h-1 w-full rounded-full bg-[var(--border)]">
                 <div
-                  className={`h-full rounded-full transition-all duration-700 ease-[var(--ease-apple)] ${barColors[tc.key].bg}`}
-                  style={{ width: `${pct}%` }}
+                  className="h-full rounded-full transition-all duration-700 ease-out"
+                  style={{ width: `${pct}%`, background: color }}
                 />
               </div>
             </Card>
@@ -201,157 +268,195 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Quick Stats Bento Cards */}
+      {/* Quick Stats */}
       {data.quickStats && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Card padding="md" className="hover-lift hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
-            <p className="text-[9px] font-semibold text-muted uppercase tracking-widest">Avg Daily Spend</p>
-            <p className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Card padding="sm">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--foreground-muted)] mb-1">
+              Avg Daily Spend
+            </p>
+            <p className="text-base font-semibold text-[var(--foreground)] tabular-nums">
               {formatCurrency(data.quickStats.avgDailySpend, currency)}
             </p>
           </Card>
-          <Card padding="md" className="hover-lift hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
-            <p className="text-[9px] font-semibold text-muted uppercase tracking-widest">Top Category</p>
-            <p className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight text-foreground truncate">
+          <Card padding="sm">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--foreground-muted)] mb-1">
+              Top Category
+            </p>
+            <p className="text-base font-semibold text-[var(--foreground)] truncate">
               {data.quickStats.topCategory ?? "—"}
             </p>
           </Card>
-          <Card padding="md" className="hover-lift hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
-            <p className="text-[9px] font-semibold text-muted uppercase tracking-widest">Biggest Expense</p>
-            <p className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight text-expense">
+          <Card padding="sm">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--foreground-muted)] mb-1">
+              Biggest Expense
+            </p>
+            <p className="text-base font-semibold text-[var(--expense)] tabular-nums">
               {data.quickStats.biggestExpense
-                ? `${formatCurrency(data.quickStats.biggestExpense.amount, currency)}`
+                ? formatCurrency(data.quickStats.biggestExpense.amount, currency)
                 : "—"}
             </p>
             {data.quickStats.biggestExpense && (
-              <p className="text-[10px] text-muted mt-1 tracking-tight">{data.quickStats.biggestExpense.category}</p>
+              <p className="text-[10px] text-[var(--foreground-muted)] mt-0.5">
+                {data.quickStats.biggestExpense.category}
+              </p>
             )}
           </Card>
         </div>
       )}
 
-      {/* Charts Bento Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Spending Trends with high-fidelity gradient & dotted grid lines */}
-        <Card className="hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
-          <CardHeader title="Spending Trends" description="Last 6 months breakdown" />
-          <CardBody className="pt-2">
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={data.trends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+      {/* Charts */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Trends */}
+        <Card>
+          <CardHeader
+            title="Spending Trends"
+            description="Last 6 months"
+          />
+          <CardBody>
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={data.trends} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                 <defs>
-                  {/* Subtle translucent gradient fills */}
-                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#30d158" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="#30d158" stopOpacity={0.005}/>
+                  <linearGradient id="gIncome" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#22C55E" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#22C55E" stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ff453a" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="#ff453a" stopOpacity={0.005}/>
+                  <linearGradient id="gExpenses" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#EF4444" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="colorSavings" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2997ff" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="#2997ff" stopOpacity={0.005}/>
+                  <linearGradient id="gSavings" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#6366F1" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#6366F1" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                {/* Hair-thin dotted grid lines */}
-                <CartesianGrid strokeDasharray="1 5" stroke={gridStroke} vertical={false} />
+                <CartesianGrid strokeDasharray="1 6" stroke={gridStroke} vertical={false} />
                 <XAxis dataKey="month" tick={{ fill: textFill, fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: textFill, fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{
                     background: tooltipBg,
-                    border: `1px solid ${tooltipBorder}`,
-                    borderRadius: "16px",
-                    backdropFilter: "blur(20px)",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
+                    border: `1px solid ${tooltipBdr}`,
+                    borderRadius: "10px",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                    padding: "10px 14px",
                   }}
-                  labelStyle={{ color: tooltipLabel, fontSize: "11px", fontWeight: "600" }}
-                  itemStyle={{ fontSize: "11px" }}
+                  labelStyle={{ color: tooltipColor, fontSize: "11px", fontWeight: "600", marginBottom: "4px" }}
+                  itemStyle={{ fontSize: "11px", color: tooltipColor }}
                 />
-                <Area type="monotone" dataKey="income" stroke="#30d158" strokeWidth={1.8} fill="url(#colorIncome)" name="Income" />
-                <Area type="monotone" dataKey="expenses" stroke="#ff453a" strokeWidth={1.8} fill="url(#colorExpenses)" name="Expenses" />
-                <Area type="monotone" dataKey="savings" stroke="#2997ff" strokeWidth={1.8} fill="url(#colorSavings)" name="Savings" />
+                <Area type="monotone" dataKey="income"   stroke="#22C55E" strokeWidth={1.5} fill="url(#gIncome)"   name="Income" />
+                <Area type="monotone" dataKey="expenses" stroke="#EF4444" strokeWidth={1.5} fill="url(#gExpenses)" name="Expenses" />
+                <Area type="monotone" dataKey="savings"  stroke="#6366F1" strokeWidth={1.5} fill="url(#gSavings)"  name="Savings" />
               </AreaChart>
             </ResponsiveContainer>
+            {/* Legend */}
+            <div className="mt-3 flex items-center gap-5 px-1">
+              {[
+                { color: "#22C55E", label: "Income" },
+                { color: "#EF4444", label: "Expenses" },
+                { color: "#6366F1", label: "Savings" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full" style={{ background: item.color }} />
+                  <span className="text-[10px] text-[var(--foreground-muted)]">{item.label}</span>
+                </div>
+              ))}
+            </div>
           </CardBody>
         </Card>
 
-        {/* Category Breakdown */}
-        <Card className="hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
-          <CardHeader title="Category Breakdown" description="Current month expense distribution" />
-          <CardBody className="pt-2">
+        {/* Category Pie */}
+        <Card>
+          <CardHeader
+            title="Category Breakdown"
+            description="This month's distribution"
+          />
+          <CardBody>
             {data.categoryBreakdown.length === 0 ? (
-              <p className="py-24 text-center text-muted text-xs">No expenses logged this month</p>
+              <div className="flex h-[260px] items-center justify-center">
+                <p className="text-sm text-[var(--foreground-subtle)]">No expenses this month</p>
+              </div>
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
-                  <Pie
-                    data={data.categoryBreakdown}
-                    dataKey="amount"
-                    nameKey="category"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={85}
-                    innerRadius={50} // Clean donut layout
-                    paddingAngle={3}
-                    label={({ name, percent }) =>
-                      `${name ?? ""} ${((percent ?? 0) * 100).toFixed(0)}%`
-                    }
-                    labelLine={false}
-                  >
-                    {data.categoryBreakdown.map((_, i) => (
-                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: tooltipBg,
-                      border: `1px solid ${tooltipBorder}`,
-                      borderRadius: "16px",
-                      backdropFilter: "blur(20px)",
-                    }}
-                    itemStyle={{ fontSize: "11px", color: tooltipLabel }}
-                    formatter={(value) => formatCurrency(Number(value), currency)}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              <>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie
+                      data={data.categoryBreakdown}
+                      dataKey="amount"
+                      nameKey="category"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                      innerRadius={52}
+                      paddingAngle={2}
+                      labelLine={false}
+                    >
+                      {data.categoryBreakdown.map((_, i) => (
+                        <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        background: tooltipBg,
+                        border: `1px solid ${tooltipBdr}`,
+                        borderRadius: "10px",
+                        padding: "10px 14px",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                      }}
+                      itemStyle={{ fontSize: "11px", color: tooltipColor }}
+                      formatter={(value) => formatCurrency(Number(value), currency)}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Category legend */}
+                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 px-1">
+                  {data.categoryBreakdown.slice(0, 6).map((cat, i) => (
+                    <div key={cat.category} className="flex items-center gap-1.5 min-w-0">
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-sm"
+                        style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
+                      />
+                      <span className="text-[10px] text-[var(--foreground-muted)] truncate">{cat.category}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </CardBody>
         </Card>
       </div>
 
-      {/* AI Insights Panel */}
+      {/* AI Insights */}
       <AIInsightsCard />
 
-      {/* Recent Expenses Ledger List */}
-      <Card className="hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300">
-        <CardHeader title="Recent Expenses" description="Last 5 transactions logged" />
+      {/* Recent Expenses */}
+      <Card>
+        <CardHeader title="Recent Expenses" description="Last 5 transactions" />
         <CardBody>
           {data.recentExpenses.length === 0 ? (
-            <p className="text-muted text-xs">No expenses yet.</p>
+            <p className="text-sm text-[var(--foreground-subtle)] py-4 text-center">No expenses yet.</p>
           ) : (
-            <div className="divide-y divide-zinc-200/40 dark:divide-white/[0.04]">
-              {data.recentExpenses.map((exp) => {
-                return (
-                  <div key={exp.id} className="flex items-center justify-between py-4 transition-colors hover:bg-white/[0.01]">
-                    <div className="flex items-center gap-3">
-                      {/* Apple HIG custom styled muted tag */}
-                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-[9px] font-semibold ${getBadgeStyles(exp.type)}`}>
-                        {getBadgeLabel(exp.type)}
-                      </span>
-                      <div>
-                        <p className="text-xs sm:text-sm font-semibold text-foreground">{exp.category}</p>
-                        <p className="text-[10px] text-muted mt-0.5">
-                          {format(new Date(exp.date), "MMM d, yyyy")} · {exp.paymentMethod}
-                        </p>
-                      </div>
+            <div className="divide-y divide-[var(--border)]">
+              {data.recentExpenses.map((exp) => (
+                <div key={exp.id} className="flex items-center justify-between py-3.5 group">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span
+                      className={`shrink-0 inline-block rounded-md px-2 py-0.5 text-[10px] font-medium ${getBadgeStyle(exp.type)}`}
+                    >
+                      {getBadgeLabel(exp.type)}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-[var(--foreground)] truncate">{exp.category}</p>
+                      <p className="text-[10px] text-[var(--foreground-muted)] mt-0.5">
+                        {format(new Date(exp.date), "MMM d, yyyy")} · {exp.paymentMethod}
+                      </p>
                     </div>
-                    <p className="text-xs sm:text-sm font-bold text-foreground">
-                      -{formatCurrency(exp.amount, currency)}
-                    </p>
                   </div>
-                );
-              })}
+                  <p className="shrink-0 text-sm font-semibold text-[var(--expense)] tabular-nums ml-4">
+                    -{formatCurrency(exp.amount, currency)}
+                  </p>
+                </div>
+              ))}
             </div>
           )}
         </CardBody>
