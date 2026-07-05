@@ -408,7 +408,7 @@ export function HomePageClient() {
             <FeatureCard
               icon={<ShieldIcon />}
               title="Privacy First"
-              description="Zero telemetry, row-level data isolation, and bcrypt hashing. Your data belongs to you."
+              description="Complete privacy, bank-grade data isolation, and secure password protection. Your data belongs to you."
               className="reveal-on-scroll"
             >
               <SecurityMini />
@@ -429,7 +429,7 @@ export function HomePageClient() {
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: "⚡", title: "Sub-Second Load",   desc: "Built with Turbopack and React 19 for instant navigation." },
+              { icon: "⚡", title: "Sub-Second Load",   desc: "Engineered for lightning-fast page loads and instant navigation." },
               { icon: "🔒", title: "Isolated Data",      desc: "No tracker libraries. Your transactions stay private." },
               { icon: "🎨", title: "Adaptive UI",        desc: "Clean light and dark modes that adapt to your preference." },
               { icon: "📊", title: "Clear Analytics",    desc: "Visualize budget progress with high-contrast charts." },
@@ -456,7 +456,7 @@ export function HomePageClient() {
                 Secure by design.
               </h2>
               <p className="text-sm text-[var(--foreground-muted)] leading-relaxed max-w-md">
-                SpendClan enforces strict row-level isolation. Session tokens are verified atomically. Credentials are encrypted with 12 rounds of bcrypt, preventing brute-force attacks.
+                SpendClan enforces strict data isolation. All credentials and transactions are secured using industry-standard protocols, preventing unauthorized access.
               </p>
               <Link href="/about" className="apple-link text-sm">
                 Learn about our security →
