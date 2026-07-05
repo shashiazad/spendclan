@@ -100,10 +100,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             </span>
             <span className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-              Zero Background AI Calls
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
               Penny-Perfect Splits
             </span>
           </div>
