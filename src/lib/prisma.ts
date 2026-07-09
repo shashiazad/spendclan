@@ -8,7 +8,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const connectionString =
+  let connectionString =
     process.env.DATABASE_URL ||
     process.env.POSTGRES_PRISMA_URL ||
     process.env.POSTGRES_URL;
@@ -16,6 +16,12 @@ function createPrismaClient() {
     throw new Error(
       "Database connection string is not set. Please configure DATABASE_URL, POSTGRES_PRISMA_URL, or POSTGRES_URL."
     );
+  }
+
+  // Sanitize connection string to explicitly use 'verify-full' instead of 'require'
+  // to prevent the pg driver security warnings.
+  if (connectionString.includes("sslmode=require")) {
+    connectionString = connectionString.replace("sslmode=require", "sslmode=verify-full");
   }
 
   // Create a connection pool optimized for serverless environments.
