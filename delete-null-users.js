@@ -2,7 +2,7 @@ require("dotenv").config();
 const { Client } = require("pg");
 
 async function main() {
-  const connectionString =
+  let connectionString =
     process.env.DATABASE_URL ||
     process.env.POSTGRES_PRISMA_URL ||
     process.env.POSTGRES_URL;
@@ -10,6 +10,12 @@ async function main() {
   if (!connectionString) {
     console.log("No database connection string found in environment variables. Skipping cleanup.");
     return;
+  }
+
+  // Sanitize connection string to explicitly use 'verify-full' instead of 'require'
+  // to prevent the pg driver security warnings.
+  if (connectionString.includes("sslmode=require")) {
+    connectionString = connectionString.replace("sslmode=require", "sslmode=verify-full");
   }
 
   console.log("Connecting to database to clean up users with NULL mobileNumber...");
