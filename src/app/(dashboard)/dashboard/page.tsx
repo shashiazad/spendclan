@@ -201,8 +201,6 @@ export default function DashboardPage() {
     }
   }
 
-
-
   const [isLight, setIsLight] = useState(false);
   useEffect(() => {
     const checkTheme = () => {
