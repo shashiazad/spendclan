@@ -44,11 +44,11 @@ async function main() {
   const userAnswer = await bcrypt.hash("mumbai", 12);
 
   const user = await prisma.user.upsert({
-    where: { email: "user@xpensio.app" },
+    where: { email: "user@spendclan.app" },
     update: { emailVerified: true },
     create: {
       name: "Demo User",
-      email: "user@xpensio.app",
+      email: "user@spendclan.app",
       hashedPassword: userPassword,
       currency: "INR",
       role: "USER",
@@ -59,7 +59,7 @@ async function main() {
   });
 
   console.log("Seeded users:");
-  console.log(`  Demo User:  user@xpensio.app / user123 (${user.id})`);
+  console.log(`  Demo User:  user@spendclan.app / user123 (${user.id})`);
 }
 
 main()

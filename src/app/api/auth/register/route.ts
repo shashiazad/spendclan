@@ -3,21 +3,31 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { handleZodError } from "@/lib/auth";
 import { registerSchema } from "@/lib/validators";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendWhatsAppOTP } from "@/lib/whatsapp";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const data = registerSchema.parse(body);
 
-    const existing = await prisma.user.findUnique({
-      where: { email: data.email.toLowerCase() },
+    const conditions: any[] = [];
+    if (data.email) {
+      conditions.push({ email: data.email.toLowerCase() });
+    }
+    if (data.mobileNumber) {
+      conditions.push({ mobileNumber: data.mobileNumber.trim() });
+    }
+
+    const existing = await prisma.user.findFirst({
+      where: {
+        OR: conditions,
+      },
     });
 
     if (existing) {
       if (existing.emailVerified) {
         return NextResponse.json(
-          { error: "Email already registered" },
+          { error: "Mobile number or Email already registered" },
           { status: 409 },
         );
       } else {
@@ -39,7 +49,8 @@ export async function POST(request: Request) {
     const user = await prisma.user.create({
       data: {
         name: data.name,
-        email: data.email.toLowerCase(),
+        email: data.email ? data.email.toLowerCase() : null,
+        mobileNumber: data.mobileNumber.trim(),
         hashedPassword,
         currency: data.currency,
         securityQuestion: data.securityQuestion,
@@ -52,44 +63,49 @@ export async function POST(request: Request) {
         id: true,
         name: true,
         email: true,
+        mobileNumber: true,
         currency: true,
         emailVerified: true,
       },
     });
 
-    // Send verification email
-    await sendVerificationEmail(user.email, user.name, token);
+    // Send verification WhatsApp message
+    if (user.mobileNumber) {
+      await sendWhatsAppOTP(user.mobileNumber, user.name, token);
+    }
 
-    // Process pending group invitations for this email
-    try {
-      const invitations = await prisma.groupInvitation.findMany({
-        where: { email: user.email },
-      });
-
-      if (invitations.length > 0) {
-        // Create GroupMember records
-        await prisma.groupMember.createMany({
-          data: invitations.map((inv) => ({
-            userId: user.id,
-            groupId: inv.groupId,
-            role: "MEMBER",
-          })),
-        });
-
-        // Delete processed invitations
-        await prisma.groupInvitation.deleteMany({
+    // Process pending group invitations for this email (if email exists)
+    if (user.email) {
+      try {
+        const invitations = await prisma.groupInvitation.findMany({
           where: { email: user.email },
         });
 
-        // Invalidate dashboards
-        const { invalidateDashboard, invalidateGroupMemberDashboards } = await import("@/lib/cache");
-        for (const inv of invitations) {
-          await invalidateGroupMemberDashboards(inv.groupId);
+        if (invitations.length > 0) {
+          // Create GroupMember records
+          await prisma.groupMember.createMany({
+            data: invitations.map((inv) => ({
+              userId: user.id,
+              groupId: inv.groupId,
+              role: "MEMBER",
+            })),
+          });
+
+          // Delete processed invitations
+          await prisma.groupInvitation.deleteMany({
+            where: { email: user.email },
+          });
+
+          // Invalidate dashboards
+          const { invalidateDashboard, invalidateGroupMemberDashboards } = await import("@/lib/cache");
+          for (const inv of invitations) {
+            await invalidateGroupMemberDashboards(inv.groupId);
+          }
+          invalidateDashboard(user.id);
         }
-        invalidateDashboard(user.id);
+      } catch (inviteError) {
+        console.error("Failed to process auto-join invitations during registration:", inviteError);
       }
-    } catch (inviteError) {
-      console.error("Failed to process auto-join invitations during registration:", inviteError);
     }
 
     return NextResponse.json({ user }, { status: 201 });

@@ -1,4 +1,4 @@
-# Xpensio Requirements
+# SpendClan Requirements
 
 Personal finance group expense management web app.
 

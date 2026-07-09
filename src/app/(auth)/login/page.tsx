@@ -15,7 +15,7 @@ function LoginForm() {
   const registered = searchParams.get("registered");
   const reset = searchParams.get("reset");
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,13 +27,13 @@ function LoginForm() {
 
     try {
       const result = await signIn("credentials", {
-        email,
+        identifier,
         password,
         redirect: false,
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        setError("Invalid mobile number/email or password");
         setLoading(false);
         return;
       }
@@ -71,13 +71,13 @@ function LoginForm() {
         )}
 
         <Input
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
+          label="Mobile Number or Email"
+          type="text"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          placeholder="+919876543210 or you@example.com"
           required
-          autoComplete="email"
+          autoComplete="username"
         />
 
         <Input

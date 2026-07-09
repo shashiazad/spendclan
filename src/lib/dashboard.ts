@@ -35,10 +35,15 @@ export async function getDashboardData(userId: string) {
   const year = now.getFullYear();
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
+  
+  const sixMonthsAgo = subMonths(now, 5);
+  const startRange = startOfMonth(sixMonthsAgo);
+  const endRange = endOfMonth(now);
 
   // Run ALL independent queries concurrently instead of sequentially
   const [
-    trends,
+    rangeIncomes,
+    rangeExpenses,
     categoryExpenses,
     typeExpenses,
     recentExpenses,
@@ -46,20 +51,16 @@ export async function getDashboardData(userId: string) {
     groups,
     biggestExpense,
   ] = await Promise.all([
-    // Trends: run all 6 months concurrently (was sequential — 12 queries in a loop)
-    Promise.all(
-      Array.from({ length: 6 }, (_, i) => {
-        const d = subMonths(now, 5 - i);
-        const m = d.getMonth() + 1;
-        const y = d.getFullYear();
-        return getMonthlyTotals(userId, m, y).then((totals) => ({
-          month: format(d, "MMM yyyy"),
-          income: totals.income,
-          expenses: totals.expenses,
-          savings: totals.savings,
-        }));
-      })
-    ),
+    // Fetch incomes for 6-month range
+    prisma.income.findMany({
+      where: { userId, date: { gte: startRange, lte: endRange } },
+      select: { amount: true, date: true },
+    }),
+    // Fetch expenses for 6-month range
+    prisma.personalExpense.findMany({
+      where: { userId, date: { gte: startRange, lte: endRange } },
+      select: { amount: true, date: true },
+    }),
     // Category breakdown
     prisma.personalExpense.groupBy({
       by: ["category"],
@@ -101,6 +102,38 @@ export async function getDashboardData(userId: string) {
       orderBy: { amount: "desc" },
     }),
   ]);
+
+  // Group 6-month totals in memory to avoid 12 concurrent query roundtrips
+  const monthlyTotalsMap = new Map<string, { income: number; expenses: number }>();
+  const getMonthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+
+  for (const inc of rangeIncomes) {
+    const key = getMonthKey(inc.date);
+    const existing = monthlyTotalsMap.get(key) || { income: 0, expenses: 0 };
+    existing.income += inc.amount;
+    monthlyTotalsMap.set(key, existing);
+  }
+
+  for (const exp of rangeExpenses) {
+    const key = getMonthKey(exp.date);
+    const existing = monthlyTotalsMap.get(key) || { income: 0, expenses: 0 };
+    existing.expenses += exp.amount;
+    monthlyTotalsMap.set(key, existing);
+  }
+
+  const trends = Array.from({ length: 6 }, (_, i) => {
+    const d = subMonths(now, 5 - i);
+    const m = d.getMonth() + 1;
+    const y = d.getFullYear();
+    const key = `${y}-${String(m).padStart(2, "0")}`;
+    const totals = monthlyTotalsMap.get(key) || { income: 0, expenses: 0 };
+    return {
+      month: format(d, "MMM yyyy"),
+      income: totals.income,
+      expenses: totals.expenses,
+      savings: totals.income - totals.expenses,
+    };
+  });
 
   // Current month totals from trends (last element is the current month)
   const current = trends[trends.length - 1];

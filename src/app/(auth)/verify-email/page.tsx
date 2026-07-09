@@ -10,7 +10,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 function VerifyEmailForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email") ?? "";
+  const identifier = searchParams.get("identifier") ?? searchParams.get("email") ?? "";
 
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
@@ -20,10 +20,10 @@ function VerifyEmailForm() {
   const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
-    if (!email) {
-      setError("Missing email address");
+    if (!identifier) {
+      setError("Missing mobile number or email");
     }
-  }, [email]);
+  }, [identifier]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -41,7 +41,7 @@ function VerifyEmailForm() {
       const res = await fetch("/api/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, token: token.trim() }),
+        body: JSON.stringify({ identifier, token: token.trim() }),
       });
 
       const data = await res.json();
@@ -51,7 +51,7 @@ function VerifyEmailForm() {
         return;
       }
 
-      setSuccess("Email verified successfully! Redirecting to login...");
+      setSuccess("Account verified successfully! Redirecting to login...");
       setTimeout(() => {
         router.push("/login?registered=1");
       }, 2000);
@@ -72,7 +72,7 @@ function VerifyEmailForm() {
       const res = await fetch("/api/auth/resend-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ identifier }),
       });
 
       const data = await res.json();
@@ -82,7 +82,7 @@ function VerifyEmailForm() {
         return;
       }
 
-      setSuccess("A new verification code has been sent to your email!");
+      setSuccess("A new verification code has been sent via WhatsApp!");
       setCooldown(60);
     } catch {
       setError("Failed to resend code. Please try again.");
@@ -93,8 +93,8 @@ function VerifyEmailForm() {
 
   return (
     <AuthCard
-      title="Verify your email"
-      subtitle={`Enter the 6-digit code sent to ${email || "your email"}`}
+      title="Verify your account"
+      subtitle={`Enter the 6-digit code sent to ${identifier || "your mobile number / WhatsApp"}`}
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
@@ -119,11 +119,11 @@ function VerifyEmailForm() {
           maxLength={6}
           pattern="[0-9]{6}"
           className="text-center text-xl font-bold tracking-widest"
-          hint="Check your email inbox or spam folder for the 6-digit code"
+          hint="Check WhatsApp for the 6-digit code"
         />
 
-        <Button type="submit" className="w-full" loading={loading} disabled={!email || token.length !== 6}>
-          Verify Email
+        <Button type="submit" className="w-full" loading={loading} disabled={!identifier || token.length !== 6}>
+          Verify Account
         </Button>
 
         <div className="text-center text-sm">
