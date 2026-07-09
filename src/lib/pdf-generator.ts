@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 // Helper function to format currency value in jsPDF
 function formatVal(amount: number, currency: string): string {
@@ -140,7 +140,7 @@ export async function generatePersonalPDF(data: any, currency: string) {
     `${c.percentage.toFixed(1)}%`,
   ]);
 
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: currentY,
     head: categoryHeaders,
     body: categoryRows,
@@ -170,7 +170,7 @@ export async function generatePersonalPDF(data: any, currency: string) {
     formatVal(e.amount, currency),
   ]);
 
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: currentY,
     head: transactionHeaders,
     body: transactionRows,
@@ -283,7 +283,7 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
       ],
     ];
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: currentY,
       head: groupStatHeaders,
       body: groupStatRows,
@@ -313,7 +313,7 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
         formatVal(tx.userShare, currency),
       ]);
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: currentY,
         head: groupTxHeaders,
         body: groupTxRows,
@@ -414,7 +414,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
       : `${m.outstandingBalance > 0 ? "+" : ""}${formatVal(m.outstandingBalance, currency)}`,
   ]);
 
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: currentY,
     head: memberHeaders,
     body: memberRows,
@@ -442,7 +442,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
     `${c.percentage.toFixed(1)}%`,
   ]);
 
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: currentY,
     head: catHeaders,
     body: catRows,
@@ -472,7 +472,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
     formatVal(e.amount, currency),
   ]);
 
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: currentY,
     head: expHeaders,
     body: expRows,
@@ -504,7 +504,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
       formatVal(s.amount, currency),
     ]);
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: currentY,
       head: setHeaders,
       body: setRows,
