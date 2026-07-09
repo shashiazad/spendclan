@@ -18,6 +18,7 @@ function VerifyEmailForm() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [attemptsRemaining, setAttemptsRemaining] = useState<number | null>(null);
 
   useEffect(() => {
     if (!email) {
@@ -77,6 +78,10 @@ function VerifyEmailForm() {
 
       const data = await res.json();
 
+      if (data.attemptsRemaining !== undefined) {
+        setAttemptsRemaining(data.attemptsRemaining);
+      }
+
       if (!res.ok) {
         setError(data.error ?? "Failed to resend code");
         return;
@@ -126,19 +131,29 @@ function VerifyEmailForm() {
           Verify Email
         </Button>
 
-        <div className="text-center text-sm">
-          <button
-            type="button"
-            onClick={handleResend}
-            disabled={resending || cooldown > 0}
-            className={`font-medium transition-colors ${
-              cooldown > 0
-                ? "text-slate-500 cursor-not-allowed"
-                : "text-emerald-400 hover:text-emerald-300"
-            }`}
-          >
-            {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}
-          </button>
+        <div className="text-center text-sm space-y-2">
+          <div>
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resending || cooldown > 0 || attemptsRemaining === 0}
+              className={`font-medium transition-colors ${
+                cooldown > 0 || attemptsRemaining === 0
+                  ? "text-slate-500 cursor-not-allowed"
+                  : "text-emerald-400 hover:text-emerald-300"
+              }`}
+            >
+              {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}
+            </button>
+          </div>
+
+          {attemptsRemaining !== null && (
+            <p className="text-xs text-slate-400">
+              {attemptsRemaining > 0
+                ? `${attemptsRemaining} resend attempt${attemptsRemaining > 1 ? "s" : ""} remaining today`
+                : "No resend attempts remaining today (Max 3). Please wait 24 hours."}
+            </p>
+          )}
         </div>
       </form>
     </AuthCard>

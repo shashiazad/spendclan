@@ -16,9 +16,9 @@ function getTransporter() {
     auth:
       process.env.SMTP_USER && process.env.SMTP_PASS
         ? {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          }
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        }
         : undefined,
   });
 }
@@ -32,7 +32,7 @@ interface TemplateParams {
 }
 
 /**
- * Renders a premium, responsive HTML email wrapper template matching the SpendClan design system.
+ * Renders a premium, responsive HTML email wrapper template matching the SpendClan brand design.
  */
 function renderEmailTemplate({
   title,
@@ -43,13 +43,13 @@ function renderEmailTemplate({
 }: TemplateParams): string {
   const ctaBlock = (ctaText && ctaUrl)
     ? `
-      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 28px 0; text-align: center;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 32px 0; text-align: center;">
         <tr>
           <td align="center">
             <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
               <tr>
-                <td align="center" bgcolor="#10b981" style="border-radius: 6px;">
-                  <a href="${ctaUrl}" target="_blank" style="display: inline-block; background-color: #10b981; color: #ffffff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold; font-family: Inter, system-ui, -apple-system, sans-serif; font-size: 15px; border: 1px solid #10b981;">
+                <td align="center" bgcolor="#10b981" style="border-radius: 8px;">
+                  <a href="${ctaUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); background-color: #10b981; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-family: Inter, system-ui, -apple-system, sans-serif; font-size: 15px; border: none; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);">
                     ${ctaText}
                   </a>
                 </td>
@@ -67,8 +67,7 @@ function renderEmailTemplate({
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light dark">
-  <meta name="supported-color-schemes" content="light dark">
+  <meta name="color-scheme" content="light">
   <title>${title}</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -81,35 +80,40 @@ function renderEmailTemplate({
       -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
     }
-    
-    img {
-      border: 0;
-      outline: none;
-      text-decoration: none;
-      -ms-interpolation-mode: bicubic;
-    }
   </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Inter, system-ui, -apple-system, sans-serif; color: #0f172a; -webkit-font-smoothing: antialiased;">
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Inter, system-ui, -apple-system, sans-serif; color: #1e293b; -webkit-font-smoothing: antialiased;">
   ${preheader ? `<span style="display: none; max-height: 0px; overflow: hidden; mso-hide: all;">${preheader}</span>` : ""}
   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; padding: 40px 0;">
     <tr>
       <td align="center">
         <!-- Main Wrapper Container -->
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; width: 100%; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; width: 100%; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
           
+          <!-- Top Accent Band -->
+          <tr>
+            <td height="6" style="background: linear-gradient(90deg, #10b981, #059669); background-color: #10b981;"></td>
+          </tr>
+
           <!-- Logo / Header -->
           <tr>
-            <td align="center" style="padding: 40px 40px 20px 40px;">
+            <td align="center" style="padding: 40px 40px 24px 40px;">
               <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                   <td align="center">
-                    <img src="https://spendclan.vercel.app/icon-192x192.png" width="48" height="48" alt="SpendClan Logo" style="display: block; width: 48px; height: 48px;" />
+                    <!-- SpendClan Logo -->
+                    <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                      <tr>
+                        <td style="background-color: #ecfdf5; padding: 12px; border-radius: 12px; border: 1px solid #d1fae5;">
+                          <img src="https://spenclan.vercel.app/icon-192x192.png" width="40" height="40" alt="SpendClan Logo" style="display: block; width: 40px; height: 40px; border-radius: 8px;" onerror="this.src='https://spendclan.vercel.app/icon-192x192.png'; this.onerror=null;" />
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding-top: 12px;">
-                    <span style="font-size: 20px; font-weight: bold; color: #0f172a; letter-spacing: -0.5px;">SpendClan</span>
+                  <td align="center" style="padding-top: 16px;">
+                    <span style="font-size: 22px; font-weight: 700; color: #0f172a; letter-spacing: -0.5px; font-family: Inter, system-ui, sans-serif;">SpendClan</span>
                   </td>
                 </tr>
               </table>
@@ -127,17 +131,17 @@ function renderEmailTemplate({
 
           <!-- Main Content -->
           <tr>
-            <td style="padding: 30px 40px 40px 40px; font-size: 15px; line-height: 1.6; color: #334155;">
+            <td style="padding: 32px 40px 40px 40px; font-size: 15px; line-height: 1.6; color: #475569; font-family: Inter, system-ui, sans-serif;">
               ${contentHtml}
               ${ctaBlock}
               
-              <!-- Signature Matrix -->
+              <!-- Signature -->
               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 32px; border-top: 1px solid #f1f5f9; padding-top: 24px;">
                 <tr>
-                  <td style="font-size: 14px; color: #475569; line-height: 1.5;">
+                  <td style="font-size: 14px; color: #64748b; line-height: 1.5;">
                     Best regards,<br>
-                    <strong>The SpendClan Team</strong><br>
-                    <span style="font-size: 12px; color: #94a3b8; font-weight: normal; margin-top: 4px; display: block;">—<br>Personal Tracking Meets Seamless Group Splits</span>
+                    <strong style="color: #0f172a;">The SpendClan Team</strong><br>
+                    <span style="font-size: 12px; color: #94a3b8; font-weight: normal; margin-top: 4px; display: block;">Smart Personal Ledger & Effortless Group Splitter</span>
                   </td>
                 </tr>
               </table>
@@ -146,9 +150,9 @@ function renderEmailTemplate({
 
           <!-- Footer Legal -->
           <tr>
-            <td align="center" bgcolor="#f8fafc" style="padding: 24px 40px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; line-height: 1.5; text-align: center;">
-              <p style="margin: 0;">This email was sent to you as part of your SpendClan account updates.</p>
-              <p style="margin: 4px 0 0 0;">© ${new Date().getFullYear()} SpendClan. All rights reserved.</p>
+            <td align="center" bgcolor="#f8fafc" style="padding: 24px 40px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; line-height: 1.5; text-align: center; font-family: Inter, system-ui, sans-serif;">
+              <p style="margin: 0;">This email was sent to you to complete your requested account updates.</p>
+              <p style="margin: 6px 0 0 0;">© ${new Date().getFullYear()} SpendClan. All rights reserved.</p>
             </td>
           </tr>
 
@@ -175,17 +179,17 @@ export async function sendPasswordResetEmail(
   }
 
   const title = "Reset your SpendClan password";
-  const preheader = "You requested a password reset for your SpendClan account.";
+  const preheader = "Reset your SpendClan password inside the next 1 hour.";
   const contentHtml = `
-    <p style="margin: 0 0 16px 0;">Hello,</p>
-    <p style="margin: 0 0 16px 0;">We received a request to reset the password associated with your SpendClan account. Click the button below to set a new password:</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; color: #0f172a; font-weight: 600;">Hello,</p>
+    <p style="margin: 0 0 16px 0;">We received a request to reset the password associated with your SpendClan account. Click the button below to configure a new secure password:</p>
     <p style="margin: 28px 0 0 0; font-size: 13px; color: #64748b;">This password reset link is valid for <strong>1 hour</strong>. If you did not make this request, you can safely ignore this email; your account security remains fully intact.</p>
-    <p style="margin: 12px 0 0 0; font-size: 11px; color: #94a3b8; word-break: break-all;">If the button above does not work, copy and paste this URL into your browser:<br>${resetUrl}</p>
+    <p style="margin: 16px 0 0 0; font-size: 11px; color: #94a3b8; word-break: break-all;">If the button does not work, copy and paste this URL into your browser:<br><a href="${resetUrl}" style="color: #10b981; text-decoration: underline;">${resetUrl}</a></p>
   `;
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM ?? "SpendClan <noreply@example.com>",
+      from: process.env.SMTP_FROM ?? "SpendClan <noreply@spendclan.com>",
       to: email,
       subject: title,
       html: renderEmailTemplate({
@@ -219,13 +223,13 @@ export async function sendVerificationEmail(
   }
 
   const title = "Verify your SpendClan email address";
-  const preheader = "Verify your email to complete your registration on SpendClan.";
+  const preheader = "Use verification code ${token} to complete your registration.";
   const contentHtml = `
-    <p style="margin: 0 0 16px 0;">Hello ${name},</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; color: #0f172a; font-weight: 600;">Hello ${name},</p>
     <p style="margin: 0 0 16px 0;">Welcome to SpendClan! We're excited to help you track personal spending and split group expenses effortlessly.</p>
     <p style="margin: 0 0 20px 0;">Please verify your email address by entering the following 6-digit confirmation code on the verification screen:</p>
-    <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #0f172a; margin: 24px 0; font-family: Courier, monospace;">
-      ${token}
+    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
+      <span style="font-size: 38px; font-weight: 700; letter-spacing: 8px; color: #10b981; font-family: 'Courier New', Courier, monospace;">${token}</span>
     </div>
     <p style="margin: 20px 0 0 0; font-size: 13px; color: #64748b;">This verification code is valid for <strong>1 hour</strong>. If you did not sign up for SpendClan, please ignore this email.</p>
   `;
@@ -268,11 +272,11 @@ export async function sendGroupInvitationEmail(
   const title = `Invitation to join "${groupName}" on SpendClan`;
   const preheader = `${invitedByName} has invited you to join the group "${groupName}" on SpendClan.`;
   const contentHtml = `
-    <p style="margin: 0 0 16px 0;">Hello,</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; color: #0f172a; font-weight: 600;">Hello,</p>
     <p style="margin: 0 0 16px 0;"><strong>${invitedByName}</strong> has invited you to join their pocket group <strong>"${groupName}"</strong> on SpendClan.</p>
     <p style="margin: 0 0 16px 0;">SpendClan makes it incredibly simple to split bills, track shared expenses, and settle up with friends and family instantly.</p>
     <p style="margin: 0 0 20px 0;">Click the button below to accept the invitation and sign up using this email address. Once registered, you will be automatically added to the group.</p>
-    <p style="margin: 28px 0 0 0; font-size: 13px; color: #64748b;">If the button above does not work, copy and paste this URL into your browser:<br>${registerUrl}</p>
+    <p style="margin: 28px 0 0 0; font-size: 13px; color: #64748b;">If the button does not work, copy and paste this URL into your browser:<br><a href="${registerUrl}" style="color: #10b981; text-decoration: underline;">${registerUrl}</a></p>
   `;
 
   try {
@@ -295,4 +299,3 @@ export async function sendGroupInvitationEmail(
 
   return true;
 }
-

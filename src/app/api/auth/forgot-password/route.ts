@@ -43,6 +43,47 @@ export async function POST(request: Request) {
     });
 
     if (user) {
+      // Rate limiting: Max 3 password reset emails per 24 hours
+      const now = new Date();
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+      let attempts = user.passwordResetAttempts;
+      const lastSent = user.lastPasswordResetSentAt;
+
+      if (attempts >= 3 && lastSent && lastSent > oneDayAgo) {
+        const diffMs = 24 * 60 * 60 * 1000 - (now.getTime() - lastSent.getTime());
+        const remainingHours = Math.floor(diffMs / (60 * 60 * 1000));
+        const remainingMinutes = Math.ceil((diffMs % (60 * 60 * 1000)) / (60 * 1000));
+
+        let remainingText = "";
+        if (remainingHours > 0) {
+          remainingText = `${remainingHours} hour${remainingHours > 1 ? "s" : ""} and ${remainingMinutes} minute${remainingMinutes > 1 ? "s" : ""}`;
+        } else {
+          remainingText = `${remainingMinutes} minute${remainingMinutes > 1 ? "s" : ""}`;
+        }
+
+        return NextResponse.json(
+          { error: `Too many password reset attempts. Please try again in ${remainingText}.` },
+          { status: 429 }
+        );
+      }
+
+      // Increment reset attempts count
+      if (!lastSent || lastSent <= oneDayAgo) {
+        attempts = 1;
+      } else {
+        attempts += 1;
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          passwordResetAttempts: attempts,
+          lastPasswordResetSentAt: now,
+        },
+      });
+
+      // Clear existing tokens
       await prisma.passwordResetToken.deleteMany({
         where: { userId: user.id },
       });
@@ -67,4 +108,3 @@ export async function POST(request: Request) {
     return handleZodError(error);
   }
 }
-

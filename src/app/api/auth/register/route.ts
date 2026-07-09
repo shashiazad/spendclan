@@ -58,6 +58,8 @@ export async function POST(request: Request) {
         emailVerified: false,
         verificationToken: token,
         verificationTokenExpires: tokenExpires,
+        verificationAttempts: 1,
+        lastVerificationSentAt: new Date(),
       },
       select: {
         id: true,
