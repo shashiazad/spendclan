@@ -14,8 +14,10 @@ export async function GET() {
         id: true,
         name: true,
         email: true,
+        mobileNumber: true,
         currency: true,
         profilePhoto: true,
+        createdAt: true,
       },
     });
 
@@ -68,8 +70,10 @@ export async function PUT(request: Request) {
         id: true,
         name: true,
         email: true,
+        mobileNumber: true,
         currency: true,
         profilePhoto: true,
+        createdAt: true,
       },
     });
 

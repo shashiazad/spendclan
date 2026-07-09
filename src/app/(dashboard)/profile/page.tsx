@@ -12,8 +12,10 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<{
     name: string;
     email: string;
+    mobileNumber: string;
     currency: string;
     profilePhoto: string | null;
+    createdAt: string;
   } | null>(null);
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -89,7 +91,7 @@ export default function ProfilePage() {
           // Get optimized base64 string
           const base64 = canvas.toDataURL("image/jpeg", 0.8);
           setPreviewPhoto(base64);
-        };
+        }
       };
       img.src = event.target?.result as string;
     };
@@ -120,7 +122,6 @@ export default function ProfilePage() {
       });
 
       if (res.ok) {
-        const data = await res.json();
         // Update NextAuth local session
         await update({ profilePhoto: previewPhoto });
         
@@ -139,10 +140,10 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-slate-100">Profile Settings</h1>
-        <p className="mt-1 text-slate-400">Manage your SpendClan avatar and account details</p>
+        <p className="mt-1 text-slate-400">Manage your SpendClan avatar and view account details</p>
       </div>
 
       <Card>
@@ -202,7 +203,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Read-only Details */}
+            {/* Read-only Details Grid */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1.5">
@@ -224,10 +225,32 @@ export default function ProfilePage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1.5">
+                  Mobile Number
+                </label>
+                <div className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-slate-400 select-none">
+                  {profile.mobileNumber}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1.5">
                   Primary Currency
                 </label>
                 <div className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-slate-400 select-none">
                   {profile.currency}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1.5">
+                  Member Since
+                </label>
+                <div className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-slate-400 select-none">
+                  {new Date(profile.createdAt).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
                 </div>
               </div>
             </div>
