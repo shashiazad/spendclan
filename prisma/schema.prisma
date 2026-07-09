@@ -70,6 +70,11 @@ model User {
   verificationToken String?
   verificationTokenExpires DateTime?
   profilePhoto      String?
+  verificationAttempts    Int       @default(0)
+  lastVerificationSentAt  DateTime?
+  passwordResetAttempts   Int       @default(0)
+  lastPasswordResetSentAt DateTime?
+  failedAttempts          Int       @default(0)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
