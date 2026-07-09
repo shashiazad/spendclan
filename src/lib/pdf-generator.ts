@@ -1,64 +1,80 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
-// Helper function to format currency value in jsPDF
+// Helper function to format currency value in jsPDF (using standard code to avoid symbol UTF-8 errors)
 function formatVal(amount: number, currency: string): string {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: currency,
-  }).format(amount);
+  return `${currency} ${amount.toFixed(2)}`;
 }
 
-// Helper to draw the header on each page
-function drawPageHeader(doc: any, titleText: string) {
-  const pageCount = doc.internal.getNumberOfPages();
-  doc.setPage(pageCount);
-
-  // Top color bar accent
-  doc.setFillColor(16, 185, 129); // SpendClan emerald
-  doc.rect(0, 0, 210, 6, "F");
-
-  // Header Logo and text
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(16, 185, 129);
-  doc.text("SpendClan", 14, 15);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(148, 163, 184); // muted slate
-  doc.text("Personal Ledger & Group Splits", 36, 15);
-
-  // Right-aligned report name
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(100, 116, 139);
-  doc.text(titleText, 196, 15, { align: "right" });
-
-  // Thin line divider
-  doc.setDrawColor(226, 232, 240); // slate-200
-  doc.setLineWidth(0.5);
-  doc.line(14, 18, 196, 18);
+// Helper to asynchronously load image in client browser
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = src;
+    img.onload = () => resolve(img);
+    img.onerror = (err) => reject(err);
+  });
 }
 
-// Helper to draw the footer on each page
-function drawPageFooter(doc: any) {
-  const totalPages = doc.internal.getNumberOfPages();
-  
+// Helper to draw headers and footers on all pages at the end of generation
+async function addHeaderFooter(doc: jsPDF, titleText: string) {
+  const totalPages = doc.getNumberOfPages();
+  let logoImg: HTMLImageElement | null = null;
+
+  try {
+    logoImg = await loadImage("/logo.png");
+  } catch (e) {
+    console.error("Failed to load logo in PDF generator:", e);
+  }
+
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-    
+
+    // Top color bar accent
+    doc.setFillColor(16, 185, 129); // SpendClan emerald
+    doc.rect(0, 0, 210, 4, "F");
+
+    // Draw logo if loaded successfully
+    let textStartX = 14;
+    if (logoImg) {
+      doc.addImage(logoImg, "PNG", 14, 8, 8, 8);
+      textStartX = 25;
+    }
+
+    // Header logo text
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(16, 185, 129);
+    doc.text("SpendClan", textStartX, 14);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(148, 163, 184); // muted slate
+    doc.text("Personal Ledger & Group Splits", textStartX + 22, 14);
+
+    // Right-aligned report name
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text(titleText, 196, 14, { align: "right" });
+
+    // Thin line divider
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.setLineWidth(0.4);
+    doc.line(14, 18, 196, 18);
+
     // Bottom line divider
     doc.setDrawColor(241, 245, 249); // slate-100
-    doc.setLineWidth(0.5);
+    doc.setLineWidth(0.4);
     doc.line(14, 282, 196, 282);
 
     // Footer Text
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(148, 163, 184); // muted
-    doc.text("© SpendClan. All rights reserved.", 14, 288);
-    doc.text(`Page ${i} of ${totalPages}`, 196, 288, { align: "right" });
+    doc.text("© SpendClan. All rights reserved.", 14, 287);
+    doc.text(`Page ${i} of ${totalPages}`, 196, 287, { align: "right" });
   }
 }
 
@@ -82,14 +98,14 @@ export async function generatePersonalPDF(data: any, currency: string) {
 
   // Page 1 Title
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
+  doc.setFontSize(20);
   doc.setTextColor(15, 23, 42); // dark slate
-  doc.text(reportTitle, 14, 32);
+  doc.text(reportTitle, 14, 30);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(100, 116, 139);
-  doc.text(`Reporting Period: ${reportingPeriod}  |  Generated on ${new Date().toLocaleDateString()}`, 14, 38);
+  doc.text(`Reporting Period: ${reportingPeriod}  |  Generated on ${new Date().toLocaleDateString()}`, 14, 36);
 
   // Draw Summary Cards
   const cards = [
@@ -102,33 +118,33 @@ export async function generatePersonalPDF(data: any, currency: string) {
   cards.forEach((card) => {
     // Background card rect
     doc.setFillColor(card.bg[0], card.bg[1], card.bg[2]);
-    doc.rect(cardX, 44, 56, 22, "F");
+    doc.rect(cardX, 42, 56, 20, "F");
 
     // Text details inside card
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
-    doc.text(card.label, cardX + 5, 50);
+    doc.text(card.label, cardX + 5, 47);
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setTextColor(card.text[0], card.text[1], card.text[2]);
-    doc.text(card.val, cardX + 5, 59);
+    doc.text(card.val, cardX + 5, 56);
 
     cardX += 63;
   });
 
   // Net cashflow summary text
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(15, 23, 42);
-  doc.text(`Remaining Balance: ${formatVal(data.summary.netRemaining, currency)}`, 14, 73);
+  doc.text(`Remaining Balance: ${formatVal(data.summary.netRemaining, currency)}`, 14, 69);
 
-  let currentY = 78;
+  let currentY = 74;
 
   // Category summary table
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setTextColor(15, 23, 42);
   doc.text("Category-Wise Summary", 14, currentY);
   currentY += 4;
@@ -146,16 +162,15 @@ export async function generatePersonalPDF(data: any, currency: string) {
     body: categoryRows,
     theme: "striped",
     headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: "bold" },
-    styles: { fontSize: 9 },
-    margin: { left: 14, right: 14 },
-    didDrawPage: () => drawPageHeader(doc, reportTitle),
+    styles: { fontSize: 8.5 },
+    margin: { top: 26, left: 14, right: 14, bottom: 20 },
   });
 
-  currentY = (doc as any).lastAutoTable.finalY + 12;
+  currentY = (doc as any).lastAutoTable.finalY + 10;
 
   // Detailed Transactions List
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setTextColor(15, 23, 42);
   doc.text("Detailed Transaction List", 14, currentY);
   currentY += 4;
@@ -176,12 +191,13 @@ export async function generatePersonalPDF(data: any, currency: string) {
     body: transactionRows,
     theme: "striped",
     headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: "bold" },
-    styles: { fontSize: 9 },
-    margin: { left: 14, right: 14 },
-    didDrawPage: () => drawPageHeader(doc, reportTitle),
+    styles: { fontSize: 8.5 },
+    margin: { top: 26, left: 14, right: 14, bottom: 20 },
   });
 
-  drawPageFooter(doc);
+  // Render headers and footers globally on all pages
+  await addHeaderFooter(doc, reportTitle);
+
   doc.save(`SpendClan_Personal_Report_${monthName}_${data.year}.pdf`);
 }
 
@@ -205,18 +221,18 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
 
   // Page 1 Title
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
+  doc.setFontSize(20);
   doc.setTextColor(15, 23, 42);
-  doc.text(reportTitle, 14, 32);
+  doc.text(reportTitle, 14, 30);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(100, 116, 139);
-  doc.text(`Reporting Period: ${reportingPeriod}  |  Generated on ${new Date().toLocaleDateString()}`, 14, 38);
+  doc.text(`Reporting Period: ${reportingPeriod}  |  Generated on ${new Date().toLocaleDateString()}`, 14, 36);
 
   // Overall Group Summary Cards
   const cards = [
-    { label: "ACTIVE GROUPS", val: String(data.summary.totalGroups), bg: [241, 245, 249], text: [15, 23, 42] },
+    { label: "ACTIVE POCKETS", val: String(data.summary.totalGroups), bg: [241, 245, 249], text: [15, 23, 42] },
     { label: "TOTAL CONTRIBUTED", val: formatVal(data.summary.totalContributed, currency), bg: [236, 253, 245], text: [4, 120, 87] },
     { label: "TOTAL SHARE", val: formatVal(data.summary.totalShare, currency), bg: [254, 242, 242], text: [153, 27, 27] },
   ];
@@ -224,48 +240,48 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
   let cardX = 14;
   cards.forEach((card) => {
     doc.setFillColor(card.bg[0], card.bg[1], card.bg[2]);
-    doc.rect(cardX, 44, 56, 22, "F");
+    doc.rect(cardX, 42, 56, 20, "F");
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
-    doc.text(card.label, cardX + 5, 50);
+    doc.text(card.label, cardX + 5, 47);
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setTextColor(card.text[0], card.text[1], card.text[2]);
-    doc.text(card.val, cardX + 5, 59);
+    doc.text(card.val, cardX + 5, 56);
 
     cardX += 63;
   });
 
   const netBalance = data.summary.totalOutstandingBalance;
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(15, 23, 42);
   doc.text(
     `Overall Outstanding Balance: ${formatVal(Math.abs(netBalance), currency)} ${
       netBalance === 0 ? "(Settled)" : netBalance > 0 ? "(Receivable)" : "(Owed)"
     }`,
     14,
-    73
+    69
   );
 
-  let currentY = 80;
+  let currentY = 76;
 
   // Render separate section for each group
   data.groups.forEach((group: any, idx: number) => {
     // If it's not the first group, start a new page
     if (idx > 0) {
       doc.addPage();
-      currentY = 32;
+      currentY = 26;
     }
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
+    doc.setFontSize(13);
     doc.setTextColor(16, 185, 129);
     doc.text(group.groupName, 14, currentY);
-    currentY += 6;
+    currentY += 5;
 
     // Group Statistics Table
     const groupStatHeaders = [["Parameter", "Group Value", "Your Value", "Status / Notes"]];
@@ -289,9 +305,8 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
       body: groupStatRows,
       theme: "striped",
       headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: "bold" },
-      styles: { fontSize: 9 },
-      margin: { left: 14, right: 14 },
-      didDrawPage: () => drawPageHeader(doc, reportTitle),
+      styles: { fontSize: 8.5 },
+      margin: { top: 26, left: 14, right: 14, bottom: 20 },
     });
 
     currentY = (doc as any).lastAutoTable.finalY + 8;
@@ -299,7 +314,7 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
     // Group Transactions involving the user in the selected month
     if (group.transactions.length > 0) {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
+      doc.setFontSize(10.5);
       doc.setTextColor(15, 23, 42);
       doc.text("Group Transactions Involving You", 14, currentY);
       currentY += 4;
@@ -319,16 +334,17 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
         body: groupTxRows,
         theme: "striped",
         headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: "bold" },
-        styles: { fontSize: 8.5 },
-        margin: { left: 14, right: 14 },
-        didDrawPage: () => drawPageHeader(doc, reportTitle),
+        styles: { fontSize: 8 },
+        margin: { top: 26, left: 14, right: 14, bottom: 20 },
       });
 
       currentY = (doc as any).lastAutoTable.finalY + 8;
     }
   });
 
-  drawPageFooter(doc);
+  // Draw header and footer on all pages
+  await addHeaderFooter(doc, reportTitle);
+
   doc.save(`SpendClan_My_Group_Report_${monthName}_${data.year}.pdf`);
 }
 
@@ -347,17 +363,17 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
 
   // Title section
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
+  doc.setFontSize(20);
   doc.setTextColor(15, 23, 42);
-  doc.text(groupName, 14, 32);
+  doc.text(groupName, 14, 30);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(100, 116, 139);
   doc.text(
     `Reporting Period: ${data.reportingPeriod}  |  Total Members: ${data.summary.totalMembers}  |  Generated: ${new Date().toLocaleDateString()}`,
     14,
-    38
+    36
   );
 
   // Group Summary Cards
@@ -370,27 +386,27 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
   let cardX = 14;
   cards.forEach((card) => {
     doc.setFillColor(card.bg[0], card.bg[1], card.bg[2]);
-    doc.rect(cardX, 44, 56, 22, "F");
+    doc.rect(cardX, 42, 56, 20, "F");
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
-    doc.text(card.label, cardX + 5, 50);
+    doc.text(card.label, cardX + 5, 47);
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setTextColor(card.text[0], card.text[1], card.text[2]);
-    doc.text(card.val, cardX + 5, 59);
+    doc.text(card.val, cardX + 5, 56);
 
     cardX += 63;
   });
 
-  let currentY = 74;
+  let currentY = 70;
 
   // Description
   if (data.description) {
     doc.setFont("helvetica", "italic");
-    doc.setFontSize(9.5);
+    doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
     doc.text(`Description: ${data.description}`, 14, currentY);
     currentY += 8;
@@ -398,7 +414,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
 
   // 1. Member Contribution Summary
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(11.5);
   doc.setTextColor(15, 23, 42);
   doc.text("Member Contribution Summary", 14, currentY);
   currentY += 4;
@@ -420,16 +436,15 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
     body: memberRows,
     theme: "striped",
     headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: "bold" },
-    styles: { fontSize: 8.5 },
-    margin: { left: 14, right: 14 },
-    didDrawPage: () => drawPageHeader(doc, reportTitle),
+    styles: { fontSize: 8 },
+    margin: { top: 26, left: 14, right: 14, bottom: 20 },
   });
 
   currentY = (doc as any).lastAutoTable.finalY + 10;
 
   // 2. Category Summary
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(11.5);
   doc.setTextColor(15, 23, 42);
   doc.text("Category Spending Breakdown", 14, currentY);
   currentY += 4;
@@ -448,16 +463,15 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
     body: catRows,
     theme: "striped",
     headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: "bold" },
-    styles: { fontSize: 8.5 },
-    margin: { left: 14, right: 14 },
-    didDrawPage: () => drawPageHeader(doc, reportTitle),
+    styles: { fontSize: 8 },
+    margin: { top: 26, left: 14, right: 14, bottom: 20 },
   });
 
   currentY = (doc as any).lastAutoTable.finalY + 10;
 
   // 3. Detailed Expense Log
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(11.5);
   doc.setTextColor(15, 23, 42);
   doc.text("Detailed Expense Log", 14, currentY);
   currentY += 4;
@@ -478,12 +492,11 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
     body: expRows,
     theme: "striped",
     headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: "bold" },
-    styles: { fontSize: 8, cellPadding: 3 },
-    margin: { left: 14, right: 14 },
+    styles: { fontSize: 7.5, cellPadding: 2.5 },
+    margin: { top: 26, left: 14, right: 14, bottom: 20 },
     columnStyles: {
-      4: { cellWidth: 50 }, // Give split breakdown more width for clean wrap
+      4: { cellWidth: 45 }, // Clean wrapping for split breakdowns
     },
-    didDrawPage: () => drawPageHeader(doc, reportTitle),
   });
 
   currentY = (doc as any).lastAutoTable.finalY + 10;
@@ -491,7 +504,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
   // 4. Settlement details
   if (data.settlements.length > 0) {
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(11.5);
     doc.setTextColor(15, 23, 42);
     doc.text("Settlement Log", 14, currentY);
     currentY += 4;
@@ -510,12 +523,13 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
       body: setRows,
       theme: "striped",
       headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: "bold" },
-      styles: { fontSize: 8.5 },
-      margin: { left: 14, right: 14 },
-      didDrawPage: () => drawPageHeader(doc, reportTitle),
+      styles: { fontSize: 8 },
+      margin: { top: 26, left: 14, right: 14, bottom: 20 },
     });
   }
 
-  drawPageFooter(doc);
+  // Draw header and footer on all pages
+  await addHeaderFooter(doc, reportTitle);
+
   doc.save(`SpendClan_Group_${data.groupName.replace(/\s+/g, "_")}_Report.pdf`);
 }
