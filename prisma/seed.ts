@@ -39,16 +39,18 @@ async function main() {
 
   const user = await prisma.user.upsert({
     where: { email: "user@spendclan.app" },
-    update: { emailVerified: true },
+    update: { emailVerified: true, mobileVerified: true },
     create: {
       name: "Demo User",
       email: "user@spendclan.app",
+      mobileNumber: "+19876543210",
       hashedPassword: userPassword,
       currency: "INR",
       role: "USER",
       securityQuestion: "In what city were you born?",
       securityAnswer: userAnswer,
       emailVerified: true,
+      mobileVerified: true,
     },
   });
 

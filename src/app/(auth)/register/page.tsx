@@ -50,7 +50,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push(`/verify-email?identifier=${encodeURIComponent(mobileNumber)}`);
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -87,16 +87,18 @@ export default function RegisterPage() {
           onChange={(e) => setMobileNumber(e.target.value)}
           placeholder="+919876543210"
           required
-          hint="Verification code will be sent to WhatsApp"
+          hint="Used for secondary verification and security checks"
         />
 
         <Input
-          label="Email (Optional)"
+          label="Email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
+          required
           autoComplete="email"
+          hint="Verification code will be sent to this email address"
         />
 
         <Input

@@ -57,8 +57,8 @@ enum SplitType {
 model User {
   id                String   @id @default(uuid())
   name              String
-  email             String?  @unique
-  mobileNumber      String?  @unique
+  email             String   @unique
+  mobileNumber      String   @unique
   hashedPassword    String
   currency          Currency @default(INR)
   role              Role     @default(USER)
