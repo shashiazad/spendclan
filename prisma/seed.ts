@@ -13,32 +13,26 @@ const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const adminEmail = process.env.SEED_ADMIN_EMAIL;
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
-  const adminAnswer = process.env.SEED_ADMIN_ANSWER || "fluffy";
+  const defaultAdminPassword = await bcrypt.hash("admin123", 12);
+  const defaultAdminAnswer = await bcrypt.hash("fluffy", 12);
 
-  if (adminEmail && adminPassword) {
-    const password = await bcrypt.hash(adminPassword, 12);
-    const answer = await bcrypt.hash(adminAnswer.toLowerCase().trim(), 12);
-
-    const admin = await prisma.user.upsert({
-      where: { email: adminEmail.toLowerCase().trim() },
-      update: { emailVerified: true },
-      create: {
-        name: "Admin User",
-        email: adminEmail.toLowerCase().trim(),
-        hashedPassword: password,
-        currency: "INR",
-        role: "ADMIN",
-        securityQuestion: "What was the name of your first pet?",
-        securityAnswer: answer,
-        emailVerified: true,
-      },
-    });
-    console.log(`Seeded admin user: ${adminEmail} (${admin.id})`);
-  } else {
-    console.log("Skipping admin user seed (SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD environment variables not set).");
-  }
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@spendclan.app" },
+    update: { emailVerified: true, mobileVerified: true },
+    create: {
+      name: "System Admin",
+      email: "admin@spendclan.app",
+      mobileNumber: "+10000000000",
+      hashedPassword: defaultAdminPassword,
+      currency: "INR",
+      role: "ADMIN",
+      securityQuestion: "What was the name of your first pet?",
+      securityAnswer: defaultAdminAnswer,
+      emailVerified: true,
+      mobileVerified: true,
+    },
+  });
+  console.log(`Seeded admin user:  admin@spendclan.app / admin123 (${admin.id})`);
 
   const userPassword = await bcrypt.hash("user123", 12);
   const userAnswer = await bcrypt.hash("mumbai", 12);
