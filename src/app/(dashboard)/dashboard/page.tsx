@@ -20,6 +20,19 @@ import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { AIInsightsCard } from "@/components/dashboard/AIInsightsCard";
 import { formatCurrency } from "@/lib/constants";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
+import { Modal } from "@/components/ui/Modal";
+
+const monthsList = Array.from({ length: 12 }, (_, i) => ({
+  value: String(i + 1),
+  label: new Date(2000, i).toLocaleString("default", { month: "long" }),
+}));
+
+const yearsList = Array.from({ length: 5 }, (_, i) => {
+  const y = new Date().getFullYear() - 2 + i;
+  return { value: String(y), label: String(y) };
+});
 
 type DashboardData = {
   summary: {
@@ -154,6 +167,40 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const currency = session?.user?.currency ?? "INR";
 
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportType, setReportType] = useState<"personal" | "my-groups">("personal");
+  const [reportMonth, setReportMonth] = useState(String(new Date().getMonth() + 1));
+  const [reportYear, setReportYear] = useState(String(new Date().getFullYear()));
+  const [downloadingReport, setDownloadingReport] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
+
+  async function handleDownloadReport() {
+    setDownloadingReport(true);
+    setReportError(null);
+    try {
+      const endpoint = reportType === "personal" ? "/api/reports/personal" : "/api/reports/my-groups";
+      const res = await fetch(`${endpoint}?month=${reportMonth}&year=${reportYear}`);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to fetch report data");
+      }
+      const reportData = await res.json();
+      
+      const { generatePersonalPDF, generateMyGroupsPDF } = await import("@/lib/pdf-generator");
+      
+      if (reportType === "personal") {
+        await generatePersonalPDF(reportData, currency);
+      } else {
+        await generateMyGroupsPDF(reportData, currency);
+      }
+      setShowReportModal(false);
+    } catch (e: any) {
+      setReportError(e.message || "Failed to generate report");
+    } finally {
+      setDownloadingReport(false);
+    }
+  }
+
   const [isLight, setIsLight] = useState(false);
   useEffect(() => {
     const checkTheme = () => {
@@ -202,9 +249,26 @@ export default function DashboardPage() {
             {new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-[var(--income)]" />
-          <span className="text-xs text-[var(--foreground-muted)]">Live</span>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setReportType("personal");
+              setReportError(null);
+              setShowReportModal(true);
+            }}
+            className="flex items-center gap-1.5 text-xs font-semibold"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Download Reports
+          </Button>
+          <div className="hidden sm:flex items-center gap-1.5 ml-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--income)]" />
+            <span className="text-xs text-[var(--foreground-muted)]">Live</span>
+          </div>
         </div>
       </div>
 
@@ -461,6 +525,77 @@ export default function DashboardPage() {
           )}
         </CardBody>
       </Card>
+
+      {/* Report Modal */}
+      <Modal
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        title="Download PDF Expense Report"
+        size="sm"
+      >
+        <div className="space-y-4">
+          {reportError && (
+            <div className="text-xs text-red-500 bg-red-50 dark:bg-red-950/20 p-2 rounded-lg border border-red-200 dark:border-red-800">
+              {reportError}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-[10px] font-semibold text-[var(--foreground-muted)] uppercase tracking-wider mb-2">
+              Report Type
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setReportType("personal")}
+                className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
+                  reportType === "personal"
+                    ? "bg-[var(--accent-dim)] text-[var(--accent)] border-[var(--accent)]"
+                    : "border-[var(--border)] text-[var(--foreground-muted)] hover:bg-[var(--sidebar-hover)]"
+                }`}
+              >
+                Personal Report
+              </button>
+              <button
+                type="button"
+                onClick={() => setReportType("my-groups")}
+                className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
+                  reportType === "my-groups"
+                    ? "bg-[var(--accent-dim)] text-[var(--accent)] border-[var(--accent)]"
+                    : "border-[var(--border)] text-[var(--foreground-muted)] hover:bg-[var(--sidebar-hover)]"
+                }`}
+              >
+                Consolidated Groups
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Select
+              label="Month"
+              value={reportMonth}
+              onChange={(e) => setReportMonth(e.target.value)}
+              options={monthsList}
+            />
+            <Select
+              label="Year"
+              value={reportYear}
+              onChange={(e) => setReportYear(e.target.value)}
+              options={yearsList}
+            />
+          </div>
+
+          <div className="pt-2">
+            <Button
+              onClick={handleDownloadReport}
+              className="w-full text-xs font-semibold"
+              loading={downloadingReport}
+            >
+              Generate & Download PDF
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
