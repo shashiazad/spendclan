@@ -12,7 +12,8 @@ import {
 
 export const registerSchema = z.object({
   name: z.string().min(2).max(100),
-  email: z.string().email(),
+  email: z.string().email().optional().or(z.literal("")),
+  mobileNumber: z.string().min(8).max(20),
   password: z.string().min(8).max(100),
   currency: z.enum(CURRENCIES),
   securityQuestion: z.enum(SECURITY_QUESTIONS),
@@ -20,12 +21,12 @@ export const registerSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z.string().email(),
+  identifier: z.string().min(1),
   password: z.string().min(1),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email(),
+  email: z.string().min(1),
 });
 
 export const resetPasswordSchema = z.object({
@@ -34,7 +35,7 @@ export const resetPasswordSchema = z.object({
 });
 
 export const resetPasswordQaSchema = z.object({
-  email: z.string().email(),
+  email: z.string().min(1),
   answer: z.string().min(1).optional(),
   password: z.string().min(8).max(100).optional(),
 });

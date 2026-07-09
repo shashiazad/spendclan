@@ -82,7 +82,9 @@ export async function POST(request: Request) {
 
     // Add their emails to inputEmails to make sure we treat them as registered users
     for (const u of usersById) {
-      inputEmails.add(u.email.toLowerCase());
+      if (u.email) {
+        inputEmails.add(u.email.toLowerCase());
+      }
     }
 
     // 3. Fetch users by Email
@@ -96,10 +98,14 @@ export async function POST(request: Request) {
     // Combine users into a Map (email -> id)
     const allUsersMap = new Map<string, string>();
     for (const u of usersById) {
-      allUsersMap.set(u.email.toLowerCase(), u.id);
+      if (u.email) {
+        allUsersMap.set(u.email.toLowerCase(), u.id);
+      }
     }
     for (const u of usersByEmail) {
-      allUsersMap.set(u.email.toLowerCase(), u.id);
+      if (u.email) {
+        allUsersMap.set(u.email.toLowerCase(), u.id);
+      }
     }
 
     const registeredUserIds = Array.from(new Set(allUsersMap.values()));

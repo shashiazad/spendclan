@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
   const [password, setPassword] = useState("");
   const [currency, setCurrency] = useState("INR");
   const [securityQuestion, setSecurityQuestion] = useState<string>(
@@ -34,6 +35,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           name,
           email,
+          mobileNumber,
           password,
           currency,
           securityQuestion,
@@ -48,7 +50,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+      router.push(`/verify-email?identifier=${encodeURIComponent(mobileNumber)}`);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -79,12 +81,21 @@ export default function RegisterPage() {
         />
 
         <Input
-          label="Email"
+          label="Mobile Number"
+          type="tel"
+          value={mobileNumber}
+          onChange={(e) => setMobileNumber(e.target.value)}
+          placeholder="+919876543210"
+          required
+          hint="Verification code will be sent to WhatsApp"
+        />
+
+        <Input
+          label="Email (Optional)"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          required
           autoComplete="email"
         />
 

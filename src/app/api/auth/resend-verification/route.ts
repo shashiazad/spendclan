@@ -1,26 +1,32 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail } from "@/lib/email";
+import { sendWhatsAppOTP } from "@/lib/whatsapp";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email } = body;
+    const { identifier } = body;
 
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    if (!identifier) {
+      return NextResponse.json({ error: "Identifier (mobile/email) is required" }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier.toLowerCase() },
+          { mobileNumber: identifier },
+        ],
+      },
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (user.emailVerified) {
-      return NextResponse.json({ message: "Email already verified" }, { status: 200 });
+    if (user.emailVerified || user.mobileVerified) {
+      return NextResponse.json({ message: "Account already verified" }, { status: 200 });
     }
 
     // Generate new 6-digit random token
@@ -35,8 +41,12 @@ export async function POST(request: Request) {
       },
     });
 
-    // Send verification email
-    await sendVerificationEmail(user.email, user.name, token);
+    // Send verification WhatsApp message (or fallback to email if mobile is missing)
+    if (user.mobileNumber) {
+      await sendWhatsAppOTP(user.mobileNumber, user.name, token);
+    } else if (user.email) {
+      await sendVerificationEmail(user.email, user.name, token);
+    }
 
     return NextResponse.json({ message: "Verification code sent successfully" }, { status: 200 });
   } catch (error) {

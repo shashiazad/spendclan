@@ -1,96 +1,157 @@
-# Xpensio
+# SpendClan
 
-Personal finance and group expense management web app.
+> **SpendClan** is a premium, high-performance, and secure personal finance and group expense management web application. Built with Next.js 16 (App Router), React 19, Tailwind CSS 4, and Prisma 7, it empowers users to track daily budgets, manage shared group bills, compute simplified debt settlements, and get financial insights.
 
-## Tech Stack
+---
 
-- Next.js 16 (App Router), React 19, TypeScript
-- Tailwind CSS 4, Recharts 3
-- PostgreSQL 16, Prisma 7
-- NextAuth.js 4 (Credentials + JWT)
+## ✨ Features
 
-## Quick Start (Local)
+### 🔐 1. Authentication & Security
+*   **Secure Authentication**: Built using `NextAuth.js` with credentials-based login. Passwords securely hashed with `bcryptjs` (12 rounds).
+*   **Password Recovery**: Two secure reset channels:
+    *   *Email Reset*: Token-based recovery with 1-hour expiration sent via secure SMTP.
+    *   *Security Q&A Reset*: Secondary instant recovery option using case-insensitive hashed security questions.
+*   **Role-Based Access Control (RBAC)**: Secure separation between standard `USER` accounts and system `ADMIN` accounts.
+*   **Data Isolation**: Session-level row security prevents unauthorized data access between users. Group membership is strictly validated on every action.
+
+### 📊 2. Interactive Dashboard & Analytics
+*   **Key Financial Metrics**: Real-time display of *Total Income*, *Total Expenses*, *Net Worth*, *Savings*, *Others Owe You*, and *You Owe*.
+*   **Visual Spending Trends**: 6-month interactive Area Chart visualizing income vs. expenses vs. savings.
+*   **Category Breakdown**: Responsive Pie Chart displaying category distributions for the current month's expenses.
+*   **Activity Ledger**: Instant lookup of the most recent financial activities.
+
+### 💰 3. Personal Finance Suite
+*   **Expense Management**: Full CRUD operations with detailed categorization (Groceries, Rent, Medical, Dining, etc.) and payment method logging (Cash, Card, UPI).
+*   **Income Tracking**: Log earnings from validated sources (Salary, Freelance, Business, Other).
+*   **Recurring Expenses**: Monitor daily, weekly, or monthly repeating bills with due dates and overdue highlighting.
+*   **Savings Goals**: Create savings goals with progress tracking bars, target deadlines, and inline status updates.
+
+### 👥 4. Group Expense Splitting
+*   **Multi-Member Groups**: Group creation with invite-by-email functionality.
+*   **Smart Splitting**:
+    *   *Equal Splits*: Evenly distributes expenses across all group members.
+    *   *Percentage Splits*: Customizable percentage split validation (checks that sum equals 100%).
+    *   *Custom Splits*: Splits by exact specified currency amounts.
+*   **Simplified Debts**: Employs a greedy matching algorithm to resolve group debts using the minimum number of transactions.
+*   **Settlement Logs**: Keep an active ledger of who paid whom with real-time balance sheet updates.
+
+### 🛡️ 5. Administrative Control Panel
+*   **User Auditing**: Admins can audit registered users, viewing statistics (roles, active status, group/expense/income counts).
+*   **System Actions**: Identify and clean up accounts idle for 30+ days (deletions cascade cleanly; admins cannot delete themselves or other admins).
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS 4, Recharts 3
+- **Database & ORM**: PostgreSQL 16, Prisma 7 (optimized with `@prisma/adapter-pg` driver)
+- **Authentication**: NextAuth.js 4 (JWT Sessions)
+- **Utilities**: Nodemailer (SMTP), Zod (Validation), date-fns, UUID v4
+- **Deployment**: Vercel
+
+---
+
+## 🚀 Getting Started (Local Development)
 
 ### Prerequisites
-
 - Node.js 20+
-- PostgreSQL 16
+- PostgreSQL 16+
 
-### Setup
+### Setup Instructions
 
-```bash
-# Install dependencies
-npm install
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/your-username/spendclan.git
+    cd spendclan
+    ```
 
-# Copy environment variables
-cp .env.example .env
-# Edit .env with your PostgreSQL connection string
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-# Push schema to database
-npm run db:push
+3.  **Configure environment variables**:
+    Copy the example env file and update it with your local credentials:
+    ```bash
+    cp .env.example .env
+    ```
+    Open `.env` and set your `DATABASE_URL` (e.g. `postgresql://user:password@localhost:5432/spendclan`).
 
-# Seed demo users
-npm run db:seed
+4.  **Sync database schema**:
+    Push the database schema directly to your local instance using Prisma:
+    ```bash
+    npm run db:push
+    ```
 
-# Start dev server
-npm run dev
-```
+5.  **Seed the demo data**:
+    Seed your local database with default categories and a demo user account:
+    ```bash
+    npm run db:seed
+    ```
 
-Open [http://localhost:3000](http://localhost:3000)
+6.  **Run the development server**:
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Demo Accounts
+---
 
-| Email | Password | Role |
+## 🔑 Demo & Seeding Accounts
+
+After seeding the database, you can log in with the following demo user:
+
+| Email | Password | Role | Description |
+| --- | --- | --- | --- |
+| `user@spendclan.app` | `user123` | `USER` | Default demo account loaded with seed data |
+
+> **Note on Admin Accounts**:
+> To seed a system administrator account, configure the following variables in your `.env` file before running `npm run db:seed`:
+> ```env
+> SEED_ADMIN_EMAIL="admin@yourdomain.com"
+> SEED_ADMIN_PASSWORD="your-secure-password"
+> SEED_ADMIN_ANSWER="your-security-answer"
+> ```
+
+---
+
+## ⚙️ Environment Variables
+
+The application reads the following configuration variables. Ensure they are configured before deployment:
+
+| Variable | Description | Example / Recommended Value |
 | --- | --- | --- |
-| admin@xpensio.app | admin123 | ADMIN |
-| user@xpensio.app | user123 | USER |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:password@host:5432/db` |
+| `NEXTAUTH_SECRET` | A secure, random string for signing JWTs | Generate with `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | Base URL of the deployed application | `http://localhost:3000` (Local) / `https://yourdomain.com` |
+| `SMTP_HOST` | SMTP server host address | `smtp.resend.com` or `smtp.gmail.com` |
+| `SMTP_PORT` | Port for sending SMTP mail | `587` (STARTTLS) or `465` (TLS) |
+| `SMTP_SECURE` | Use SSL/TLS | `true` for 465, `false` for 587 |
+| `SMTP_USER` | SMTP authentication user | `apikey` (Resend) or your email |
+| `SMTP_PASS` | SMTP authentication password | Your SMTP password or app-specific password |
+| `SMTP_FROM` | Sender address shown on transactional emails | `SpendClan <noreply@yourdomain.com>` |
+| `GEMINI_API_KEY` | Gemini API key for AI Insights *(Optional)* | Get key from Google AI Studio |
 
-## Deploy to Vercel
+---
 
-1. Push this repo to GitHub.
-2. Import the project in [Vercel](https://vercel.com/new).
-3. Set the following environment variables in the Vercel dashboard:
-   - `DATABASE_URL` — PostgreSQL connection string (e.g. from [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)).
-   - `NEXTAUTH_SECRET` — Random secret for JWT signing.
-   - `NEXTAUTH_URL` — Your production URL (e.g. `https://xpensio.vercel.app`).
-   - `SMTP_HOST` — SMTP server host (e.g. `smtp.resend.com`).
-   - `SMTP_PORT` — SMTP port (`587` for STARTTLS, `465` for TLS).
-   - `SMTP_SECURE` — `true` for TLS (port 465) or `false` for STARTTLS (port 587).
-   - `SMTP_USER` & `SMTP_PASS` — Credentials for the SMTP server.
-   - `SMTP_FROM` — Sender email address (e.g. `Xpensio <noreply@yourdomain.com>`).
-4. Deploy. Vercel will automatically run `npm run build` (which includes `prisma generate`).
-5. After the first deploy, run migrations against your production database:
-   ```bash
-   DATABASE_URL="your-production-connection-string" npx prisma db push
-   ```
+## 📦 Scripts Reference
 
-## Environment Variables
-
-See `.env.example` for all required variables:
-
-- `DATABASE_URL` — PostgreSQL connection string.
-- `NEXTAUTH_SECRET` — Random secret for JWT signing.
-- `NEXTAUTH_URL` — App URL (e.g. `http://localhost:3000` locally, `https://yourdomain.com` in production).
-- `SMTP_HOST` — SMTP server host (e.g. `smtp.resend.com`).
-- `SMTP_PORT` — SMTP port (`587` for STARTTLS, `465` for TLS).
-- `SMTP_SECURE` — `true` for TLS (port 465) or `false` for STARTTLS (port 587).
-- `SMTP_USER` & `SMTP_PASS` — Credentials for the SMTP server.
-- `SMTP_FROM` — Sender email address (e.g. `Xpensio <noreply@yourdomain.com>`).
-
-## Scripts
-
-| Command | Description |
+| Command | Action |
 | --- | --- |
-| `npm run dev` | Start development server |
-| `npm run build` | Production build |
-| `npm run db:push` | Push Prisma schema to DB |
-| `npm run db:migrate` | Run Prisma migrations |
-| `npm run db:seed` | Seed demo users |
+| `npm run dev` | Starts the Next.js development server |
+| `npm run build` | Builds the application for production |
+| `npm run start` | Starts the production built server |
+| `npm run db:push` | Pushes Prisma schema modifications directly to the database |
+| `npm run db:migrate` | Runs database migrations (for production track) |
+| `npm run db:seed` | Seeds database with initial tables and demo users |
+| `npm run lint` | Runs ESLint checker |
 
-## Features
+---
 
-- **Auth**: Register, login, email reset, security Q&A reset
-- **Personal Finance**: Expenses, income, recurring expenses, savings & goals
-- **Dashboard**: Summary cards, spending trends, category breakdown
-- **Groups**: Shared expenses with equal/percentage/custom splits, balance tracking, settlements
-- **Admin**: User management panel
+## 🛡️ Production & Security Considerations
+
+Before making your repository public or deploying to staging/production:
+*   Ensure that `.env` files are never tracked (verify they are ignored in `.gitignore`).
+*   Always use database connection pooling (such as Prisma transaction poolers via PgBouncer or serverless adapters) when deploying to serverless platforms like Vercel.
+*   Keep your `NEXTAUTH_SECRET` secure and rotating.
+*   Avoid adding any plain text credentials, API keys, or live DB strings to documentation or source code.

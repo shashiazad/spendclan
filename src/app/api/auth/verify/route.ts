@@ -4,25 +4,30 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, token } = body;
+    const { identifier, token } = body;
 
-    if (!email || !token) {
+    if (!identifier || !token) {
       return NextResponse.json(
-        { error: "Email and verification code are required" },
+        { error: "Verification code is required" },
         { status: 400 },
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier.toLowerCase() },
+          { mobileNumber: identifier },
+        ],
+      },
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (user.emailVerified) {
-      return NextResponse.json({ message: "Email already verified" }, { status: 200 });
+    if (user.emailVerified || user.mobileVerified) {
+      return NextResponse.json({ message: "Account already verified" }, { status: 200 });
     }
 
     if (!user.verificationToken || user.verificationToken !== token.trim()) {
@@ -37,12 +42,13 @@ export async function POST(request: Request) {
       where: { id: user.id },
       data: {
         emailVerified: true,
+        mobileVerified: true,
         verificationToken: null,
         verificationTokenExpires: null,
       },
     });
 
-    return NextResponse.json({ message: "Email verified successfully" }, { status: 200 });
+    return NextResponse.json({ message: "Account verified successfully" }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
