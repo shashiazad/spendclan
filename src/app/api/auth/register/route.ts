@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { handleZodError } from "@/lib/auth";
 import { registerSchema } from "@/lib/validators";
-import { sendWhatsAppOTP } from "@/lib/whatsapp";
+import { sendVerificationEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     const user = await prisma.user.create({
       data: {
         name: data.name,
-        email: data.email ? data.email.toLowerCase() : null,
+        email: data.email.toLowerCase(),
         mobileNumber: data.mobileNumber.trim(),
         hashedPassword,
         currency: data.currency,
@@ -69,43 +69,39 @@ export async function POST(request: Request) {
       },
     });
 
-    // Send verification WhatsApp message
-    if (user.mobileNumber) {
-      await sendWhatsAppOTP(user.mobileNumber, user.name, token);
-    }
+    // Send verification email
+    await sendVerificationEmail(user.email, user.name, token);
 
-    // Process pending group invitations for this email (if email exists)
-    if (user.email) {
-      try {
-        const invitations = await prisma.groupInvitation.findMany({
+    // Process pending group invitations for this email (since email is required)
+    try {
+      const invitations = await prisma.groupInvitation.findMany({
+        where: { email: user.email },
+      });
+
+      if (invitations.length > 0) {
+        // Create GroupMember records
+        await prisma.groupMember.createMany({
+          data: invitations.map((inv) => ({
+            userId: user.id,
+            groupId: inv.groupId,
+            role: "MEMBER",
+          })),
+        });
+
+        // Delete processed invitations
+        await prisma.groupInvitation.deleteMany({
           where: { email: user.email },
         });
 
-        if (invitations.length > 0) {
-          // Create GroupMember records
-          await prisma.groupMember.createMany({
-            data: invitations.map((inv) => ({
-              userId: user.id,
-              groupId: inv.groupId,
-              role: "MEMBER",
-            })),
-          });
-
-          // Delete processed invitations
-          await prisma.groupInvitation.deleteMany({
-            where: { email: user.email },
-          });
-
-          // Invalidate dashboards
-          const { invalidateDashboard, invalidateGroupMemberDashboards } = await import("@/lib/cache");
-          for (const inv of invitations) {
-            await invalidateGroupMemberDashboards(inv.groupId);
-          }
-          invalidateDashboard(user.id);
+        // Invalidate dashboards
+        const { invalidateDashboard, invalidateGroupMemberDashboards } = await import("@/lib/cache");
+        for (const inv of invitations) {
+          await invalidateGroupMemberDashboards(inv.groupId);
         }
-      } catch (inviteError) {
-        console.error("Failed to process auto-join invitations during registration:", inviteError);
+        invalidateDashboard(user.id);
       }
+    } catch (inviteError) {
+      console.error("Failed to process auto-join invitations during registration:", inviteError);
     }
 
     return NextResponse.json({ user }, { status: 201 });

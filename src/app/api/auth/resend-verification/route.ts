@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail } from "@/lib/email";
-import { sendWhatsAppOTP } from "@/lib/whatsapp";
 
 export async function POST(request: Request) {
   try {
@@ -41,12 +40,8 @@ export async function POST(request: Request) {
       },
     });
 
-    // Send verification WhatsApp message (or fallback to email if mobile is missing)
-    if (user.mobileNumber) {
-      await sendWhatsAppOTP(user.mobileNumber, user.name, token);
-    } else if (user.email) {
-      await sendVerificationEmail(user.email, user.name, token);
-    }
+    // Send verification email
+    await sendVerificationEmail(user.email, user.name, token);
 
     return NextResponse.json({ message: "Verification code sent successfully" }, { status: 200 });
   } catch (error) {
