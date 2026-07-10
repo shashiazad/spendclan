@@ -1,6 +1,119 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
+interface AutoTableDoc {
+  lastAutoTable?: {
+    finalY: number;
+  };
+}
+
+export interface PersonalPDFExpense {
+  date: string;
+  notes?: string | null;
+  category: string;
+  paymentMethod: string;
+  type: string;
+  amount: number;
+}
+
+export interface PersonalPDFCategoryBreakdown {
+  category: string;
+  amount: number;
+  percentage: number;
+}
+
+export interface PersonalPDFData {
+  month: number;
+  year: number;
+  summary: {
+    totalIncome: number;
+    totalExpenses: number;
+    totalSavings: number;
+    netRemaining: number;
+  };
+  categoryBreakdown: PersonalPDFCategoryBreakdown[];
+  expenses: PersonalPDFExpense[];
+}
+
+export interface GroupTransaction {
+  date: string;
+  description: string;
+  paidBy: string;
+  amount: number;
+  userShare: number;
+}
+
+export interface GroupPDFData {
+  groupName: string;
+  totalGroupExpenses: number;
+  userContribution: number;
+  userShare: number;
+  settlementsPaid: number;
+  settlementsReceived: number;
+  outstandingBalance: number;
+  transactions: GroupTransaction[];
+}
+
+export interface MyGroupsPDFData {
+  month: number;
+  year: number;
+  summary: {
+    totalGroups: number;
+    totalContributed: number;
+    totalShare: number;
+    totalOutstandingBalance: number;
+  };
+  groups: GroupPDFData[];
+}
+
+export interface MemberSplit {
+  name: string;
+  amount: number;
+}
+
+export interface IndividualGroupExpense {
+  date: string;
+  description: string;
+  category: string;
+  paidBy: string;
+  splits: MemberSplit[];
+  amount: number;
+}
+
+export interface IndividualGroupSettlement {
+  date: string;
+  amount: number;
+  from: string;
+  to: string;
+}
+
+export interface IndividualGroupPDFData {
+  groupName: string;
+  reportingPeriod: string;
+  description?: string;
+  summary: {
+    totalMembers: number;
+    totalExpenses: number;
+    totalContributions: number;
+    totalSettlements: number;
+  };
+  members: Array<{
+    name: string;
+    email: string;
+    contributed: number;
+    share: number;
+    outstandingBalance: number;
+  }>;
+  categorySummary: Array<{
+    category: string;
+    amount: number;
+    count: number;
+    percentage: number;
+  }>;
+  expenses: IndividualGroupExpense[];
+  settlements: IndividualGroupSettlement[];
+}
+
 // Helper function to format currency value in jsPDF (using standard code to avoid symbol UTF-8 errors)
 function formatVal(amount: number, currency: string): string {
   return `${currency} ${amount.toFixed(2)}`;
@@ -81,7 +194,7 @@ async function addHeaderFooter(doc: jsPDF, titleText: string) {
 /**
  * 1. Personal Expense Report PDF Generator
  */
-export async function generatePersonalPDF(data: any, currency: string) {
+export async function generatePersonalPDF(data: PersonalPDFData, currency: string) {
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -150,7 +263,7 @@ export async function generatePersonalPDF(data: any, currency: string) {
   currentY += 4;
 
   const categoryHeaders = [["Category", "Total Spent", "Percentage of Spend"]];
-  const categoryRows = data.categoryBreakdown.map((c: any) => [
+  const categoryRows = data.categoryBreakdown.map((c: PersonalPDFCategoryBreakdown) => [
     c.category,
     formatVal(c.amount, currency),
     `${c.percentage.toFixed(1)}%`,
@@ -166,7 +279,7 @@ export async function generatePersonalPDF(data: any, currency: string) {
     margin: { top: 26, left: 14, right: 14, bottom: 20 },
   });
 
-  currentY = (doc as any).lastAutoTable.finalY + 10;
+  currentY = (doc as jsPDF & AutoTableDoc).lastAutoTable!.finalY + 10;
 
   // Detailed Transactions List
   doc.setFont("helvetica", "bold");
@@ -176,7 +289,7 @@ export async function generatePersonalPDF(data: any, currency: string) {
   currentY += 4;
 
   const transactionHeaders = [["Date", "Description", "Category", "Payment Method", "Type", "Amount"]];
-  const transactionRows = data.expenses.map((e: any) => [
+  const transactionRows = data.expenses.map((e: PersonalPDFExpense) => [
     new Date(e.date).toLocaleDateString(),
     e.notes || e.category,
     e.category,
@@ -204,7 +317,7 @@ export async function generatePersonalPDF(data: any, currency: string) {
 /**
  * 2. My Group Expenses Report PDF Generator
  */
-export async function generateMyGroupsPDF(data: any, currency: string) {
+export async function generateMyGroupsPDF(data: MyGroupsPDFData, currency: string) {
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -270,7 +383,7 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
   let currentY = 76;
 
   // Render separate section for each group
-  data.groups.forEach((group: any, idx: number) => {
+  data.groups.forEach((group: GroupPDFData, idx: number) => {
     // If it's not the first group, start a new page
     if (idx > 0) {
       doc.addPage();
@@ -309,7 +422,7 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
       margin: { top: 26, left: 14, right: 14, bottom: 20 },
     });
 
-    currentY = (doc as any).lastAutoTable.finalY + 8;
+    currentY = (doc as jsPDF & AutoTableDoc).lastAutoTable!.finalY + 8;
 
     // Group Transactions involving the user in the selected month
     if (group.transactions.length > 0) {
@@ -320,7 +433,7 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
       currentY += 4;
 
       const groupTxHeaders = [["Date", "Description", "Paid By", "Group Total", "Your Share"]];
-      const groupTxRows = group.transactions.map((tx: any) => [
+      const groupTxRows = group.transactions.map((tx: GroupTransaction) => [
         new Date(tx.date).toLocaleDateString(),
         tx.description,
         tx.paidBy,
@@ -338,7 +451,7 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
         margin: { top: 26, left: 14, right: 14, bottom: 20 },
       });
 
-      currentY = (doc as any).lastAutoTable.finalY + 8;
+      currentY = (doc as jsPDF & AutoTableDoc).lastAutoTable!.finalY + 8;
     }
   });
 
@@ -351,7 +464,7 @@ export async function generateMyGroupsPDF(data: any, currency: string) {
 /**
  * 3. Individual Group Expense Report PDF Generator
  */
-export async function generateIndividualGroupPDF(data: any, currency: string) {
+export async function generateIndividualGroupPDF(data: IndividualGroupPDFData, currency: string) {
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -420,7 +533,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
   currentY += 4;
 
   const memberHeaders = [["Member Name", "Email Address", "Contributed", "Share of Expense", "Balance"]];
-  const memberRows = data.members.map((m: any) => [
+  const memberRows = data.members.map((m: { name: string; email: string; contributed: number; share: number; outstandingBalance: number }) => [
     m.name,
     m.email,
     formatVal(m.contributed, currency),
@@ -440,7 +553,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
     margin: { top: 26, left: 14, right: 14, bottom: 20 },
   });
 
-  currentY = (doc as any).lastAutoTable.finalY + 10;
+  currentY = (doc as jsPDF & AutoTableDoc).lastAutoTable!.finalY + 10;
 
   // 2. Category Summary
   doc.setFont("helvetica", "bold");
@@ -450,7 +563,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
   currentY += 4;
 
   const catHeaders = [["Category", "Total Spent", "Transactions Count", "Percentage"]];
-  const catRows = data.categorySummary.map((c: any) => [
+  const catRows = data.categorySummary.map((c: { category: string; amount: number; count: number; percentage: number }) => [
     c.category,
     formatVal(c.amount, currency),
     c.count,
@@ -467,7 +580,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
     margin: { top: 26, left: 14, right: 14, bottom: 20 },
   });
 
-  currentY = (doc as any).lastAutoTable.finalY + 10;
+  currentY = (doc as jsPDF & AutoTableDoc).lastAutoTable!.finalY + 10;
 
   // 3. Detailed Expense Log
   doc.setFont("helvetica", "bold");
@@ -477,12 +590,12 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
   currentY += 4;
 
   const expHeaders = [["Date", "Description", "Category", "Paid By", "Split Breakdown", "Amount"]];
-  const expRows = data.expenses.map((e: any) => [
+  const expRows = data.expenses.map((e: IndividualGroupExpense) => [
     new Date(e.date).toLocaleDateString(),
     e.description,
     e.category,
     e.paidBy,
-    e.splits.map((s: any) => `${s.name}: ${formatVal(s.amount, currency)}`).join("\n"),
+    e.splits.map((s: MemberSplit) => `${s.name}: ${formatVal(s.amount, currency)}`).join("\n"),
     formatVal(e.amount, currency),
   ]);
 
@@ -499,7 +612,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
     },
   });
 
-  currentY = (doc as any).lastAutoTable.finalY + 10;
+  currentY = (doc as jsPDF & AutoTableDoc).lastAutoTable!.finalY + 10;
 
   // 4. Settlement details
   if (data.settlements.length > 0) {
@@ -510,7 +623,7 @@ export async function generateIndividualGroupPDF(data: any, currency: string) {
     currentY += 4;
 
     const setHeaders = [["Date", "Sender", "Recipient", "Amount"]];
-    const setRows = data.settlements.map((s: any) => [
+    const setRows = data.settlements.map((s: IndividualGroupSettlement) => [
       new Date(s.date).toLocaleDateString(),
       s.from,
       s.to,

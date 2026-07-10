@@ -70,7 +70,7 @@ export const prisma = new Proxy(basePrisma, {
         get(modelTarget, modelProp) {
           const originalMethod = Reflect.get(modelTarget, modelProp);
           if (typeof originalMethod === "function") {
-            return async function (...args: any[]) {
+            return async function (...args: unknown[]) {
               try {
                 // Dynamic imports to prevent module initialization circular dependency loops
                 const { getSession } = await import("./auth");
@@ -81,16 +81,20 @@ export const prisma = new Proxy(basePrisma, {
 
                 if (userId) {
                   const isolatedClient = getIsolatedClient(userId);
-                  const isolatedModelDelegate = (isolatedClient as any)[prop];
+                  const isolatedModelDelegate = (isolatedClient as Record<string | symbol, unknown>)[prop];
                   
-                  if (isolatedModelDelegate && modelProp in isolatedModelDelegate) {
-                    const isolatedMethod = isolatedModelDelegate[modelProp];
+                  if (
+                    isolatedModelDelegate && 
+                    typeof isolatedModelDelegate === "object" && 
+                    modelProp in isolatedModelDelegate
+                  ) {
+                    const isolatedMethod = (isolatedModelDelegate as Record<string | symbol, unknown>)[modelProp];
                     if (typeof isolatedMethod === "function") {
                       return isolatedMethod.apply(isolatedModelDelegate, args);
                     }
                   }
                 }
-              } catch (e) {
+              } catch {
                 // Next.js will throw an error if headers/cookies are read outside of a request context
                 // (e.g. during build-time page generation or background seeding). We fall back to raw query execution.
               }

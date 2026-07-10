@@ -15,9 +15,8 @@ export async function POST(request: Request) {
       resetToken = await prisma.passwordResetToken.delete({
         where: { token },
       });
-    } catch (err: any) {
-      // Prisma error code for RecordNotFound (P2025)
-      if (err.code === "P2025") {
+    } catch (err) {
+      if (err && typeof err === "object" && "code" in err && err.code === "P2025") {
         return NextResponse.json(
           { error: "Invalid or expired reset token" },
           { status: 400 },

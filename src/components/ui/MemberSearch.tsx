@@ -37,8 +37,10 @@ export function MemberSearch({
   // Debounced search
   useEffect(() => {
     if (query.trim().length < 2) {
-      setResults([]);
-      setLoading(false);
+      Promise.resolve().then(() => {
+        setResults([]);
+        setLoading(false);
+      });
       return;
     }
 
@@ -48,7 +50,7 @@ export function MemberSearch({
         const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
         if (res.ok) {
           const data = await res.json();
-          const mapped = data.map((u: any) => ({
+          const mapped = data.map((u: { id: string; name?: string; email: string; profilePhoto?: string | null }) => ({
             id: u.id,
             name: u.name,
             email: u.email,

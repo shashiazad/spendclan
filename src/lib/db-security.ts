@@ -1,5 +1,10 @@
 import { basePrisma } from "./prisma";
 
+interface PrismaArgs {
+  data?: Record<string, unknown> | Record<string, unknown>[] | null;
+  where?: Record<string, unknown> | null;
+}
+
 /**
  * Creates an isolated, tenant-safe Prisma Client instance for the current request context.
  * 
@@ -19,14 +24,14 @@ export function getIsolatedClient(userId: string) {
     query: {
       personalExpense: {
         async $allOperations({ operation, args, query }) {
-          const a = args as any;
+          const a = args as PrismaArgs;
           if (operation === "create") {
-            a.data = { ...a.data, userId };
+            a.data = { ...(a.data as Record<string, unknown>), userId };
           } else if (operation === "createMany") {
             if (Array.isArray(a.data)) {
-              a.data = a.data.map((item: any) => ({ ...item, userId }));
+              a.data = a.data.map((item) => ({ ...item, userId }));
             } else {
-              a.data = { ...a.data, userId };
+              a.data = { ...(a.data as Record<string, unknown>), userId };
             }
           } else {
             a.where = { ...a.where, userId };
@@ -36,14 +41,14 @@ export function getIsolatedClient(userId: string) {
       },
       income: {
         async $allOperations({ operation, args, query }) {
-          const a = args as any;
+          const a = args as PrismaArgs;
           if (operation === "create") {
-            a.data = { ...a.data, userId };
+            a.data = { ...(a.data as Record<string, unknown>), userId };
           } else if (operation === "createMany") {
             if (Array.isArray(a.data)) {
-              a.data = a.data.map((item: any) => ({ ...item, userId }));
+              a.data = a.data.map((item) => ({ ...item, userId }));
             } else {
-              a.data = { ...a.data, userId };
+              a.data = { ...(a.data as Record<string, unknown>), userId };
             }
           } else {
             a.where = { ...a.where, userId };
@@ -53,14 +58,14 @@ export function getIsolatedClient(userId: string) {
       },
       saving: {
         async $allOperations({ operation, args, query }) {
-          const a = args as any;
+          const a = args as PrismaArgs;
           if (operation === "create") {
-            a.data = { ...a.data, userId };
+            a.data = { ...(a.data as Record<string, unknown>), userId };
           } else if (operation === "createMany") {
             if (Array.isArray(a.data)) {
-              a.data = a.data.map((item: any) => ({ ...item, userId }));
+              a.data = a.data.map((item) => ({ ...item, userId }));
             } else {
-              a.data = { ...a.data, userId };
+              a.data = { ...(a.data as Record<string, unknown>), userId };
             }
           } else {
             a.where = { ...a.where, userId };
@@ -70,14 +75,14 @@ export function getIsolatedClient(userId: string) {
       },
       savingsGoal: {
         async $allOperations({ operation, args, query }) {
-          const a = args as any;
+          const a = args as PrismaArgs;
           if (operation === "create") {
-            a.data = { ...a.data, userId };
+            a.data = { ...(a.data as Record<string, unknown>), userId };
           } else if (operation === "createMany") {
             if (Array.isArray(a.data)) {
-              a.data = a.data.map((item: any) => ({ ...item, userId }));
+              a.data = a.data.map((item) => ({ ...item, userId }));
             } else {
-              a.data = { ...a.data, userId };
+              a.data = { ...(a.data as Record<string, unknown>), userId };
             }
           } else {
             a.where = { ...a.where, userId };
@@ -87,14 +92,14 @@ export function getIsolatedClient(userId: string) {
       },
       recurringExpense: {
         async $allOperations({ operation, args, query }) {
-          const a = args as any;
+          const a = args as PrismaArgs;
           if (operation === "create") {
-            a.data = { ...a.data, userId };
+            a.data = { ...(a.data as Record<string, unknown>), userId };
           } else if (operation === "createMany") {
             if (Array.isArray(a.data)) {
-              a.data = a.data.map((item: any) => ({ ...item, userId }));
+              a.data = a.data.map((item) => ({ ...item, userId }));
             } else {
-              a.data = { ...a.data, userId };
+              a.data = { ...(a.data as Record<string, unknown>), userId };
             }
           } else {
             a.where = { ...a.where, userId };
@@ -104,7 +109,7 @@ export function getIsolatedClient(userId: string) {
       },
       group: {
         async $allOperations({ operation, args, query }) {
-          const a = args as any;
+          const a = args as PrismaArgs;
           if (operation === "create" || operation === "createMany") {
             return query(args);
           }
@@ -120,7 +125,7 @@ export function getIsolatedClient(userId: string) {
       },
       groupMember: {
         async $allOperations({ operation, args, query }) {
-          const a = args as any;
+          const a = args as PrismaArgs;
           if (operation === "create" || operation === "createMany") {
             return query(args);
           }
@@ -138,13 +143,13 @@ export function getIsolatedClient(userId: string) {
       },
       groupExpense: {
         async $allOperations({ operation, args, query }) {
-          const a = args as any;
-          let groupId = a.where?.groupId || a.data?.groupId;
+          const a = args as PrismaArgs;
+          let groupId = ((a.where && a.where.groupId) || (a.data && !Array.isArray(a.data) && a.data.groupId)) as string | undefined;
 
           // If the query does not specify a groupId directly, look it up by ID using basePrisma
           if (!groupId && a.where?.id) {
             const expense = await basePrisma.groupExpense.findUnique({
-              where: { id: a.where.id },
+              where: { id: a.where.id as string },
               select: { groupId: true },
             });
             if (expense) {
@@ -178,13 +183,13 @@ export function getIsolatedClient(userId: string) {
       },
       settlement: {
         async $allOperations({ operation, args, query }) {
-          const a = args as any;
-          let groupId = a.where?.groupId || a.data?.groupId;
+          const a = args as PrismaArgs;
+          let groupId = ((a.where && a.where.groupId) || (a.data && !Array.isArray(a.data) && a.data.groupId)) as string | undefined;
 
           // Resolve groupId if not directly present in where/data blocks
           if (!groupId && a.where?.id) {
             const sett = await basePrisma.settlement.findUnique({
-              where: { id: a.where.id },
+              where: { id: a.where.id as string },
               select: { groupId: true },
             });
             if (sett) {
@@ -216,7 +221,7 @@ export function getIsolatedClient(userId: string) {
       },
       user: {
         async $allOperations({ operation, args, query }) {
-          const a = args as any;
+          const a = args as PrismaArgs;
           // Block any attempt to update/delete other users' account records
           if (
             operation === "update" ||

@@ -103,8 +103,8 @@ export async function PUT(request: Request) {
         await updateActiveSavingsGoal(tx, auth.session.user.id, delta);
         return updated;
       });
-    } catch (txError: any) {
-      if (txError.message === "NOT_FOUND") {
+    } catch (txError) {
+      if (txError instanceof Error && txError.message === "NOT_FOUND") {
         return NextResponse.json({ error: "Income not found" }, { status: 404 });
       }
       throw txError;
@@ -140,8 +140,8 @@ export async function DELETE(request: Request) {
         await tx.income.delete({ where: { id } });
         await updateActiveSavingsGoal(tx, auth.session.user.id, -existing.amount);
       });
-    } catch (txError: any) {
-      if (txError.message === "NOT_FOUND") {
+    } catch (txError) {
+      if (txError instanceof Error && txError.message === "NOT_FOUND") {
         return NextResponse.json({ error: "Income not found" }, { status: 404 });
       }
       throw txError;

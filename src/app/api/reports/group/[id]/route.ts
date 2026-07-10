@@ -19,7 +19,7 @@ export async function GET(request: Request, context: RouteContext) {
   const monthStr = searchParams.get("month");
   const yearStr = searchParams.get("year");
 
-  let dateFilter: any = undefined;
+  let dateFilter: { gte: Date; lt: Date } | undefined = undefined;
   let monthLabel = "All Time";
   if (monthStr && yearStr) {
     const month = parseInt(monthStr, 10);
@@ -160,7 +160,7 @@ export async function GET(request: Request, context: RouteContext) {
     const categoryMap = new Map<string, { amount: number; count: number }>();
     for (const exp of reportExpenses) {
       // Find category of group expense (we default category to "Other" or use whatever category matches, prisma schema has category)
-      const cat = (exp as any).category || "Other";
+      const cat = (exp as Record<string, unknown>).category as string | undefined || "Other";
       const record = categoryMap.get(cat) || { amount: 0, count: 0 };
       record.amount += exp.amount;
       record.count += 1;
@@ -191,11 +191,11 @@ export async function GET(request: Request, context: RouteContext) {
         id: e.id,
         date: e.date,
         description: e.description,
-        category: (e as any).category || "Other",
+        category: (e as Record<string, unknown>).category as string | undefined || "Other",
         paidBy: e.paidBy.name,
         amount: e.amount,
-        paymentMethod: (e as any).paymentMethod || "CASH",
-        notes: (e as any).notes || null,
+        paymentMethod: (e as Record<string, unknown>).paymentMethod as string | undefined || "CASH",
+        notes: (e as Record<string, unknown>).notes as string | undefined || null,
         splits: e.splits.map((s) => ({ name: s.user.name, amount: s.amount })),
       })),
       settlements: reportSettlements.map((s) => ({

@@ -52,7 +52,15 @@ export default function RecurringPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) load();
+    });
+    return () => {
+      active = false;
+    };
+  }, [load]);
 
   const active = items.filter((i) => i.isActive);
   const inactive = items.filter((i) => !i.isActive);
