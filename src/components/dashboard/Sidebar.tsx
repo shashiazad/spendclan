@@ -227,25 +227,93 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile header */}
-      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--sidebar-bg)] px-4 lg:hidden">
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-md px-4 lg:hidden">
         <div className="flex items-center gap-2">
           <img src="/logo.png" alt="SpendClan Logo" className="h-7 w-7 object-contain" />
-          <span className="text-sm font-semibold text-[var(--foreground)]">SpendClan</span>
+          <span className="text-sm font-semibold text-[var(--foreground)] tracking-tight">SpendClan</span>
         </div>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          {session?.user && (
+            <Link href="/profile" className="flex h-7 w-7 items-center justify-center">
+              {session.user.profilePhoto ? (
+                <img
+                  src={session.user.profilePhoto}
+                  alt={session.user.name ?? "User"}
+                  className="h-7 w-7 rounded-full object-cover ring-1 ring-[var(--border)]"
+                />
+              ) : (
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent-dim)] text-[var(--accent)] font-semibold text-[10px] ring-1 ring-[var(--accent)]/20">
+                  {session.user.name
+                    ? session.user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+                    : "?"}
+                </div>
+              )}
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile bottom navigation bar */}
+      <div className="fixed bottom-0 inset-x-0 z-40 h-16 glass-nav lg:hidden flex justify-around items-center px-2 border-t border-[var(--border)]">
+        <Link
+          href="/dashboard"
+          className={`flex flex-col items-center justify-center gap-1 w-16 h-full text-center transition-colors ${
+            pathname === "/dashboard" ? "text-[var(--accent)] font-semibold" : "text-[var(--foreground-muted)]"
+          }`}
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+          </svg>
+          <span className="text-[10px] tracking-tight">Home</span>
+        </Link>
+
+        <Link
+          href="/personal/expenses"
+          className={`flex flex-col items-center justify-center gap-1 w-16 h-full text-center transition-colors ${
+            pathname.startsWith("/personal") ? "text-[var(--accent)] font-semibold" : "text-[var(--foreground-muted)]"
+          }`}
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+          </svg>
+          <span className="text-[10px] tracking-tight">Expenses</span>
+        </Link>
+
+        <Link
+          href="/groups"
+          className={`flex flex-col items-center justify-center gap-1 w-16 h-full text-center transition-colors ${
+            pathname.startsWith("/groups") ? "text-[var(--accent)] font-semibold" : "text-[var(--foreground-muted)]"
+          }`}
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+          </svg>
+          <span className="text-[10px] tracking-tight">Pockets</span>
+        </Link>
+
+        <Link
+          href="/advisor"
+          className={`flex flex-col items-center justify-center gap-1 w-16 h-full text-center transition-colors ${
+            pathname.startsWith("/advisor") ? "text-[var(--accent)] font-semibold" : "text-[var(--foreground-muted)]"
+          }`}
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+          </svg>
+          <span className="text-[10px] tracking-tight">Advisor</span>
+        </Link>
+
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="rounded-lg p-2 text-[var(--foreground-muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)] transition-colors"
-          aria-label="Toggle menu"
+          className={`flex flex-col items-center justify-center gap-1 w-16 h-full text-center transition-colors ${
+            mobileOpen ? "text-[var(--accent)] font-semibold" : "text-[var(--foreground-muted)]"
+          }`}
         >
-          {mobileOpen ? (
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          )}
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+          <span className="text-[10px] tracking-tight">Menu</span>
         </button>
       </div>
 
@@ -258,12 +326,23 @@ export function Sidebar() {
         />
       )}
 
-      {/* Mobile sidebar */}
+      {/* Mobile sidebar (drawer menu triggered by Menu tab) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-[var(--border)] bg-[var(--sidebar-bg)] transition-transform duration-300 ease-out lg:hidden ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 right-0 z-50 flex w-60 flex-col border-l border-[var(--border)] bg-[var(--sidebar-bg)] transition-transform duration-300 ease-out lg:hidden ${
+          mobileOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--border)] px-4">
+          <span className="text-sm font-semibold text-[var(--foreground)]">Menu</span>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="rounded-lg p-1 text-[var(--foreground-muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
         {sidebarContent}
       </aside>
 
