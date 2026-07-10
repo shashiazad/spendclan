@@ -32,7 +32,7 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`rounded-xl border bg-[var(--card)] border-[var(--border)] shadow-[var(--shadow-sm)] transition-colors duration-200 ${paddingClasses[padding]} ${className}`}
+      className={`rounded-2xl border bg-[var(--card)] border-[var(--border)] shadow-[var(--shadow-sm)] transition-colors duration-200 ${paddingClasses[padding]} ${className}`}
     >
       {children}
     </div>
