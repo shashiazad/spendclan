@@ -66,10 +66,12 @@ export async function generateFinancialInsight(prompt: string, maxRetries = 3): 
       });
 
       return response.text ?? "";
-    } catch (error: any) {
+    } catch (error: unknown) {
       attempt++;
       
-      const isRateLimit = error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('RESOURCE_EXHAUSTED');
+      const errMsg = error instanceof Error ? error.message : String(error);
+      const errStatus = (error && typeof error === "object" && "status" in error) ? (error as { status: number }).status : undefined;
+      const isRateLimit = errStatus === 429 || errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED');
       
       if (isRateLimit && attempt < maxRetries) {
         // Exponential backoff: 2s, 4s, 8s...

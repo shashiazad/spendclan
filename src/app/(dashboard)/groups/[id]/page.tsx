@@ -92,8 +92,9 @@ export default function GroupDetailPage() {
       const { generateIndividualGroupPDF } = await import("@/lib/pdf-generator");
       await generateIndividualGroupPDF(reportData, currency);
       setShowReportModal(false);
-    } catch (e: any) {
-      setReportError(e.message || "Failed to generate group report");
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : "Failed to generate group report";
+      setReportError(errorMsg);
     } finally {
       setDownloadingReport(false);
     }
@@ -155,7 +156,15 @@ export default function GroupDetailPage() {
     setLoading(false);
   }, [loadGroup, loadExpenses, loadBalances, loadSettlements]);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) loadAll();
+    });
+    return () => {
+      active = false;
+    };
+  }, [loadAll]);
 
   async function deleteGroup() {
     if (!confirm("Are you sure you want to delete this pocket? This action is permanent and will delete all expenses and settlements in this pocket.")) return;
@@ -177,7 +186,10 @@ export default function GroupDetailPage() {
 
   useEffect(() => {
     if (members.length > 0 && !expForm.paidById) {
-      setExpForm((f) => ({ ...f, paidById: userId ?? members[0].userId ?? members[0].user?.id ?? "" }));
+      const defaultPaidById = userId ?? members[0].userId ?? members[0].user?.id ?? "";
+      Promise.resolve().then(() => {
+        setExpForm((f) => f.paidById ? f : { ...f, paidById: defaultPaidById });
+      });
     }
   }, [members, userId, expForm.paidById]);
 

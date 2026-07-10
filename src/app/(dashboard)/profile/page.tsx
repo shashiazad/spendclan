@@ -7,7 +7,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 export default function ProfilePage() {
-  const { data: session, update, status } = useSession();
+  const { update, status } = useSession();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<{
     name: string;

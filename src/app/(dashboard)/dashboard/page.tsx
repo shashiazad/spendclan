@@ -194,8 +194,9 @@ export default function DashboardPage() {
         await generateMyGroupsPDF(reportData, currency);
       }
       setShowReportModal(false);
-    } catch (e: any) {
-      setReportError(e.message || "Failed to generate report");
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : "Failed to generate report";
+      setReportError(errorMsg);
     } finally {
       setDownloadingReport(false);
     }

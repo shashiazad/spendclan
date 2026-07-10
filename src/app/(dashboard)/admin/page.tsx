@@ -42,7 +42,11 @@ export default function AdminPage() {
       router.push("/dashboard");
       return;
     }
-    if (session) load();
+    if (session) {
+      Promise.resolve().then(() => {
+        load();
+      });
+    }
   }, [session, load, router]);
 
   async function handleDelete(id: string) {
