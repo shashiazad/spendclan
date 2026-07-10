@@ -109,8 +109,8 @@ export async function DELETE(request: Request) {
         await tx.saving.delete({ where: { id } });
         await updateActiveSavingsGoal(tx, auth.session.user.id, -existing.amount);
       });
-    } catch (txError: any) {
-      if (txError.message === "NOT_FOUND") {
+    } catch (txError) {
+      if (txError instanceof Error && txError.message === "NOT_FOUND") {
         return NextResponse.json({ error: "Saving not found" }, { status: 404 });
       }
       throw txError;

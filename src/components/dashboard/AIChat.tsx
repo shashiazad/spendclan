@@ -90,7 +90,7 @@ export function AIChat() {
             </div>
             <h3 className="text-sm font-semibold text-[var(--foreground)]">AI Financial Advisor</h3>
             <p className="mt-1 max-w-sm text-xs text-[var(--foreground-muted)]">
-              Ask me anything about your finances. I'll analyze your spending data and provide personalized advice.
+              Ask me anything about your finances. I&apos;ll analyze your spending data and provide personalized advice.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               {SUGGESTED_QUESTIONS.map((q) => (

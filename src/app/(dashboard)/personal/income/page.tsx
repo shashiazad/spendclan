@@ -50,9 +50,17 @@ export default function IncomePage() {
     const data = await res.json();
     setIncomes(data.incomes ?? data);
     setLoading(false);
-  }, [month, year]);
+  }, [month, year, setLoading, setIncomes]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) load();
+    });
+    return () => {
+      active = false;
+    };
+  }, [load]);
 
   const total = incomes.reduce((s, i) => s + i.amount, 0);
 

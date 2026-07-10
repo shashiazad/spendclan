@@ -1,0 +1,49 @@
+name: PR Checks and AI Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  quality-checks:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        
+      - name: Run Linter
+        run: npm run lint
+        
+      - name: Run Type Check
+        run: npx tsc --noEmit
+
+  ai-review:
+    name: AI PR Reviewer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Agentic PR Reviewer
+        uses: shashiazad/agentic-pr-reviewer@main
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
