@@ -326,10 +326,10 @@ export function Sidebar() {
         />
       )}
 
-      {/* Mobile sidebar (drawer menu triggered by Menu tab) */}
+      {/* Mobile sidebar (drawer menu triggered by Menu tab - left side overlay) */}
       <aside
-        className={`fixed inset-y-0 right-0 z-50 flex w-60 flex-col border-l border-[var(--border)] bg-[var(--sidebar-bg)] transition-transform duration-300 ease-out lg:hidden ${
-          mobileOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-[var(--border)] bg-[var(--background)] shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--border)] px-4">
@@ -346,8 +346,8 @@ export function Sidebar() {
         {sidebarContent}
       </aside>
 
-      {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-[var(--border)] bg-[var(--sidebar-bg)] lg:flex">
+      {/* Desktop sidebar (right side navigation for webapp) */}
+      <aside className="fixed inset-y-0 right-0 z-30 hidden w-60 flex-col border-l border-[var(--border)] bg-[var(--sidebar-bg)] lg:flex">
         {sidebarContent}
       </aside>
     </>
