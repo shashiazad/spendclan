@@ -3,103 +3,103 @@
 /* ─────────────────────── DARK MODE (DEFAULT) ─────────────────────── */
 :root {
   /* Surfaces */
-  --background:   #0A0A0B;
-  --surface:      #111113;
-  --card:         #161618;
-  --card-hover:   #1C1C1F;
-  --overlay:      #0A0A0B;
+  --background:   #040407;
+  --surface:      rgba(15, 15, 24, 0.45);
+  --card:         rgba(20, 20, 32, 0.4);
+  --card-hover:   rgba(30, 30, 48, 0.55);
+  --overlay:      #040407;
 
   /* Borders */
-  --border:       #272729;
-  --border-hover: #38383B;
-  --border-focus: #4F46E5;
+  --border:       rgba(255, 255, 255, 0.055);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --border-focus: #8B5CF6;
 
   /* Text */
-  --foreground:        #F5F5F6;
-  --foreground-muted:  #A0A0A8;
-  --foreground-subtle: #6B6B72;
+  --foreground:        #F8FAFC;
+  --foreground-muted:  #94A3B8;
+  --foreground-subtle: #64748B;
 
-  /* Accent — Indigo */
-  --accent:       #6366F1;
-  --accent-hover: #4F46E5;
-  --accent-dim:   rgba(99, 102, 241, 0.12);
-  --accent-ring:  rgba(99, 102, 241, 0.25);
+  /* Accent — Purple/Violet Gradient ready */
+  --accent:       #8B5CF6;
+  --accent-hover: #7C3AED;
+  --accent-dim:   rgba(139, 92, 246, 0.10);
+  --accent-ring:  rgba(139, 92, 246, 0.22);
 
   /* Sidebar */
-  --sidebar-bg:     #0F0F11;
+  --sidebar-bg:     rgba(10, 10, 15, 0.6);
   --sidebar-hover:  rgba(255, 255, 255, 0.04);
-  --sidebar-active: rgba(99, 102, 241, 0.10);
+  --sidebar-active: rgba(139, 92, 246, 0.10);
 
   /* Financial Semantic */
-  --income:        #22C55E;
-  --income-dim:    rgba(34, 197, 94, 0.12);
-  --expense:       #EF4444;
-  --expense-dim:   rgba(239, 68, 68, 0.12);
-  --savings:       #6366F1;
-  --savings-dim:   rgba(99, 102, 241, 0.12);
+  --income:        #10B981;
+  --income-dim:    rgba(16, 185, 129, 0.10);
+  --expense:       #F43F5E;
+  --expense-dim:   rgba(244, 63, 94, 0.10);
+  --savings:       #8B5CF6;
+  --savings-dim:   rgba(139, 92, 246, 0.10);
   --warning:       #F59E0B;
-  --warning-dim:   rgba(245, 158, 11, 0.12);
+  --warning-dim:   rgba(245, 158, 11, 0.10);
 
   /* Shadows */
-  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.5);
-  --shadow-xl:  0 24px 64px rgba(0, 0, 0, 0.6);
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.6);
+  --shadow-xl:  0 24px 64px rgba(0, 0, 0, 0.7);
 
   /* Scrollbar */
-  --scrollbar-thumb: #2A2A2D;
-  --scrollbar-thumb-hover: #38383B;
+  --scrollbar-thumb: #1E1E28;
+  --scrollbar-thumb-hover: #2E2E3E;
 }
 
 /* ─────────────────────── LIGHT MODE ─────────────────────── */
 .light {
   /* Surfaces */
-  --background:   #F7F7F8;
-  --surface:      #FFFFFF;
-  --card:         #FFFFFF;
-  --card-hover:   #F5F5F7;
+  --background:   #F8FAFC;
+  --surface:      rgba(255, 255, 255, 0.65);
+  --card:         rgba(255, 255, 255, 0.7);
+  --card-hover:   rgba(255, 255, 255, 0.85);
   --overlay:      #FFFFFF;
 
   /* Borders */
-  --border:       #E4E4E7;
-  --border-hover: #D1D1D6;
+  --border:       rgba(15, 23, 42, 0.06);
+  --border-hover: rgba(15, 23, 42, 0.12);
   --border-focus: #4F46E5;
 
   /* Text */
-  --foreground:        #0F0F11;
-  --foreground-muted:  #6B7280;
-  --foreground-subtle: #9CA3AF;
+  --foreground:        #0F172A;
+  --foreground-muted:  #475569;
+  --foreground-subtle: #94A3B8;
 
   /* Accent — Indigo */
   --accent:       #4F46E5;
   --accent-hover: #4338CA;
-  --accent-dim:   rgba(79, 70, 229, 0.08);
-  --accent-ring:  rgba(79, 70, 229, 0.20);
+  --accent-dim:   rgba(79, 70, 229, 0.06);
+  --accent-ring:  rgba(79, 70, 229, 0.18);
 
   /* Sidebar */
-  --sidebar-bg:     #FFFFFF;
-  --sidebar-hover:  rgba(0, 0, 0, 0.04);
-  --sidebar-active: rgba(79, 70, 229, 0.08);
+  --sidebar-bg:     rgba(255, 255, 255, 0.65);
+  --sidebar-hover:  rgba(15, 23, 42, 0.04);
+  --sidebar-active: rgba(79, 70, 229, 0.06);
 
   /* Financial Semantic */
-  --income:        #16A34A;
-  --income-dim:    rgba(22, 163, 74, 0.08);
-  --expense:       #DC2626;
-  --expense-dim:   rgba(220, 38, 38, 0.08);
+  --income:        #059669;
+  --income-dim:    rgba(5, 150, 105, 0.06);
+  --expense:       #E11D48;
+  --expense-dim:   rgba(225, 29, 72, 0.06);
   --savings:       #4F46E5;
-  --savings-dim:   rgba(79, 70, 229, 0.08);
+  --savings-dim:   rgba(79, 70, 229, 0.06);
   --warning:       #D97706;
-  --warning-dim:   rgba(217, 119, 6, 0.08);
+  --warning-dim:   rgba(217, 119, 6, 0.06);
 
   /* Shadows */
-  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.10);
-  --shadow-xl:  0 24px 64px rgba(0, 0, 0, 0.12);
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.07);
+  --shadow-xl:  0 24px 64px rgba(0, 0, 0, 0.08);
 
   /* Scrollbar */
-  --scrollbar-thumb: #D1D1D6;
-  --scrollbar-thumb-hover: #B0B0B8;
+  --scrollbar-thumb: #E2E8F0;
+  --scrollbar-thumb-hover: #CBD5E1;
 }
 
 /* ─────────────────────── TAILWIND THEME BRIDGE ─────────────────────── */
@@ -152,16 +152,38 @@ body {
 
 /* ─────────────────────── UTILITY CLASSES ─────────────────────── */
 
-/* Cards */
+/* Cards & Panels */
 .card {
   background: var(--card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 .card:hover {
   border-color: var(--border-hover);
+  background: var(--card-hover);
+}
+
+.glass-panel {
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+.glass-nav {
+  background: rgba(10, 10, 15, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+}
+.light .glass-nav {
+  background: rgba(255, 255, 255, 0.8);
+  border-top: 1px solid var(--border);
 }
 
 /* Page gradient for landing only */
