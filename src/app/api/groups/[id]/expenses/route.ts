@@ -5,7 +5,7 @@ import {
   requireGroupMember,
   handleZodError,
 } from "@/lib/auth";
-import { buildEqualSplits } from "@/lib/group-balances";
+
 import { invalidateGroupMemberDashboards } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { groupExpenseSchema } from "@/lib/validators";

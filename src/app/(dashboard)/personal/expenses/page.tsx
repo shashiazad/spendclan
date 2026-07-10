@@ -69,9 +69,17 @@ export default function ExpensesPage() {
     const data = await res.json();
     setExpenses(data.expenses ?? data);
     setLoading(false);
-  }, [month, year, filterCategory, filterType]);
+  }, [month, year, filterCategory, filterType, setLoading, setExpenses]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) load();
+    });
+    return () => {
+      active = false;
+    };
+  }, [load]);
 
   const total = expenses.reduce((s, e) => s + e.amount, 0);
 

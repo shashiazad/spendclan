@@ -62,7 +62,37 @@ export async function GET(request: Request) {
       },
     });
 
-    const groupsData: any[] = [];
+    interface GroupReportItem {
+      groupId: string;
+      groupName: string;
+      totalGroupExpenses: number;
+      userContribution: number;
+      userShare: number;
+      amountPaid: number;
+      outstandingBalance: number;
+      settlementsPaid: number;
+      settlementsReceived: number;
+      settlementStatus: string;
+      transactions: Array<{
+        id: string;
+        date: Date;
+        description: string;
+        amount: number;
+        paidBy: string;
+        userPaid: boolean;
+        userShare: number;
+      }>;
+      settlements: Array<{
+        id: string;
+        date: Date;
+        amount: number;
+        from: string;
+        to: string;
+        userPaid: boolean;
+      }>;
+    }
+
+    const groupsData: GroupReportItem[] = [];
     let overallTotalContributed = 0;
     let overallTotalShare = 0;
     let overallTotalSettlementsPaid = 0;

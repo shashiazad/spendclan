@@ -20,11 +20,7 @@ function VerifyEmailForm() {
   const [cooldown, setCooldown] = useState(0);
   const [attemptsRemaining, setAttemptsRemaining] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!email) {
-      setError("Missing email address");
-    }
-  }, [email]);
+  const displayError = error || (!email ? "Missing email address" : "");
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -102,9 +98,9 @@ function VerifyEmailForm() {
       subtitle={`Enter the 6-digit code sent to ${email || "your email"}`}
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {error && (
+        {displayError && (
           <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 animate-slide-up">
-            {error}
+            {displayError}
           </div>
         )}
 

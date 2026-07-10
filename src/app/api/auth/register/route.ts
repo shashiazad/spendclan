@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const data = registerSchema.parse(body);
 
-    const conditions: any[] = [];
+    const conditions: Record<string, string>[] = [];
     if (data.email) {
       conditions.push({ email: data.email.toLowerCase() });
     }
