@@ -33,8 +33,8 @@ async function main() {
   try {
     await client.connect();
     // Delete any users who have a NULL mobileNumber to allow the unique NOT NULL constraint to be created
-    const result = await client.query('DELETE FROM "User" WHERE "mobileNumber" IS NULL');
-    console.log(`Cleanup complete. Deleted ${result.rowCount} user(s) with NULL mobileNumber.`);
+    // const result = await client.query('DELETE FROM "User" WHERE "mobileNumber" IS NULL');
+    console.log(`Cleanup complete. Skipped deletion as NULL mobileNumber is now supported.`);
   } catch (error) {
     console.error("Error running database pre-build cleanup:", error);
   } finally {
