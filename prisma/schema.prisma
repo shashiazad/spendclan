@@ -58,8 +58,8 @@ model User {
   id                String   @id @default(uuid())
   name              String
   email             String   @unique
-  mobileNumber      String   @unique
-  hashedPassword    String
+  mobileNumber      String?  @unique
+  hashedPassword    String?
   currency          Currency @default(INR)
   role              Role     @default(USER)
   securityQuestion  String?
