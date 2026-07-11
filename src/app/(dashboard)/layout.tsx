@@ -21,7 +21,7 @@ export default async function DashboardLayout({
     <ToastProvider>
       <div className="bg-background min-h-screen text-foreground transition-colors duration-300">
         <Sidebar />
-        <div className="flex min-h-screen flex-col lg:pr-64">
+        <div className="flex min-h-screen flex-col lg:pl-64">
           <main className="flex-1 px-4 pb-28 pt-20 lg:px-8 lg:py-8">
             {children}
           </main>
