@@ -182,35 +182,40 @@ export function Sidebar() {
 
       {/* User */}
       <div className="shrink-0 border-t border-[var(--border)] p-3">
-        {session?.user && (
-          <Link
-            href="/profile"
-            className="flex items-center gap-2.5 rounded-lg px-2 py-2 transition-colors hover:bg-[var(--sidebar-hover)] group"
-          >
-            {session.user.profilePhoto ? (
-              <img
-                src={session.user.profilePhoto}
-                alt={session.user.name ?? "User"}
-                className="h-7 w-7 rounded-full object-cover ring-1 ring-[var(--border)]"
-              />
-            ) : (
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent-dim)] text-[var(--accent)] font-semibold text-xs ring-1 ring-[var(--accent)]/20">
-                {session.user.name
-                  ? session.user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
-                  : "?"}
+        <div className="flex items-center justify-between gap-2">
+          {session?.user && (
+            <Link
+              href="/profile"
+              onClick={() => setMobileOpen(false)}
+              className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2 py-2 transition-colors hover:bg-[var(--sidebar-hover)] group"
+            >
+              {session.user.profilePhoto ? (
+                <img
+                  src={session.user.profilePhoto}
+                  alt={session.user.name ?? "User"}
+                  className="h-7 w-7 rounded-full object-cover ring-1 ring-[var(--border)]"
+                />
+              ) : (
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-dim)] text-[var(--accent)] font-semibold text-xs ring-1 ring-[var(--accent)]/20">
+                  {session.user.name
+                    ? session.user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+                    : "?"}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-medium text-[var(--foreground)]">
+                  {session.user.name}
+                </p>
+                <p className="truncate text-[10px] text-[var(--foreground-subtle)]">
+                  {session.user.email}
+                </p>
               </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium text-[var(--foreground)]">
-                {session.user.name}
-              </p>
-              <p className="truncate text-[10px] text-[var(--foreground-subtle)]">
-                {session.user.email}
-              </p>
-            </div>
+            </Link>
+          )}
+          <div className="shrink-0">
             <ThemeToggle />
-          </Link>
-        )}
+          </div>
+        </div>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="mt-1 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs text-[var(--foreground-subtle)] transition-colors hover:bg-[var(--sidebar-hover)] hover:text-[var(--expense)]"
@@ -326,10 +331,10 @@ export function Sidebar() {
         />
       )}
 
-      {/* Mobile sidebar (drawer menu triggered by Menu tab - left side overlay) */}
+      {/* Mobile sidebar (drawer menu triggered by Menu tab) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-[var(--border)] bg-[var(--background)] shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 right-0 z-50 flex w-60 flex-col border-l border-[var(--border)] bg-[var(--sidebar-bg)] transition-transform duration-300 ease-out lg:hidden ${
+          mobileOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--border)] px-4">
@@ -346,8 +351,8 @@ export function Sidebar() {
         {sidebarContent}
       </aside>
 
-      {/* Desktop sidebar (right side navigation for webapp) */}
-      <aside className="fixed inset-y-0 right-0 z-30 hidden w-60 flex-col border-l border-[var(--border)] bg-[var(--sidebar-bg)] lg:flex">
+      {/* Desktop sidebar */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-[var(--border)] bg-[var(--sidebar-bg)] lg:flex">
         {sidebarContent}
       </aside>
     </>
