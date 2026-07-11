@@ -129,6 +129,12 @@ export const userSearchSchema = z.object({
 });
 
 export const profileUpdateSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  mobileNumber: z.string().min(8).max(20).optional().nullable(),
+  currency: z.enum(CURRENCIES).optional(),
+  securityQuestion: z.enum(SECURITY_QUESTIONS).optional().nullable(),
+  securityAnswer: z.string().min(2).max(200).optional().nullable(),
+  password: z.string().min(8).max(100).optional().nullable(),
   profilePhoto: z.string().optional().nullable(),
 });
 
