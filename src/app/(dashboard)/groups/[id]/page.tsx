@@ -120,6 +120,7 @@ export default function GroupDetailPage() {
   });
   const [settleForm, setSettleForm] = useState({ amount: "", toId: "" });
   const [selectedMemberToAdd, setSelectedMemberToAdd] = useState<SelectedMember[]>([]);
+  const [showAddMemberDropdown, setShowAddMemberDropdown] = useState(false);
 
   const loadGroup = useCallback(async () => {
     const res = await fetch(`/api/groups/${id}`);
@@ -402,6 +403,62 @@ export default function GroupDetailPage() {
             </svg>
             Download Report
           </Button>
+          <div className="relative">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowAddMemberDropdown(!showAddMemberDropdown)}
+              className="flex items-center gap-1.5 text-xs font-semibold"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              Add Member
+            </Button>
+            {showAddMemberDropdown && (
+              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-zinc-900 border border-[#E8E8ED]/80 dark:border-[#2C2C2E]/60 shadow-xl rounded-xl p-4 z-50 animate-slide-up text-left">
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-widest mb-3">Add Member to Pocket</h3>
+                <form
+                  onSubmit={async (e) => {
+                    await addMember(e);
+                    setShowAddMemberDropdown(false);
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-1.5">
+                    <MemberSearch
+                      selectedMembers={selectedMemberToAdd}
+                      onAddMember={(member) => setSelectedMemberToAdd([member])}
+                      onRemoveMember={() => setSelectedMemberToAdd([])}
+                      excludeEmails={
+                        session?.user?.email
+                          ? [session.user.email, ...memberList.map((m) => m.user?.email || "").filter(Boolean)]
+                          : memberList.map((m) => m.user?.email || "").filter(Boolean)
+                      }
+                      placeholder="Search by name or type email..."
+                      singleSelect={true}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2 border-t border-[#E8E8ED]/30 dark:border-[#2C2C2E]/20">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedMemberToAdd([]);
+                        setShowAddMemberDropdown(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" size="sm" disabled={selectedMemberToAdd.length === 0}>
+                      Add
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
           {isAdmin && (
             <Button variant="danger" size="sm" onClick={deleteGroup}>
               Delete Pocket
@@ -576,33 +633,6 @@ export default function GroupDetailPage() {
                   options={memberList.filter(m => (m.userId ?? m.user?.id) !== userId).map(m => ({ value: m.userId ?? m.user?.id ?? "", label: m.name ?? m.user?.name ?? "" }))}
                 />
                 <div className="flex items-end"><Button type="submit">Record</Button></div>
-              </form>
-            </CardBody>
-          </Card>
-
-          <Card>
-            <CardHeader title="Add Member" />
-            <CardBody>
-              <form onSubmit={addMember} className="space-y-4">
-                <div className="space-y-1.5">
-                  <MemberSearch
-                    selectedMembers={selectedMemberToAdd}
-                    onAddMember={(member) => setSelectedMemberToAdd([member])}
-                    onRemoveMember={() => setSelectedMemberToAdd([])}
-                    excludeEmails={
-                      session?.user?.email
-                        ? [session.user.email, ...memberList.map((m) => m.user?.email || "").filter(Boolean)]
-                        : memberList.map((m) => m.user?.email || "").filter(Boolean)
-                    }
-                    placeholder="Search by name or type email..."
-                    singleSelect={true}
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={selectedMemberToAdd.length === 0}>
-                    Add Member
-                  </Button>
-                </div>
               </form>
             </CardBody>
           </Card>
