@@ -119,16 +119,43 @@ Estimate how much the user could save by following your recommendations.
 Use the user's currency symbol throughout. Be specific with numbers.`;
 }
 
-export function buildAdvisorPrompt(ctx: AIFinancialContext, question: string): string {
-  return `${SYSTEM_PREAMBLE}
+export function buildAdvisorPrompt(
+  ctx: AIFinancialContext,
+  question: string,
+  relevantExpenses?: any[],
+  userName?: string,
+  advisorNotes?: string | null
+): string {
+  let text = `${SYSTEM_PREAMBLE}
 
-${formatContext(ctx)}
+${formatContext(ctx)}`;
 
-The user is asking a financial question. Answer it based on their actual spending data above. Be specific, reference their real numbers, and provide actionable advice.
+  if (advisorNotes) {
+    text += `### Long-Term User Goals & Constraints (Memory)\n${advisorNotes}\n\n`;
+  }
+
+  if (relevantExpenses && relevantExpenses.length > 0) {
+    const sym = CURRENCY_SYMBOLS[ctx.currency] ?? ctx.currency;
+    text += `### Relevant Transactions Retrieved (RAG Search)\n`;
+    for (const e of relevantExpenses) {
+      const dateStr = e.date instanceof Date ? e.date.toISOString().split("T")[0] : String(e.date).split("T")[0];
+      const noteStr = e.notes ? ` (Notes: ${e.notes})` : "";
+      text += `- **${dateStr}**: ${sym}${e.amount.toFixed(2)} in **${e.category}** via ${e.paymentMethod} [Type: ${e.type}]${noteStr}\n`;
+    }
+    text += "\n";
+  }
+
+  const greetingInstruction = userName ? `Warmly greet the user by name (e.g. "Hello, ${userName}!") in your first sentence.` : "Warmly greet the user.";
+
+  text += `The user is asking a financial question. Answer it based on their actual spending data, monthly metrics, relevant transactions, and long-term goals/constraints. Be specific, reference real numbers, and provide actionable advice.
+
+${greetingInstruction}
 
 **User's Question**: ${question}
 
 Respond in markdown format. Keep the response focused and under 300 words.`;
+
+  return text;
 }
 
 export function buildUnnecessarySpendPrompt(ctx: AIFinancialContext): string {
