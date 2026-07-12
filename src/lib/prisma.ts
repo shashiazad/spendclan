@@ -43,9 +43,61 @@ function createPrismaClient() {
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
+  // Self-healing database functions setup
+  ensureDatabaseFunctions(client).catch((err) => {
+    console.error("[Prisma Setup] Database functions initialization failed:", err);
+  });
+
   globalForPrisma.pool = pool;
 
   return client;
+}
+
+async function ensureDatabaseFunctions(client: PrismaClient) {
+  try {
+    // Check if function already exists to prevent concurrent update collisions in PostgreSQL
+    const exists = await client.$queryRawUnsafe<Array<{ exists: boolean }>>(`
+      SELECT EXISTS (
+        SELECT 1 
+        FROM pg_proc 
+        WHERE proname = 'cosine_similarity'
+      ) as exists;
+    `);
+
+    if (exists?.[0]?.exists) {
+      return;
+    }
+
+    await client.$executeRawUnsafe(`
+      CREATE OR REPLACE FUNCTION cosine_similarity(a double precision[], b double precision[])
+      RETURNS double precision AS $$
+      DECLARE
+        dot_product double precision := 0;
+        norm_a double precision := 0;
+        norm_b double precision := 0;
+        i integer;
+      BEGIN
+        IF array_length(a, 1) IS NULL OR array_length(b, 1) IS NULL OR array_length(a, 1) != array_length(b, 1) THEN
+          RETURN 0;
+        END IF;
+        FOR i IN 1..array_length(a, 1) LOOP
+          dot_product := dot_product + a[i] * b[i];
+          norm_a := norm_a + a[i] * a[i];
+          norm_b := norm_b + b[i] * b[i];
+        END LOOP;
+        IF norm_a = 0 OR norm_b = 0 THEN
+          RETURN 0;
+        END IF;
+        RETURN dot_product / (sqrt(norm_a) * sqrt(norm_b));
+      END;
+      $$ LANGUAGE plpgsql IMMUTABLE;
+    `);
+  } catch (err) {
+    // Suppress warnings during Next.js build phase where database might be offline
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("⚠️ [Prisma Setup] Could not verify database cosine_similarity function (database might be offline):", err instanceof Error ? err.message : err);
+    }
+  }
 }
 
 // Export the raw base client to be used inside db-security.ts (prevents recursive loops)
