@@ -6,6 +6,7 @@ import { invalidateDashboard } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { EXPENSE_CATEGORIES, EXPENSE_TYPES } from "@/lib/constants";
 import { expenseSchema } from "@/lib/validators";
+import { generateEmbedding, transformExpenseToDocument } from "@/lib/gemini";
 
 function parseMonthYearFilters(searchParams: URLSearchParams) {
   const month = searchParams.get("month");
@@ -68,11 +69,15 @@ export async function POST(request: Request) {
     const body = await request.json();
     const data = expenseSchema.parse(body);
 
+    const docText = transformExpenseToDocument(data);
+    const embedding = await generateEmbedding(docText);
+
     const expense = await basePrisma.$transaction(async (tx) => {
       const created = await tx.personalExpense.create({
         data: {
           ...data,
           userId: auth.session.user.id,
+          embedding,
         },
       });
       await updateActiveSavingsGoal(tx, auth.session.user.id, -data.amount);
@@ -105,10 +110,16 @@ export async function PUT(request: Request) {
           throw new Error("NOT_FOUND");
         }
 
+        const docText = transformExpenseToDocument(data);
+        const embedding = await generateEmbedding(docText);
+
         const delta = existing.amount - data.amount;
         const updated = await tx.personalExpense.update({
           where: { id },
-          data,
+          data: {
+            ...data,
+            embedding,
+          },
         });
 
         await updateActiveSavingsGoal(tx, auth.session.user.id, delta);
