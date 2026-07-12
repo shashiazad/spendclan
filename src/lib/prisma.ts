@@ -55,16 +55,33 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = basePrisma;
 }
 
+const MODEL_DELEGATES = new Set([
+  "user",
+  "personalExpense",
+  "income",
+  "saving",
+  "savingsGoal",
+  "recurringExpense",
+  "group",
+  "groupMember",
+  "groupExpense",
+  "groupSplit",
+  "settlement",
+  "passwordResetToken",
+  "groupInvitation",
+]);
+
 // Export a secure Prisma Proxy that intercepts model delegates to enforce RLS / Tenant Isolation
 export const prisma = new Proxy(basePrisma, {
   get(target, prop, receiver) {
     const delegate = Reflect.get(target, prop, receiver);
 
-    // Intercept model delegates dynamically (exclude built-in connection/utility methods)
+    // Intercept model delegates dynamically to enforce RLS / Tenant Isolation
     if (
       delegate &&
       typeof delegate === "object" &&
-      !["$connect", "$disconnect", "$executeRaw", "$queryRaw", "$transaction"].includes(prop as string)
+      typeof prop === "string" &&
+      MODEL_DELEGATES.has(prop)
     ) {
       return new Proxy(delegate, {
         get(modelTarget, modelProp) {
