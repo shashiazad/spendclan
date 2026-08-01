@@ -6,7 +6,7 @@ import { invalidateDashboard } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { EXPENSE_CATEGORIES, EXPENSE_TYPES } from "@/lib/constants";
 import { expenseSchema } from "@/lib/validators";
-import { generateEmbedding, transformExpenseToDocument } from "@/lib/gemini";
+import { generateEmbedding, transformExpenseToDocument } from "@/lib/ai";
 
 function parseMonthYearFilters(searchParams: URLSearchParams) {
   const month = searchParams.get("month");

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { isAIConfigured, generateFinancialInsight, friendlyAIError, transformQuery, generateEmbedding, extractAdvisorNotes } from "@/lib/gemini";
+import { isAIConfigured, generateFinancialInsight, friendlyAIError, transformQuery, generateEmbedding, extractAdvisorNotes } from "@/lib/ai";
 import { getAIContext } from "@/lib/ai-data";
 import { buildAdvisorPrompt } from "@/lib/ai-prompts";
 import { prisma } from "@/lib/prisma";

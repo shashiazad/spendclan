@@ -153,7 +153,7 @@ export default function RegisterPage() {
           type="button"
           variant="secondary"
           className="w-full flex items-center justify-center gap-2 border border-slate-800 bg-slate-900/50 hover:bg-slate-900 transition-colors text-slate-200"
-          onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+          onClick={() => signIn("google", { callbackUrl: "/groups" })}
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24">
             <path

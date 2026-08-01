@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { isAIConfigured, generateFinancialInsight, friendlyAIError } from "@/lib/gemini";
+import { isAIConfigured, generateFinancialInsight, friendlyAIError } from "@/lib/ai";
 import { getAIContext } from "@/lib/ai-data";
 import { buildReportPrompt } from "@/lib/ai-prompts";
 
