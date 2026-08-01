@@ -172,10 +172,16 @@ export async function sendPasswordResetEmail(
 ): Promise<boolean> {
   const transporter = getTransporter();
   const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+  const devFallback = process.env.NODE_ENV !== "production";
 
   if (!transporter) {
-    console.log(`[DEV] Password reset link for ${email}: ${resetUrl}`);
-    return true;
+    const msg = "SMTP transport is not configured. Set SMTP_HOST and optionally SMTP_USER/SMTP_PASS.";
+    console.warn(msg);
+    if (devFallback) {
+      console.log(`[DEV] Password reset link for ${email}: ${resetUrl}`);
+      return true;
+    }
+    throw new Error(msg);
   }
 
   const title = "Reset your SpendClan password";
@@ -201,8 +207,12 @@ export async function sendPasswordResetEmail(
       }),
     });
   } catch (error) {
-    console.error("Failed to send email via SMTP, falling back to console log:", error);
-    console.log(`[DEV-FALLBACK] Password reset link for ${email}: ${resetUrl}`);
+    console.error("Failed to send password reset email via SMTP:", error);
+    if (devFallback) {
+      console.log(`[DEV-FALLBACK] Password reset link for ${email}: ${resetUrl}`);
+      return true;
+    }
+    throw error;
   }
 
   return true;
@@ -215,15 +225,22 @@ export async function sendVerificationEmail(
 ): Promise<boolean> {
   const transporter = getTransporter();
 
+  const devFallback = process.env.NODE_ENV !== "production";
+
   if (!transporter) {
-    console.log(`\n==================================================`);
-    console.log(`[DEV] Email verification code for ${name} (${email}): ${token}`);
-    console.log(`==================================================\n`);
-    return true;
+    const msg = "SMTP transport is not configured. Set SMTP_HOST and optionally SMTP_USER/SMTP_PASS.";
+    console.warn(msg);
+    if (devFallback) {
+      console.log(`\n==================================================`);
+      console.log(`[DEV] Email verification code for ${name} (${email}): ${token}`);
+      console.log(`==================================================\n`);
+      return true;
+    }
+    throw new Error(msg);
   }
 
   const title = "Verify your SpendClan email address";
-  const preheader = "Use verification code ${token} to complete your registration.";
+  const preheader = `Use verification code ${token} to complete your registration.`;
   const contentHtml = `
     <p style="margin: 0 0 16px 0; font-size: 16px; color: #0f172a; font-weight: 600;">Hello ${name},</p>
     <p style="margin: 0 0 16px 0;">Welcome to SpendClan! We're excited to help you track personal spending and split group expenses effortlessly.</p>
@@ -246,10 +263,14 @@ export async function sendVerificationEmail(
       }),
     });
   } catch (error) {
-    console.error("Failed to send verification email via SMTP, falling back to console log:", error);
-    console.log(`\n==================================================`);
-    console.log(`[DEV-FALLBACK] Email verification code for ${name} (${email}): ${token}`);
-    console.log(`==================================================\n`);
+    console.error("Failed to send verification email via SMTP:", error);
+    if (devFallback) {
+      console.log(`\n==================================================`);
+      console.log(`[DEV-FALLBACK] Email verification code for ${name} (${email}): ${token}`);
+      console.log(`==================================================\n`);
+      return true;
+    }
+    throw error;
   }
 
   return true;
@@ -264,9 +285,16 @@ export async function sendGroupInvitationEmail(
   const transporter = getTransporter();
   const registerUrl = `${baseUrl}/register?email=${encodeURIComponent(email)}`;
 
+  const devFallback = process.env.NODE_ENV !== "production";
+
   if (!transporter) {
-    console.log(`[DEV] Group invitation email for ${email} to join group "${groupName}" by ${invitedByName}: ${registerUrl}`);
-    return true;
+    const msg = "SMTP transport is not configured. Set SMTP_HOST and optionally SMTP_USER/SMTP_PASS.";
+    console.warn(msg);
+    if (devFallback) {
+      console.log(`[DEV] Group invitation email for ${email} to join group "${groupName}" by ${invitedByName}: ${registerUrl}`);
+      return true;
+    }
+    throw new Error(msg);
   }
 
   const title = `Invitation to join "${groupName}" on SpendClan`;
@@ -293,8 +321,12 @@ export async function sendGroupInvitationEmail(
       }),
     });
   } catch (error) {
-    console.error("Failed to send group invitation email via SMTP, falling back to console log:", error);
-    console.log(`[DEV-FALLBACK] Group invitation email for ${email} to join group "${groupName}" by ${invitedByName}: ${registerUrl}`);
+    console.error("Failed to send group invitation email via SMTP:", error);
+    if (devFallback) {
+      console.log(`[DEV-FALLBACK] Group invitation email for ${email} to join group "${groupName}" by ${invitedByName}: ${registerUrl}`);
+      return true;
+    }
+    throw error;
   }
 
   return true;
