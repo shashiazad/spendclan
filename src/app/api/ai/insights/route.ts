@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { isAIConfigured, generateWithCache, friendlyAIError } from "@/lib/gemini";
+import { isAIConfigured, generateWithCache, friendlyAIError } from "@/lib/ai";
 import { getAIContext } from "@/lib/ai-data";
 import { buildInsightsPrompt } from "@/lib/ai-prompts";
 
