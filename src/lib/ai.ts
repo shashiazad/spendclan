@@ -1,19 +1,29 @@
 import { GoogleGenAI } from "@google/genai";
+import Groq from "groq-sdk";
 
-let client: GoogleGenAI | null = null;
+let groqClient: Groq | null = null;
+let geminiClient: GoogleGenAI | null = null;
 
-function getClient(): GoogleGenAI | null {
-  if (!process.env.GEMINI_API_KEY) return null;
-  if (!client) {
-    client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+function getGroqClient(): Groq | null {
+  if (!process.env.GROQ_API_KEY) return null;
+  if (!groqClient) {
+    groqClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
   }
-  return client;
+  return groqClient;
+}
+
+function getGeminiClient(): GoogleGenAI | null {
+  if (!process.env.GEMINI_API_KEY) return null;
+  if (!geminiClient) {
+    geminiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
+  return geminiClient;
 }
 
 // Helper function to delay execution
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-/** Maps raw Gemini API errors to user-friendly messages */
+/** Maps raw AI API errors to user-friendly messages */
 export function friendlyAIError(error: unknown): string {
   const msg = error instanceof Error ? error.message : String(error);
   const msgLower = msg.toLowerCase();
@@ -24,7 +34,7 @@ export function friendlyAIError(error: unknown): string {
     msgLower.includes("high demand") ||
     msgLower.includes("overloaded")
   ) {
-    return "SpendClan AI is analyzing a lot of balance sheets right now! \ud83d\udcca Please give us a quick moment and try asking your question again.";
+    return "SpendClan AI is analyzing a lot of balance sheets right now! 📊 Please give us a quick moment and try asking your question again.";
   }
 
   if (
@@ -32,66 +42,64 @@ export function friendlyAIError(error: unknown): string {
     msgLower.includes("resource_exhausted") ||
     msgLower.includes("rate limit")
   ) {
-    return "SpendClan AI is analyzing a lot of balance sheets right now! \ud83d\udcca Please give us a quick moment and try asking your question again.";
+    return "SpendClan AI is analyzing a lot of balance sheets right now! 📊 Please give us a quick moment and try asking your question again.";
   }
 
-  if (msgLower.includes("api_key") || msgLower.includes("not configured")) {
-    return "AI features are being set up. Check back soon! \u2728";
+  if (msgLower.includes("api_key") || msgLower.includes("not configured") || msgLower.includes("api key")) {
+    return "AI features are being set up. Check back soon! ✨";
   }
 
   if (msgLower.includes("timeout") || msgLower.includes("deadline")) {
     return "The AI advisor took too long to respond. Please try a shorter question or try again in a moment.";
   }
 
-  return "Something unexpected happened with our AI advisor. Please try again in a moment. \ud83d\ude4f";
+  return "Something unexpected happened with our AI advisor. Please try again in a moment. 🙏";
 }
 
 export async function generateFinancialInsight(prompt: string, maxRetries = 3): Promise<string> {
-  const ai = getClient();
+  const ai = getGroqClient();
   if (!ai) {
-    throw new Error("GEMINI_API_KEY is not configured");
+    throw new Error("GROQ_API_KEY is not configured");
   }
 
   let attempt = 0;
   
   while (attempt < maxRetries) {
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
-        contents: prompt,
-        config: {
-          temperature: 0.7,
-          maxOutputTokens: 2048,
-        },
+      const response = await ai.chat.completions.create({
+        model: "llama3-70b-8192", // Using Groq's high-performance Llama 3 70B
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: 2048,
       });
 
-      return response.text ?? "";
+      return response.choices[0]?.message?.content ?? "";
     } catch (error: unknown) {
       attempt++;
       
       const errMsg = error instanceof Error ? error.message : String(error);
       const errStatus = (error && typeof error === "object" && "status" in error) ? (error as { status: number }).status : undefined;
-      const isRateLimit = errStatus === 429 || errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED');
+      const isRateLimit = errStatus === 429 || errMsg.includes('429') || errMsg.includes('rate limit');
       
       if (isRateLimit && attempt < maxRetries) {
         // Exponential backoff: 2s, 4s, 8s...
         const backoffMs = Math.pow(2, attempt) * 1000;
-        console.warn(`[Gemini] Rate limit hit (429). Retrying in ${backoffMs}ms... (Attempt ${attempt}/${maxRetries})`);
+        console.warn(`[Groq] Rate limit hit (429). Retrying in ${backoffMs}ms... (Attempt ${attempt}/${maxRetries})`);
         await delay(backoffMs);
         continue;
       }
       
       const rawMsg = error instanceof Error ? error.message : "Unknown error";
-      console.error(`[Gemini] Error generating content (Attempt ${attempt}):`, rawMsg);
+      console.error(`[Groq] Error generating content (Attempt ${attempt}):`, rawMsg);
       throw new Error(friendlyAIError(error));
     }
   }
   
-  throw new Error("SpendClan AI is analyzing a lot of balance sheets right now! \ud83d\udcca Please give us a quick moment and try asking your question again.");
+  throw new Error("SpendClan AI is analyzing a lot of balance sheets right now! 📊 Please give us a quick moment and try asking your question again.");
 }
 
 export function isAIConfigured(): boolean {
-  return !!process.env.GEMINI_API_KEY;
+  return !!process.env.GROQ_API_KEY;
 }
 
 // Simple in-memory cache to avoid redundant API calls
@@ -113,12 +121,13 @@ export async function generateWithCache(
 }
 
 /**
- * Generates text embedding for the provided content using text-embedding-004
+ * Generates text embedding for the provided content using Gemini text-embedding-004
+ * (Groq doesn't provide an embedding model natively yet)
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  const ai = getClient();
+  const ai = getGeminiClient();
   if (!ai) {
-    throw new Error("GEMINI_API_KEY is not configured");
+    throw new Error("GEMINI_API_KEY is not configured for embeddings");
   }
 
   try {
@@ -184,12 +193,12 @@ export interface TransformedQuery {
 }
 
 /**
- * Uses Gemini to parse a user's natural language question into search terms and SQL filters.
+ * Uses Groq to parse a user's natural language question into search terms and SQL filters.
  */
 export async function transformQuery(userMessage: string): Promise<TransformedQuery> {
-  const ai = getClient();
+  const ai = getGroqClient();
   if (!ai) {
-    throw new Error("GEMINI_API_KEY is not configured");
+    throw new Error("GROQ_API_KEY is not configured");
   }
 
   const systemPrompt = `
@@ -225,17 +234,17 @@ Return ONLY a valid JSON object matching this exact TypeScript structure. Do NOT
 `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: userMessage,
-      config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.1,
-        responseMimeType: "application/json",
-      },
+    const response = await ai.chat.completions.create({
+      model: "llama3-70b-8192", // Using Llama 3 70B for JSON capability
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userMessage }
+      ],
+      temperature: 0.1,
+      response_format: { type: "json_object" },
     });
 
-    const text = response.text?.trim() || "";
+    const text = response.choices[0]?.message?.content?.trim() || "{}";
     const parsed = JSON.parse(text) as TransformedQuery;
     
     // Ensure structure is clean and default values exist
@@ -275,7 +284,7 @@ export async function extractAdvisorNotes(
   userMessage: string,
   currentNotes: string | null
 ): Promise<string | null> {
-  const ai = getClient();
+  const ai = getGroqClient();
   if (!ai) return null;
 
   const notesContext = currentNotes ? `Existing User Preferences/Goals:\n${currentNotes}` : "No existing preferences recorded yet.";
@@ -301,16 +310,16 @@ ${notesContext}
 `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: `User Message: "${userMessage}"`,
-      config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.1,
-      },
+    const response = await ai.chat.completions.create({
+      model: "llama3-70b-8192",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `User Message: "${userMessage}"` }
+      ],
+      temperature: 0.1,
     });
 
-    const resultText = response.text?.trim();
+    const resultText = response.choices[0]?.message?.content?.trim();
     if (!resultText || resultText === "NO_CHANGE" || resultText.includes("NO_CHANGE")) {
       return null;
     }
@@ -321,4 +330,3 @@ ${notesContext}
     return null;
   }
 }
-
