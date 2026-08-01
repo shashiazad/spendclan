@@ -322,20 +322,20 @@ export function HomePageClient() {
           <div className="relative text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 mb-6 reveal-on-scroll">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--income)]" />
-              <span className="text-[11px] font-medium text-[var(--foreground-muted)]">Personal Finance · Group Splitting · AI Insights</span>
+              <span className="text-[11px] font-medium text-[var(--foreground-muted)]">Shared Pockets · Group Splitting · Smart Settlements</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-[var(--foreground)] leading-[1.1] mb-5 reveal-on-scroll">
-              Manage money with{" "}
+              Split bills with{" "}
               <span
                 className="bg-gradient-to-r bg-clip-text text-transparent"
                 style={{ backgroundImage: "linear-gradient(135deg, var(--accent), #818CF8)" }}
               >
-                clarity.
+                friends.
               </span>
             </h1>
             <p className="text-base sm:text-lg text-[var(--foreground-muted)] font-normal max-w-2xl mx-auto leading-relaxed mb-8 reveal-on-scroll">
-              Personal expense tracking meets seamless group splitting. Keep your own budget clean while settling shared bills with friends — all in one place.
+              Seamless group splitting meets personal expense tracking. Create shared pockets, track group trips, and settle debts instantly — all in one place.
             </p>
             <div className="flex justify-center items-center gap-3 reveal-on-scroll">
               <Link href="/register" className="btn-primary">
@@ -369,19 +369,10 @@ export function HomePageClient() {
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <FeatureCard
-              icon={<WalletIcon />}
-              title="Personal Finance Suite"
-              description="Track recurring expenses, log monthly income, set strict budgets, and monitor savings goals dynamically."
-              className="sm:col-span-2 reveal-on-scroll"
-            >
-              <PersonalFinanceMini />
-            </FeatureCard>
-
-            <FeatureCard
               icon={<UsersIcon />}
               title="Smart Bill Splitting"
               description="Split shared expenses with roommates, trips, or family. Equal, custom, or percentage distributions."
-              className="reveal-on-scroll"
+              className="sm:col-span-2 reveal-on-scroll"
             >
               <GroupSplitMini />
             </FeatureCard>
@@ -393,6 +384,15 @@ export function HomePageClient() {
               className="reveal-on-scroll"
             >
               <DebtSimplificationMini />
+            </FeatureCard>
+
+            <FeatureCard
+              icon={<WalletIcon />}
+              title="Personal Finance Suite"
+              description="Track recurring expenses, log monthly income, set strict budgets, and monitor savings goals dynamically."
+              className="reveal-on-scroll"
+            >
+              <PersonalFinanceMini />
             </FeatureCard>
 
             <FeatureCard

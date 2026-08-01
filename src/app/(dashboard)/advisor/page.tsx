@@ -47,7 +47,7 @@ export default function AdvisorPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-slate-100">AI Financial Advisor</h1>
-            <p className="mt-0.5 text-slate-400">Powered by Google Gemini — Personalized insights, reports, and advice</p>
+            <p className="mt-0.5 text-slate-400">Powered by Groq LLM — Personalized insights, reports, and advice</p>
           </div>
         </div>
       </div>

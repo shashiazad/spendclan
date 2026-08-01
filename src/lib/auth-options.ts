@@ -149,12 +149,24 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, account, trigger, session }) {
       if (user) {
-        token.id = user.id;
-        token.currency = user.currency;
-        token.role = user.role;
-        token.profilePhoto = user.profilePhoto;
+        if (account?.provider === "google" && user.email) {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email.toLowerCase() },
+          });
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.currency = dbUser.currency;
+            token.role = dbUser.role;
+            token.profilePhoto = dbUser.profilePhoto;
+          }
+        } else {
+          token.id = user.id;
+          token.currency = user.currency;
+          token.role = user.role;
+          token.profilePhoto = user.profilePhoto;
+        }
       }
       if (trigger === "update" && session) {
         if (session.profilePhoto !== undefined) {
