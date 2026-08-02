@@ -67,7 +67,7 @@ export async function generateFinancialInsight(prompt: string, maxRetries = 3): 
   while (attempt < maxRetries) {
     try {
       const response = await ai.chat.completions.create({
-        model: "llama3-70b-8192", // Using Groq's high-performance Llama 3 70B
+        model: "llama-3.3-70b-versatile", // Using Groq's high-performance Llama 3.3 70B
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
         max_tokens: 2048,
@@ -235,7 +235,7 @@ Return ONLY a valid JSON object matching this exact TypeScript structure. Do NOT
 
   try {
     const response = await ai.chat.completions.create({
-      model: "llama3-70b-8192", // Using Llama 3 70B for JSON capability
+      model: "llama-3.3-70b-versatile", // Using Llama 3.3 70B for JSON capability
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userMessage }
@@ -311,7 +311,7 @@ ${notesContext}
 
   try {
     const response = await ai.chat.completions.create({
-      model: "llama3-70b-8192",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: `User Message: "${userMessage}"` }
