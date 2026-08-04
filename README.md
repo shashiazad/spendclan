@@ -2,6 +2,8 @@
 
 > **SpendClan** is a premium, high-performance, and secure personal finance and group expense management web application. Built with Next.js 16 (App Router), React 19, Tailwind CSS 4, and Prisma 7, it empowers users to track daily budgets, manage shared group bills, compute simplified debt settlements, and get financial insights.
 
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/b3a20d5e-3f67-4932-b9c5-9dd9f67f6fb0" />
+
 ---
 
 ## ✨ Features
