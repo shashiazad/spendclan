@@ -151,7 +151,7 @@ export async function GET(_request: Request, context: RouteContext) {
   if ("error" in memberCheck) return memberCheck.error;
 
   const expenses = await prisma.groupExpense.findMany({
-    where: { groupId },
+    where: { groupId, deletedAt: null },
     include: {
       paidBy: { select: { id: true, name: true } },
       splits: {
@@ -180,7 +180,7 @@ export async function POST(request: Request, context: RouteContext) {
     const data = groupExpenseSchema.parse(body);
 
     const members = await prisma.groupMember.findMany({
-      where: { groupId },
+      where: { groupId, removedAt: null },
       select: { userId: true },
     });
     const memberIds = members.map((m) => m.userId);
@@ -251,14 +251,18 @@ export async function DELETE(request: Request, context: RouteContext) {
   }
 
   const expense = await prisma.groupExpense.findFirst({
-    where: { id: expenseId, groupId },
+    where: { id: expenseId, groupId, deletedAt: null },
   });
 
   if (!expense) {
     return NextResponse.json({ error: "Expense not found" }, { status: 404 });
   }
 
-  await prisma.groupExpense.delete({ where: { id: expenseId } });
+  // Soft delete: the expense and its splits are kept for history and audit
+  await prisma.groupExpense.update({
+    where: { id: expenseId },
+    data: { deletedAt: new Date(), deletedById: auth.session.user.id },
+  });
 
   await invalidateGroupMemberDashboards(groupId);
   return NextResponse.json({ message: "Expense deleted" });

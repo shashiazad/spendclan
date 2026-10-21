@@ -56,7 +56,7 @@ export async function GET(request: Request, context: RouteContext) {
     // Note: Net outstanding balances are always calculated using all historical data to ensure correct debt states,
     // but the reporting summaries/lists will be filtered by the date range if selected.
     const allExpenses = await prisma.groupExpense.findMany({
-      where: { groupId },
+      where: { groupId, deletedAt: null },
       include: {
         paidBy: { select: { id: true, name: true } },
         splits: { include: { user: { select: { id: true, name: true } } } },
@@ -65,7 +65,7 @@ export async function GET(request: Request, context: RouteContext) {
     });
 
     const allSettlements = await prisma.settlement.findMany({
-      where: { groupId },
+      where: { groupId, deletedAt: null },
       include: {
         from: { select: { id: true, name: true } },
         to: { select: { id: true, name: true } },
