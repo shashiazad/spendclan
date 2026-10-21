@@ -211,14 +211,31 @@ model GroupExpense {
   paidBy      User         @relation("PaidBy", fields: [paidById], references: [id])
   group       Group        @relation(fields: [groupId], references: [id], onDelete: Restrict)
   splits      GroupSplit[]
+  revisions   GroupExpenseRevision[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  // Who added / last edited the expense. Null on rows created before this was tracked.
+  createdById String?
+  updatedById String?
   deletedAt   DateTime?
   deletedById String?
 
   @@index([groupId])
   @@index([groupId, deletedAt])
   @@index([paidById])
+}
+
+/// Snapshot of an expense taken before each edit, so edits never lose the previous version
+model GroupExpenseRevision {
+  id             String       @id @default(uuid())
+  groupExpenseId String
+  editedById     String
+  // amount, description, date, splitType, paidById and splits as they were before the edit
+  snapshot       Json
+  createdAt      DateTime     @default(now())
+  groupExpense   GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Restrict)
+
+  @@index([groupExpenseId, createdAt])
 }
 
 model GroupSplit {
