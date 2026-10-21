@@ -23,9 +23,9 @@ export function useToast() {
 }
 
 const variantStyles: Record<ToastVariant, string> = {
-  success: "border-[var(--income)]/25 bg-[var(--income-dim)] text-[var(--income)]",
-  error:   "border-[var(--expense)]/25 bg-[var(--expense-dim)] text-[var(--expense)]",
-  info:    "border-[var(--accent)]/25 bg-[var(--accent-dim)] text-[var(--accent)]",
+  success: "border-[var(--income)]/40 text-[var(--income)]",
+  error:   "border-[var(--expense)]/40 text-[var(--expense)]",
+  info:    "border-[var(--accent)]/40 text-[var(--accent)]",
 };
 
 const variantIcons: Record<ToastVariant, string> = {
@@ -48,11 +48,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+      <div role="status" aria-live="polite" className="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-center gap-3 rounded-lg border px-4 py-3 bg-[var(--card)] shadow-[var(--shadow-lg)] ${variantStyles[toast.variant]}`}
+            className={`pointer-events-auto flex items-center gap-3 rounded-lg border px-4 py-3 bg-[var(--surface-solid)] shadow-[var(--shadow-lg)] ${variantStyles[toast.variant]}`}
             style={{ animation: "toast-in 0.3s ease-out" }}
           >
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-current/10 text-xs font-bold shrink-0">

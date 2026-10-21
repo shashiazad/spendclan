@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
@@ -11,6 +11,7 @@ import { SPLIT_TYPES, formatCurrency } from "@/lib/constants";
 import { format } from "date-fns";
 import { MemberSearch, type SelectedMember } from "@/components/ui/MemberSearch";
 import { Modal } from "@/components/ui/Modal";
+import { useToast } from "@/components/ui/Toast";
 
 const monthsList = Array.from({ length: 12 }, (_, i) => ({
   value: String(i + 1),
@@ -54,6 +55,25 @@ type Settlement = {
 
 type Tab = "expenses" | "balances" | "settlements";
 
+type MutationResult = { ok: true } | { ok: false; error: string };
+
+const NETWORK_ERROR = "Couldn't reach the server. Check your connection and try again. Your entry has been kept.";
+
+/** Reads a user-facing message from a failed API response. */
+async function readError(res: Response, fallback: string): Promise<string> {
+  try {
+    const data = await res.json();
+    const issue = Array.isArray(data?.details) ? data.details[0] : undefined;
+    if (data?.error === "Validation failed" && issue?.message) {
+      const field = Array.isArray(issue.path) && issue.path.length ? `${issue.path.join(".")}: ` : "";
+      return `${field}${issue.message}`;
+    }
+    return data?.error ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function initials(name: string) {
   if (!name) return "?";
   return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
@@ -65,6 +85,7 @@ export default function GroupDetailPage() {
   const { data: session } = useSession();
   const currency = session?.user?.currency ?? "INR";
   const userId = session?.user?.id;
+  const { addToast } = useToast();
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportPeriodType, setReportPeriodType] = useState<"all-time" | "monthly">("all-time");
@@ -122,6 +143,13 @@ export default function GroupDetailPage() {
   const [selectedMemberToAdd, setSelectedMemberToAdd] = useState<SelectedMember[]>([]);
   const [showAddMemberDropdown, setShowAddMemberDropdown] = useState(false);
 
+  // Mutation state: which action is in flight, plus inline form errors
+  const [pending, setPending] = useState<string | null>(null);
+  const inFlight = useRef(false);
+  const [expenseError, setExpenseError] = useState<string | null>(null);
+  const [settleError, setSettleError] = useState<string | null>(null);
+  const settlePrefilled = useRef(false);
+
   const loadGroup = useCallback(async () => {
     const res = await fetch(`/api/groups/${id}`);
     const data = await res.json();
@@ -151,11 +179,40 @@ export default function GroupDetailPage() {
     setMembers(data.members ?? []);
   }, [id]);
 
+  // Reloads data in place, without the full-page spinner, so forms keep focus after a change
+  const refresh = useCallback(async () => {
+    await Promise.all([loadGroup(), loadExpenses(), loadBalances(), loadSettlements()]);
+  }, [loadGroup, loadExpenses, loadBalances, loadSettlements]);
+
   const loadAll = useCallback(async () => {
     setLoading(true);
-    await Promise.all([loadGroup(), loadExpenses(), loadBalances(), loadSettlements()]);
+    await refresh();
     setLoading(false);
-  }, [loadGroup, loadExpenses, loadBalances, loadSettlements]);
+  }, [refresh]);
+
+  /**
+   * Runs one mutation at a time and reports whether it succeeded.
+   * Returns null when ignored because another request is still in flight (double-tap, Enter + click).
+   */
+  async function runMutation(
+    key: string,
+    request: () => Promise<Response>,
+    fallback: string,
+  ): Promise<MutationResult | null> {
+    if (inFlight.current) return null;
+    inFlight.current = true;
+    setPending(key);
+    try {
+      const res = await request();
+      if (!res.ok) return { ok: false, error: await readError(res, fallback) };
+      return { ok: true };
+    } catch {
+      return { ok: false, error: NETWORK_ERROR };
+    } finally {
+      inFlight.current = false;
+      setPending(null);
+    }
+  }
 
   useEffect(() => {
     let active = true;
@@ -169,17 +226,17 @@ export default function GroupDetailPage() {
 
   async function deleteGroup() {
     if (!confirm("Are you sure you want to delete this pocket? It will be removed for all members. Its expenses and settlements are archived, not erased.")) return;
-    try {
-      const res = await fetch(`/api/groups/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        router.push("/groups");
-      } else {
-        const err = await res.json();
-        alert(err.error ?? "Failed to delete pocket");
-      }
-    } catch {
-      alert("Failed to delete pocket. Please try again.");
+    const result = await runMutation(
+      "delete-group",
+      () => fetch(`/api/groups/${id}`, { method: "DELETE" }),
+      "Couldn't delete the pocket.",
+    );
+    if (!result) return;
+    if (!result.ok) {
+      addToast(result.error, "error");
+      return;
     }
+    router.push("/groups");
   }
 
   const currentMember = group?.members?.find((m) => m.userId === userId);
@@ -194,10 +251,24 @@ export default function GroupDetailPage() {
     }
   }, [members, userId, expForm.paidById]);
 
+  useEffect(() => {
+    if (settlePrefilled.current || !userId) return;
+    const activeIds = new Set(members.map((m) => m.userId ?? m.user?.id));
+    const myDebt = debts
+      .filter((d) => d.fromId === userId && activeIds.has(d.toId))
+      .sort((a, b) => b.amount - a.amount)[0];
+    if (!myDebt) return;
+    settlePrefilled.current = true;
+    Promise.resolve().then(() => {
+      setSettleForm((f) => (f.toId || f.amount ? f : { toId: myDebt.toId, amount: myDebt.amount.toFixed(2) }));
+    });
+  }, [debts, members, userId]);
+
   async function addExpense(e: React.FormEvent) {
     e.preventDefault();
+    setExpenseError(null);
     const memberIds = members.map((m) => m.userId ?? m.user?.id ?? "");
-    let splits;
+    let splits: { userId: string; amount: number; percentage?: number }[] | undefined;
     if (expForm.splitType !== "EQUAL") {
       if (expForm.splitType === "PERCENTAGE") {
         const totalAmount = Number(expForm.amount);
@@ -232,18 +303,35 @@ export default function GroupDetailPage() {
       }
     }
 
-    await fetch(`/api/groups/${id}/expenses`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        amount: Number(expForm.amount),
-        description: expForm.description,
-        date: expForm.date,
-        splitType: expForm.splitType,
-        paidById: expForm.paidById,
-        splits,
-      }),
-    });
+    if (!expForm.paidById) {
+      setExpenseError("Choose who paid.");
+      return;
+    }
+
+    const result = await runMutation(
+      "expense",
+      () =>
+        fetch(`/api/groups/${id}/expenses`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: Number(expForm.amount),
+            description: expForm.description,
+            date: expForm.date,
+            splitType: expForm.splitType,
+            paidById: expForm.paidById,
+            splits,
+          }),
+        }),
+      "Couldn't add the expense.",
+    );
+    if (!result) return;
+    if (!result.ok) {
+      // Keep everything the user typed so they can fix it and retry
+      setExpenseError(result.error);
+      return;
+    }
+
     setExpForm({
       amount: "",
       description: "",
@@ -252,52 +340,106 @@ export default function GroupDetailPage() {
       paidById: userId ?? "",
       splits: {},
     });
-    loadAll();
+    addToast("Expense added");
+    await refresh();
   }
 
   async function deleteExpense(expenseId: string) {
     if (!confirm("Delete this expense?")) return;
-    await fetch(`/api/groups/${id}/expenses?id=${expenseId}`, { method: "DELETE" });
-    loadAll();
+    const result = await runMutation(
+      `delete-expense:${expenseId}`,
+      () => fetch(`/api/groups/${id}/expenses?id=${expenseId}`, { method: "DELETE" }),
+      "Couldn't delete the expense.",
+    );
+    if (!result) return;
+    if (!result.ok) {
+      addToast(result.error, "error");
+      return;
+    }
+    addToast("Expense deleted");
+    await refresh();
   }
 
   async function recordSettlement(e: React.FormEvent) {
     e.preventDefault();
-    await fetch(`/api/groups/${id}/settle`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: Number(settleForm.amount), toId: settleForm.toId }),
-    });
+    setSettleError(null);
+
+    const amount = Number(settleForm.amount);
+    if (!settleForm.toId) {
+      setSettleError("Choose who you paid.");
+      return;
+    }
+    if (!(amount > 0)) {
+      setSettleError("Enter an amount greater than 0.");
+      return;
+    }
+
+    const result = await runMutation(
+      "settle",
+      () =>
+        fetch(`/api/groups/${id}/settle`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount, toId: settleForm.toId }),
+        }),
+      "Couldn't record the payment.",
+    );
+    if (!result) return;
+    if (!result.ok) {
+      setSettleError(result.error);
+      return;
+    }
+
     setSettleForm({ amount: "", toId: "" });
-    loadAll();
+    settlePrefilled.current = false;
+    addToast("Payment recorded");
+    await refresh();
   }
 
-  async function addMember(e: React.FormEvent) {
+  /** Returns true when the member was added, so the dropdown only closes on success. */
+  async function addMember(e: React.FormEvent): Promise<boolean> {
     e.preventDefault();
-    if (selectedMemberToAdd.length === 0) return;
+    if (selectedMemberToAdd.length === 0) return false;
     const member = selectedMemberToAdd[0];
 
-    const res = await fetch(`/api/groups/${id}/members`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: member.id,
-        email: member.email,
-      }),
-    });
-    if (res.ok) {
-      setSelectedMemberToAdd([]);
-      loadAll();
-    } else {
-      const err = await res.json();
-      alert(err.error ?? "Failed to add member");
+    const result = await runMutation(
+      "add-member",
+      () =>
+        fetch(`/api/groups/${id}/members`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: member.id,
+            email: member.email,
+          }),
+        }),
+      "Couldn't add the member.",
+    );
+    if (!result) return false;
+    if (!result.ok) {
+      addToast(result.error, "error");
+      return false;
     }
+    setSelectedMemberToAdd([]);
+    addToast("Member added");
+    await refresh();
+    return true;
   }
 
   async function removeMember(memberId: string) {
     if (!confirm("Remove this member?")) return;
-    await fetch(`/api/groups/${id}/members?userId=${memberId}`, { method: "DELETE" });
-    loadAll();
+    const result = await runMutation(
+      `remove-member:${memberId}`,
+      () => fetch(`/api/groups/${id}/members?userId=${memberId}`, { method: "DELETE" }),
+      "Couldn't remove the member.",
+    );
+    if (!result) return;
+    if (!result.ok) {
+      addToast(result.error, "error");
+      return;
+    }
+    addToast("Member removed");
+    await refresh();
   }
 
   const tabs: { key: Tab; label: string }[] = [
@@ -420,8 +562,7 @@ export default function GroupDetailPage() {
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-widest mb-3">Add Member to Pocket</h3>
                 <form
                   onSubmit={async (e) => {
-                    await addMember(e);
-                    setShowAddMemberDropdown(false);
+                    if (await addMember(e)) setShowAddMemberDropdown(false);
                   }}
                   className="space-y-4"
                 >
@@ -451,7 +592,7 @@ export default function GroupDetailPage() {
                     >
                       Cancel
                     </Button>
-                    <Button type="submit" size="sm" disabled={selectedMemberToAdd.length === 0}>
+                    <Button type="submit" size="sm" loading={pending === "add-member"} disabled={selectedMemberToAdd.length === 0}>
                       Add
                     </Button>
                   </div>
@@ -460,7 +601,7 @@ export default function GroupDetailPage() {
             )}
           </div>
           {isAdmin && (
-            <Button variant="danger" size="sm" onClick={deleteGroup}>
+            <Button variant="danger" size="sm" onClick={deleteGroup} loading={pending === "delete-group"}>
               Delete Pocket
             </Button>
           )}
@@ -497,6 +638,8 @@ export default function GroupDetailPage() {
                 <Select label="Split Type" value={expForm.splitType} onChange={(e) => setExpForm({ ...expForm, splitType: e.target.value, splits: {} })} options={SPLIT_TYPES.map(s => ({ value: s, label: s }))} />
                 <Select
                   label="Paid By"
+                  placeholder="Select who paid"
+                  required
                   value={expForm.paidById}
                   onChange={(e) => setExpForm({ ...expForm, paidById: e.target.value })}
                   options={memberList.map((m) => ({ value: m.userId ?? m.user?.id ?? "", label: m.name ?? m.user?.name ?? "" }))}
@@ -528,10 +671,18 @@ export default function GroupDetailPage() {
                     </span>
                   </div>
                 )}
-                <div className="sm:col-span-2 lg:col-span-3 pt-2">
-                  <Button type="submit" disabled={!validationResult.isValid} className="disabled:opacity-40 disabled:select-none">
+                <div className="sm:col-span-2 lg:col-span-3 pt-2 space-y-2">
+                  <Button
+                    type="submit"
+                    loading={pending === "expense"}
+                    disabled={!validationResult.isValid || (pending !== null && pending !== "expense")}
+                    className="disabled:opacity-40 disabled:select-none"
+                  >
                     Add Expense
                   </Button>
+                  {expenseError && (
+                    <p role="alert" className="text-xs font-medium text-[var(--expense)]">{expenseError}</p>
+                  )}
                 </div>
               </form>
             </CardBody>
@@ -564,7 +715,15 @@ export default function GroupDetailPage() {
                         ))}
                       </div>
                     </div>
-                    <Button size="sm" variant="danger" onClick={() => deleteExpense(exp.id)}>Delete</Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => deleteExpense(exp.id)}
+                      loading={pending === `delete-expense:${exp.id}`}
+                      disabled={pending !== null}
+                    >
+                      Delete
+                    </Button>
                   </div>
                 </Card>
               ))}
@@ -628,11 +787,20 @@ export default function GroupDetailPage() {
                 <Input label="Amount" type="number" step="0.01" required value={settleForm.amount} onChange={(e) => setSettleForm({ ...settleForm, amount: e.target.value })} />
                 <Select
                   label="Pay To"
+                  placeholder="Select a person"
+                  required
                   value={settleForm.toId}
                   onChange={(e) => setSettleForm({ ...settleForm, toId: e.target.value })}
                   options={memberList.filter(m => (m.userId ?? m.user?.id) !== userId).map(m => ({ value: m.userId ?? m.user?.id ?? "", label: m.name ?? m.user?.name ?? "" }))}
                 />
-                <div className="flex items-end"><Button type="submit">Record</Button></div>
+                <div className="flex items-end">
+                  <Button type="submit" loading={pending === "settle"} disabled={pending !== null && pending !== "settle"}>
+                    Record
+                  </Button>
+                </div>
+                {settleError && (
+                  <p role="alert" className="sm:col-span-3 text-xs font-medium text-[var(--expense)]">{settleError}</p>
+                )}
               </form>
             </CardBody>
           </Card>
@@ -662,7 +830,15 @@ export default function GroupDetailPage() {
                         <span className="text-foreground text-sm font-medium">{initialsName}</span>
                       </div>
                       {isAdmin && uid !== userId && (
-                        <Button size="sm" variant="danger" onClick={() => removeMember(uid)}>Remove</Button>
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => removeMember(uid)}
+                          loading={pending === `remove-member:${uid}`}
+                          disabled={pending !== null}
+                        >
+                          Remove
+                        </Button>
                       )}
                     </div>
                   );

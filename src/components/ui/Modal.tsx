@@ -57,7 +57,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`relative w-full rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-xl)] animate-scale-in ${sizeClasses[size]}`}
+        className={`relative w-full rounded-xl border border-[var(--border)] bg-[var(--surface-solid)] shadow-[var(--shadow-xl)] animate-scale-in ${sizeClasses[size]}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
