@@ -52,9 +52,13 @@ export async function requireAdmin() {
 }
 
 export async function requireGroupMember(groupId: string, userId: string) {
-  const member = await prisma.groupMember.findUnique({
+  // Removed members and soft-deleted groups are treated as no access
+  const member = await prisma.groupMember.findFirst({
     where: {
-      userId_groupId: { userId, groupId },
+      userId,
+      groupId,
+      removedAt: null,
+      group: { deletedAt: null },
     },
   });
 

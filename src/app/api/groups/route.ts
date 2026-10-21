@@ -10,18 +10,19 @@ export async function GET() {
   if ("error" in auth) return auth.error;
 
   const memberships = await prisma.groupMember.findMany({
-    where: { userId: auth.session.user.id },
+    where: { userId: auth.session.user.id, removedAt: null, group: { deletedAt: null } },
     include: {
       group: {
         include: {
           members: {
+            where: { removedAt: null },
             include: {
               user: {
                 select: { id: true, name: true, email: true, profilePhoto: true },
               },
             },
           },
-          _count: { select: { expenses: true } },
+          _count: { select: { expenses: { where: { deletedAt: null } } } },
         },
       },
     },

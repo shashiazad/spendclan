@@ -85,13 +85,13 @@ export async function getDashboardData(userId: string) {
     }),
     // Groups with balances
     prisma.groupMember.findMany({
-      where: { userId },
+      where: { userId, removedAt: null, group: { deletedAt: null } },
       include: {
         group: {
           include: {
             members: { include: { user: true } },
-            expenses: { include: { splits: true } },
-            settlements: true,
+            expenses: { where: { deletedAt: null }, include: { splits: true } },
+            settlements: { where: { deletedAt: null } },
           },
         },
       },

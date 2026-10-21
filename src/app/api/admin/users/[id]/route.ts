@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
+import { hasGroupHistory } from "@/lib/group-history";
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -30,6 +31,14 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json(
       { error: "Cannot delete admin users" },
       { status: 403 },
+    );
+  }
+
+  // Users referenced by group members or transactions are never deleted
+  if (await hasGroupHistory(id)) {
+    return NextResponse.json(
+      { error: "Cannot delete a user who belongs to groups or has group transactions" },
+      { status: 409 },
     );
   }
 
