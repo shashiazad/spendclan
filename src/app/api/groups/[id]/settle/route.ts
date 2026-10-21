@@ -21,7 +21,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
   const [settlements, members] = await Promise.all([
     prisma.settlement.findMany({
-      where: { groupId },
+      where: { groupId, deletedAt: null },
       include: {
         from: { select: { id: true, name: true } },
         to: { select: { id: true, name: true } },
@@ -29,7 +29,7 @@ export async function GET(_request: Request, context: RouteContext) {
       orderBy: { createdAt: "desc" },
     }),
     prisma.groupMember.findMany({
-      where: { groupId },
+      where: { groupId, removedAt: null },
       include: {
         user: { select: { id: true, name: true, email: true, profilePhoto: true } },
       },
@@ -69,7 +69,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     const members = await prisma.groupMember.findMany({
-      where: { groupId },
+      where: { groupId, removedAt: null },
       select: { userId: true },
     });
     const memberIds = new Set(members.map((m) => m.userId));
@@ -119,7 +119,7 @@ export async function DELETE(request: Request, context: RouteContext) {
   }
 
   const settlement = await prisma.settlement.findFirst({
-    where: { id: settlementId, groupId },
+    where: { id: settlementId, groupId, deletedAt: null },
   });
 
   if (!settlement) {
@@ -129,7 +129,11 @@ export async function DELETE(request: Request, context: RouteContext) {
     );
   }
 
-  await prisma.settlement.delete({ where: { id: settlementId } });
+  // Soft delete: the settlement record is kept for history and audit
+  await prisma.settlement.update({
+    where: { id: settlementId },
+    data: { deletedAt: new Date(), deletedById: auth.session.user.id },
+  });
 
   await invalidateGroupMemberDashboards(groupId);
   return NextResponse.json({ message: "Settlement deleted" });

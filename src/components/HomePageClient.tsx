@@ -467,7 +467,7 @@ export function HomePageClient() {
               {[
                 { title: "Zero Data Sharing",          desc: "No telemetry, third-party analytics, or cookie trackers." },
                 { title: "One-Time Password Recovery",  desc: "Hashed tokens with strict single-use expiry limits." },
-                { title: "Cascading Account Purges",    desc: "Deleting an account permanently removes all data instantly." },
+                { title: "Protected Shared Ledgers",    desc: "Group expenses and settlements are archived, never erased, so balances stay correct." },
               ].map((item) => (
                 <div key={item.title} className="flex gap-3">
                   <span className="mt-0.5 h-4 w-4 shrink-0 inline-flex items-center justify-center rounded-full bg-[var(--income-dim)] text-[var(--income)]">

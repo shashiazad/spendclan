@@ -29,14 +29,16 @@ export async function GET(request: Request) {
     // 1. Fetch all groups where the user is a member, including their detailed entities
     const groups = await prisma.group.findMany({
       where: {
+        deletedAt: null,
         members: {
-          some: { userId },
+          some: { userId, removedAt: null },
         },
       },
       include: {
         members: { include: { user: true } },
         expenses: {
           where: {
+            deletedAt: null,
             date: {
               gte: startDate,
               lt: endDate,
@@ -49,6 +51,7 @@ export async function GET(request: Request) {
         },
         settlements: {
           where: {
+            deletedAt: null,
             createdAt: {
               gte: startDate,
               lt: endDate,
@@ -107,8 +110,8 @@ export async function GET(request: Request) {
         where: { id: group.id },
         include: {
           members: { include: { user: true } },
-          expenses: { include: { splits: true } },
-          settlements: true,
+          expenses: { where: { deletedAt: null }, include: { splits: true } },
+          settlements: { where: { deletedAt: null } },
         },
       });
 

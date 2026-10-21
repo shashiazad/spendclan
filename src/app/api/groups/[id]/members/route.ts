@@ -87,23 +87,32 @@ export async function POST(request: Request, context: RouteContext) {
       },
     });
 
-    if (existing) {
+    if (existing && !existing.removedAt) {
       return NextResponse.json(
         { error: "User is already a group member" },
         { status: 409 },
       );
     }
 
-    const member = await prisma.groupMember.create({
-      data: {
-        userId: user.id,
-        groupId,
-        role: "MEMBER",
-      },
-      include: {
-        user: { select: { id: true, name: true, email: true, profilePhoto: true } },
-      },
-    });
+    const memberInclude = {
+      user: { select: { id: true, name: true, email: true, profilePhoto: true } },
+    };
+
+    // A previously removed member is restored on their original row, keeping their history
+    const member = existing
+      ? await prisma.groupMember.update({
+          where: { id: existing.id },
+          data: { removedAt: null, removedById: null, role: "MEMBER" },
+          include: memberInclude,
+        })
+      : await prisma.groupMember.create({
+          data: {
+            userId: user.id,
+            groupId,
+            role: "MEMBER",
+          },
+          include: memberInclude,
+        });
 
     // Invalidate dashboard for all existing members and the new member
     await invalidateGroupMemberDashboards(groupId);
@@ -134,10 +143,8 @@ export async function DELETE(request: Request, context: RouteContext) {
     );
   }
 
-  const member = await prisma.groupMember.findUnique({
-    where: {
-      userId_groupId: { userId, groupId },
-    },
+  const member = await prisma.groupMember.findFirst({
+    where: { userId, groupId, removedAt: null },
   });
 
   if (!member) {
@@ -145,7 +152,7 @@ export async function DELETE(request: Request, context: RouteContext) {
   }
 
   const adminCount = await prisma.groupMember.count({
-    where: { groupId, role: "ADMIN" },
+    where: { groupId, role: "ADMIN", removedAt: null },
   });
 
   if (member.role === "ADMIN" && adminCount <= 1) {
@@ -155,8 +162,10 @@ export async function DELETE(request: Request, context: RouteContext) {
     );
   }
 
-  await prisma.groupMember.delete({
-    where: { userId_groupId: { userId, groupId } },
+  // Soft removal: the membership row is kept so the member's expenses and balance stay in the group
+  await prisma.groupMember.update({
+    where: { id: member.id },
+    data: { removedAt: new Date(), removedById: auth.session.user.id },
   });
 
   // Invalidate all remaining members' dashboards and the removed member's dashboard

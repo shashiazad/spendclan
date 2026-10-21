@@ -6,6 +6,19 @@ interface PrismaArgs {
 }
 
 /**
+ * Adds an isolation filter via AND so it never overwrites a filter the caller
+ * already set on the same key (e.g. `group: { deletedAt: null }`).
+ */
+function withFilter(
+  where: Record<string, unknown> | null | undefined,
+  filter: Record<string, unknown>,
+): Record<string, unknown> {
+  const existing = where?.AND;
+  const and = Array.isArray(existing) ? existing : existing ? [existing] : [];
+  return { ...where, AND: [...and, filter] };
+}
+
+/**
  * Creates an isolated, tenant-safe Prisma Client instance for the current request context.
  * 
  * - Automatic row-level enforcement: All queries on personal data models (expenses, income,
@@ -114,12 +127,11 @@ export function getIsolatedClient(userId: string) {
             return query(args);
           }
           // Enforce that any group queried, updated, or deleted must contain the user as a member
-          a.where = {
-            ...a.where,
+          a.where = withFilter(a.where, {
             members: {
-              some: { userId },
+              some: { userId, removedAt: null },
             },
-          };
+          });
           return query(args);
         },
       },
@@ -130,14 +142,13 @@ export function getIsolatedClient(userId: string) {
             return query(args);
           }
           // Constrain group membership lookups and modifications to only those groups where the user is an active member
-          a.where = {
-            ...a.where,
+          a.where = withFilter(a.where, {
             group: {
               members: {
-                some: { userId },
+                some: { userId, removedAt: null },
               },
             },
-          };
+          });
           return query(args);
         },
       },
@@ -159,24 +170,21 @@ export function getIsolatedClient(userId: string) {
 
           if (groupId) {
             // Verify the current user is active in the group
-            const member = await basePrisma.groupMember.findUnique({
-              where: {
-                userId_groupId: { userId, groupId },
-              },
+            const member = await basePrisma.groupMember.findFirst({
+              where: { userId, groupId, removedAt: null },
             });
             if (!member) {
               throw new Error("Access Denied: Not an active member of this group");
             }
           } else if (operation !== "create" && operation !== "createMany") {
             // Fallback: Constrain any search/update/delete to group expenses in groups where the user is active
-            a.where = {
-              ...a.where,
+            a.where = withFilter(a.where, {
               group: {
                 members: {
-                  some: { userId },
+                  some: { userId, removedAt: null },
                 },
               },
-            };
+            });
           }
           return query(args);
         },
@@ -198,23 +206,20 @@ export function getIsolatedClient(userId: string) {
           }
 
           if (groupId) {
-            const member = await basePrisma.groupMember.findUnique({
-              where: {
-                userId_groupId: { userId, groupId },
-              },
+            const member = await basePrisma.groupMember.findFirst({
+              where: { userId, groupId, removedAt: null },
             });
             if (!member) {
               throw new Error("Access Denied: Not an active member of this group");
             }
           } else if (operation !== "create" && operation !== "createMany") {
-            a.where = {
-              ...a.where,
+            a.where = withFilter(a.where, {
               group: {
                 members: {
-                  some: { userId },
+                  some: { userId, removedAt: null },
                 },
               },
-            };
+            });
           }
           return query(args);
         },

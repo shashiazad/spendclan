@@ -168,7 +168,7 @@ export default function GroupDetailPage() {
   }, [loadAll]);
 
   async function deleteGroup() {
-    if (!confirm("Are you sure you want to delete this pocket? This action is permanent and will delete all expenses and settlements in this pocket.")) return;
+    if (!confirm("Are you sure you want to delete this pocket? It will be removed for all members. Its expenses and settlements are archived, not erased.")) return;
     try {
       const res = await fetch(`/api/groups/${id}`, { method: "DELETE" });
       if (res.ok) {

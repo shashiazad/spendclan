@@ -80,13 +80,13 @@ export async function getAIContext(userId: string): Promise<AIFinancialContext> 
     }),
     // Group balances
     prisma.groupMember.findMany({
-      where: { userId },
+      where: { userId, removedAt: null, group: { deletedAt: null } },
       include: {
         group: {
           include: {
             members: { include: { user: { select: { id: true, name: true } } } },
-            expenses: { include: { splits: true } },
-            settlements: true,
+            expenses: { where: { deletedAt: null }, include: { splits: true } },
+            settlements: { where: { deletedAt: null } },
           },
         },
       },
