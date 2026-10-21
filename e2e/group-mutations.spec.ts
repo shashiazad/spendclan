@@ -1,21 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
-import { GROUP_ID, PASSWORD, USERS, query, resetDb } from "./db";
+import { USERS, query, resetDb } from "./db";
+import { chooseGroupAction, loginAs, openGroup } from "./helpers";
 
 // QA_REPORT G-1, G-2, G-8 and NEW-1: group page mutations must never fail silently.
-
-async function loginAs(page: Page, email: string) {
-  const request = page.context().request;
-  const { csrfToken } = await (await request.get("/api/auth/csrf")).json();
-  await request.post("/api/auth/callback/credentials", {
-    form: { csrfToken, identifier: email, password: PASSWORD, json: "true" },
-  });
-}
-
-async function openGroup(page: Page, tab?: "Balances" | "Settlements") {
-  await page.goto(`/groups/${GROUP_ID}`);
-  await expect(page.getByRole("heading", { name: "Goa Trip" })).toBeVisible();
-  if (tab) await page.getByRole("button", { name: tab, exact: true }).click();
-}
 
 const settlementCount = async () => Number((await query<{ n: string }>(`SELECT count(*) n FROM "Settlement"`))[0].n);
 const expenseCount = async () =>
@@ -31,7 +18,7 @@ test.describe("record payment", () => {
     await openGroup(page, "Settlements");
 
     await expect(page.locator("#pay-to")).toHaveValue(USERS.bob.id);
-    await expect(page.getByLabel("Amount")).toHaveValue("400.00");
+    await expect(page.getByLabel("Amount", { exact: true })).toHaveValue("400.00");
 
     await page.getByRole("button", { name: "Record" }).click();
     await expect(page.getByText("Payment recorded")).toBeVisible();
@@ -52,7 +39,7 @@ test.describe("record payment", () => {
     page.on("request", (r) => {
       if (r.method() === "POST" && r.url().includes("/settle")) posted = true;
     });
-    await page.getByLabel("Amount").fill("50");
+    await page.getByLabel("Amount", { exact: true }).fill("50");
     await page.getByRole("button", { name: "Record" }).click();
     await page.waitForTimeout(500);
     expect(posted).toBe(false);
@@ -71,7 +58,7 @@ test.describe("record payment", () => {
     await page.getByRole("button", { name: "Record" }).click();
     // Next.js adds its own role="alert" route announcer, so match ours by text
     await expect(page.getByRole("alert").filter({ hasText: "Something went wrong on our side" })).toBeVisible();
-    await expect(page.getByLabel("Amount")).toHaveValue("400.00");
+    await expect(page.getByLabel("Amount", { exact: true })).toHaveValue("400.00");
     await expect(page.locator("#pay-to")).toHaveValue(USERS.bob.id);
     expect(await settlementCount()).toBe(0);
   });
@@ -79,7 +66,7 @@ test.describe("record payment", () => {
 
 test.describe("add expense", () => {
   async function fillExpense(page: Page) {
-    await page.getByLabel("Amount").fill("300");
+    await page.getByLabel("Amount", { exact: true }).fill("300");
     await page.getByLabel("Description").fill("Scooter rental");
   }
 
@@ -93,7 +80,7 @@ test.describe("add expense", () => {
     await fillExpense(page);
     await page.getByRole("button", { name: "Add Expense", exact: true }).click();
     await expect(page.getByRole("alert").filter({ hasText: "Couldn't reach the server" })).toBeVisible();
-    await expect(page.getByLabel("Amount")).toHaveValue("300");
+    await expect(page.getByLabel("Amount", { exact: true })).toHaveValue("300");
     await expect(page.getByLabel("Description")).toHaveValue("Scooter rental");
     expect(await expenseCount()).toBe(1);
   });
@@ -123,17 +110,17 @@ test.describe("add expense", () => {
 });
 
 test("a failed delete keeps the expense and says why", async ({ page }) => {
-  await loginAs(page, USERS.alice.email);
+  await loginAs(page, USERS.bob.email);
   await openGroup(page);
-  page.on("dialog", (d) => d.accept());
   await page.route("**/api/groups/*/expenses?id=*", (route) =>
     route.request().method() === "DELETE"
-      ? route.fulfill({ status: 403, json: { error: "Forbidden" } })
+      ? route.fulfill({ status: 500, json: { error: "Something went wrong on our side" } })
       : route.continue(),
   );
 
-  await page.getByRole("button", { name: "Delete", exact: true }).click();
-  await expect(page.getByText("Forbidden")).toBeVisible();
+  await page.getByRole("button", { name: "Delete Hotel" }).click();
+  await page.getByRole("dialog", { name: "Delete expense?" }).getByRole("button", { name: "Delete", exact: true }).click();
+  await expect(page.getByText("Something went wrong on our side")).toBeVisible();
   await expect(page.getByText("Hotel")).toBeVisible();
   expect(await expenseCount()).toBe(1);
 });
@@ -141,7 +128,7 @@ test("a failed delete keeps the expense and says why", async ({ page }) => {
 test("dialogs have an opaque surface", async ({ page }) => {
   await loginAs(page, USERS.alice.email);
   await openGroup(page);
-  await page.getByRole("button", { name: "Download Report" }).click();
+  await chooseGroupAction(page, "Download report");
   const dialog = page.getByRole("dialog", { name: "Download Pocket Expense Report" });
   await expect(dialog).toBeVisible();
   const background = await dialog.evaluate((el) => getComputedStyle(el).backgroundColor);
