@@ -232,7 +232,7 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile header */}
-      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-md px-4 lg:hidden">
+      <div className="fixed inset-x-0 top-0 z-[var(--z-nav)] flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-md px-4 lg:hidden">
         <div className="flex items-center gap-2">
           <img src="/logo.png" alt="SpendClan Logo" className="h-7 w-7 object-contain" />
           <span className="text-sm font-semibold text-[var(--foreground)] tracking-tight">SpendClan</span>
@@ -260,7 +260,7 @@ export function Sidebar() {
       </div>
 
       {/* Mobile bottom navigation bar */}
-      <div className="fixed bottom-0 inset-x-0 z-40 h-16 glass-nav lg:hidden flex justify-around items-center px-2 border-t border-[var(--border)]">
+      <div className="fixed bottom-0 inset-x-0 z-[var(--z-nav)] h-[calc(4rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] glass-nav lg:hidden flex justify-around items-center px-2 border-t border-[var(--border)]">
         <Link
           href="/groups"
           className={`flex flex-col items-center justify-center gap-1 w-16 h-full text-center transition-colors ${
@@ -325,7 +325,7 @@ export function Sidebar() {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          className="fixed inset-0 z-[var(--z-overlay)] bg-black/40 lg:hidden"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
@@ -333,7 +333,7 @@ export function Sidebar() {
 
       {/* Mobile sidebar (drawer menu triggered by Menu tab) */}
       <aside
-        className={`fixed inset-y-0 right-0 z-50 flex w-60 flex-col border-l border-[var(--border)] bg-[var(--sidebar-bg)] transition-transform duration-300 ease-out lg:hidden ${
+        className={`fixed inset-y-0 right-0 z-[var(--z-modal)] flex w-60 flex-col border-l border-[var(--border)] bg-[var(--sidebar-bg)] transition-transform duration-300 ease-out lg:hidden ${
           mobileOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -341,6 +341,7 @@ export function Sidebar() {
           <span className="text-sm font-semibold text-[var(--foreground)]">Menu</span>
           <button
             onClick={() => setMobileOpen(false)}
+            aria-label="Close menu"
             className="rounded-lg p-1 text-[var(--foreground-muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

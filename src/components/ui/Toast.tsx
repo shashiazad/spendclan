@@ -4,14 +4,26 @@ import { createContext, useCallback, useContext, useState, type ReactNode } from
 
 type ToastVariant = "success" | "error" | "info";
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
+interface ToastOptions {
+  /** Optional button, e.g. "Undo" after a delete. */
+  action?: ToastAction;
+  durationMs?: number;
+}
+
 interface Toast {
   id: string;
   message: string;
   variant: ToastVariant;
+  action?: ToastAction;
 }
 
 interface ToastContextType {
-  addToast: (message: string, variant?: ToastVariant) => void;
+  addToast: (message: string, variant?: ToastVariant, options?: ToastOptions) => void;
 }
 
 const ToastContext = createContext<ToastContextType>({
@@ -37,18 +49,24 @@ const variantIcons: Record<ToastVariant, string> = {
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useCallback((message: string, variant: ToastVariant = "success") => {
-    const id = crypto.randomUUID();
-    setToasts((prev) => [...prev, { id, message, variant }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3500);
+  const dismiss = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+
+  const addToast = useCallback(
+    (message: string, variant: ToastVariant = "success", options: ToastOptions = {}) => {
+      const id = crypto.randomUUID();
+      setToasts((prev) => [...prev, { id, message, variant, action: options.action }]);
+      // Toasts with an action stay longer so there is time to use it
+      setTimeout(() => dismiss(id), options.durationMs ?? (options.action ? 7000 : 3500));
+    },
+    [dismiss],
+  );
 
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div role="status" aria-live="polite" className="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+      <div role="status" aria-live="polite" className="fixed top-4 right-4 left-4 sm:left-auto z-[var(--z-toast)] flex flex-col items-end gap-2 pointer-events-none">
         {toasts.map((toast) => (
           <div
             key={toast.id}
@@ -59,6 +77,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               {variantIcons[toast.variant]}
             </span>
             <span className="text-xs font-medium text-[var(--foreground)]">{toast.message}</span>
+            {toast.action && (
+              <button
+                type="button"
+                onClick={() => {
+                  toast.action?.onClick();
+                  dismiss(toast.id);
+                }}
+                className="ml-1 min-h-[32px] rounded-md px-2.5 text-xs font-semibold text-[var(--accent)] hover:bg-[var(--accent-dim)]"
+              >
+                {toast.action.label}
+              </button>
+            )}
           </div>
         ))}
       </div>
