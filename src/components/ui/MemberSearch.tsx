@@ -195,7 +195,7 @@ export function MemberSearch({
 
       {/* Dropdown Results */}
       {isOpen && (query.trim().length >= 2 || showInviteOption) && (
-        <div className="absolute z-50 w-full mt-1.5 bg-[var(--surface-solid)] border border-[var(--border)] rounded-lg shadow-[var(--shadow-lg)] max-h-60 overflow-y-auto">
+        <div className="absolute z-[var(--z-dropdown)] w-full mt-1.5 bg-[var(--surface-solid)] border border-[var(--border)] rounded-lg shadow-[var(--shadow-lg)] max-h-60 overflow-y-auto">
           {filteredResults.map((user) => (
             <button
               key={user.id}
