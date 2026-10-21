@@ -179,6 +179,9 @@ model Group {
   expenses    GroupExpense[]
   settlements Settlement[]
   invitations GroupInvitation[]
+  // Soft delete: groups are never removed, so their expenses and settlements are kept
+  deletedAt   DateTime?
+  deletedById String?
 }
 
 model GroupMember {
@@ -187,8 +190,11 @@ model GroupMember {
   userId   String
   groupId  String
   joinedAt DateTime  @default(now())
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  group    Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  // Soft removal: the row is kept so removed members still count in balances
+  removedAt   DateTime?
+  removedById String?
+  user     User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  group    Group     @relation(fields: [groupId], references: [id], onDelete: Restrict)
 
   @@unique([userId, groupId])
   @@index([groupId])
@@ -203,12 +209,15 @@ model GroupExpense {
   paidById    String
   groupId     String
   paidBy      User         @relation("PaidBy", fields: [paidById], references: [id])
-  group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group       Group        @relation(fields: [groupId], references: [id], onDelete: Restrict)
   splits      GroupSplit[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
 
   @@index([groupId])
+  @@index([groupId, deletedAt])
   @@index([paidById])
 }
 
@@ -217,8 +226,8 @@ model GroupSplit {
   amount         Float
   groupExpenseId String
   userId         String
-  groupExpense   GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupExpense   GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Restrict)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@index([groupExpenseId])
   @@index([userId])
@@ -232,10 +241,13 @@ model Settlement {
   groupId   String
   from      User     @relation("SettlementFrom", fields: [fromId], references: [id])
   to        User     @relation("SettlementTo", fields: [toId], references: [id])
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Restrict)
   createdAt DateTime @default(now())
+  deletedAt   DateTime?
+  deletedById String?
 
   @@index([groupId])
+  @@index([groupId, deletedAt])
   @@index([fromId])
   @@index([toId])
 }

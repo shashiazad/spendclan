@@ -21,8 +21,8 @@ export async function GET(_request: Request, context: RouteContext) {
     where: { id: groupId },
     include: {
       members: { include: { user: true } },
-      expenses: { include: { splits: true } },
-      settlements: true,
+      expenses: { where: { deletedAt: null }, include: { splits: true } },
+      settlements: { where: { deletedAt: null } },
     },
   });
 

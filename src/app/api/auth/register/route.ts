@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { handleZodError } from "@/lib/auth";
 import { registerSchema } from "@/lib/validators";
 import { sendVerificationEmail } from "@/lib/email";
+import { hasGroupHistory } from "@/lib/group-history";
 
 export async function POST(request: Request) {
   try {
@@ -31,6 +32,14 @@ export async function POST(request: Request) {
           { status: 409 },
         );
       } else {
+        // Unverified users can already be in groups (added by email), so never delete those
+        if (await hasGroupHistory(existing.id)) {
+          return NextResponse.json(
+            { error: "Please verify your existing account. Use resend verification to get a new code." },
+            { status: 409 },
+          );
+        }
+
         // Delete the unverified stale user so they can register again and get a new code
         await prisma.user.delete({ where: { id: existing.id } });
       }

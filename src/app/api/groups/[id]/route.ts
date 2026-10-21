@@ -17,7 +17,14 @@ export async function DELETE(_request: Request, context: RouteContext) {
   // Invalidate dashboard caches for all group members before deletion
   await invalidateGroupMemberDashboards(id);
 
-  await prisma.group.delete({ where: { id } });
+  // Soft delete: members, expenses and settlements are kept; only pending invites are dropped
+  await prisma.$transaction(async (tx) => {
+    await tx.group.update({
+      where: { id },
+      data: { deletedAt: new Date(), deletedById: auth.session.user.id },
+    });
+    await tx.groupInvitation.deleteMany({ where: { groupId: id } });
+  });
 
   return NextResponse.json({ message: "Group deleted" });
 }
@@ -29,9 +36,10 @@ export async function GET(_request: Request, context: RouteContext) {
   const { id } = await context.params;
 
   const group = await prisma.group.findUnique({
-    where: { id },
+    where: { id, deletedAt: null },
     include: {
       members: {
+        where: { removedAt: null },
         include: {
           user: { select: { id: true, name: true, email: true } },
         },
