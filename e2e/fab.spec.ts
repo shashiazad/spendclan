@@ -41,7 +41,7 @@ test("elsewhere, + asks which group first and the group can be changed", async (
   );
 
   await loginAs(page, USERS.alice.email);
-  await page.goto("/dashboard");
+  await page.goto("/groups");
   await fab(page).click();
 
   const dialog = page.getByRole("dialog", { name: "Add expense" });
@@ -73,7 +73,7 @@ test("an empty group offers to add the first expense", async ({ page }) => {
 test("someone with no groups is pointed to create one", async ({ page }) => {
   await query(`UPDATE "GroupMember" SET "removedAt" = now() WHERE "userId" = $1`, [USERS.carol.id]);
   await loginAs(page, USERS.carol.email);
-  await page.goto("/dashboard");
+  await page.goto("/groups");
   await fab(page).click();
   const dialog = page.getByRole("dialog", { name: "Add expense" });
   await expect(dialog.getByText("You aren't in any groups yet.", { exact: false })).toBeVisible();

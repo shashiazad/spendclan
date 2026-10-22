@@ -132,7 +132,7 @@ test.describe("dialogs", () => {
     await openGroup(page);
     await chooseGroupAction(page, "Download report");
 
-    const dialog = page.getByRole("dialog", { name: "Download Pocket Expense Report" });
+    const dialog = page.getByRole("dialog", { name: "Download Group Expense Report" });
     await expect(dialog).toBeVisible();
     expect(await dialog.evaluate((d) => d.contains(document.activeElement))).toBe(true);
     for (let i = 0; i < 8; i++) {
@@ -200,15 +200,4 @@ test("Settle up on a debt prefills the payment and warns on overpaying", async (
   await page.getByRole("button", { name: "Record" }).click();
   await expect(page.getByText("Payment recorded")).toBeVisible();
   expect(await count(`SELECT count(*) n FROM "Settlement" WHERE amount = 400`)).toBe(1);
-});
-
-test("the dashboard chart labels all six months", async ({ page }) => {
-  await loginAs(page, USERS.alice.email);
-  await page.goto("/dashboard");
-  const ticks = page.locator(".recharts-cartesian-axis-tick-value");
-  await ticks.first().scrollIntoViewIfNeeded();
-  // X-axis labels are month names; Y-axis labels are numbers
-  await expect
-    .poll(async () => (await ticks.allTextContents()).filter((t) => /^[A-Z][a-z]{2}$/.test(t)))
-    .toHaveLength(6);
 });

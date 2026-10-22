@@ -141,7 +141,7 @@ function renderEmailTemplate({
                   <td style="font-size: 14px; color: #64748b; line-height: 1.5;">
                     Best regards,<br>
                     <strong style="color: #0f172a;">The SpendClan Team</strong><br>
-                    <span style="font-size: 12px; color: #94a3b8; font-weight: normal; margin-top: 4px; display: block;">Smart Personal Ledger & Effortless Group Splitter</span>
+                    <span style="font-size: 12px; color: #94a3b8; font-weight: normal; margin-top: 4px; display: block;">Effortless Group Expense Splitting</span>
                   </td>
                 </tr>
               </table>
@@ -243,7 +243,7 @@ export async function sendVerificationEmail(
   const preheader = `Use verification code ${token} to complete your registration.`;
   const contentHtml = `
     <p style="margin: 0 0 16px 0; font-size: 16px; color: #0f172a; font-weight: 600;">Hello ${name},</p>
-    <p style="margin: 0 0 16px 0;">Welcome to SpendClan! We're excited to help you track personal spending and split group expenses effortlessly.</p>
+    <p style="margin: 0 0 16px 0;">Welcome to SpendClan! We're excited to help you split group expenses and settle up effortlessly.</p>
     <p style="margin: 0 0 20px 0;">Please verify your email address by entering the following 6-digit confirmation code on the verification screen:</p>
     <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
       <span style="font-size: 38px; font-weight: 700; letter-spacing: 8px; color: #10b981; font-family: 'Courier New', Courier, monospace;">${token}</span>
@@ -301,7 +301,7 @@ export async function sendGroupInvitationEmail(
   const preheader = `${invitedByName} has invited you to join the group "${groupName}" on SpendClan.`;
   const contentHtml = `
     <p style="margin: 0 0 16px 0; font-size: 16px; color: #0f172a; font-weight: 600;">Hello,</p>
-    <p style="margin: 0 0 16px 0;"><strong>${invitedByName}</strong> has invited you to join their pocket group <strong>"${groupName}"</strong> on SpendClan.</p>
+    <p style="margin: 0 0 16px 0;"><strong>${invitedByName}</strong> has invited you to join their group <strong>"${groupName}"</strong> on SpendClan.</p>
     <p style="margin: 0 0 16px 0;">SpendClan makes it incredibly simple to split bills, track shared expenses, and settle up with friends and family instantly.</p>
     <p style="margin: 0 0 20px 0;">Click the button below to accept the invitation and sign up using this email address. Once registered, you will be automatically added to the group.</p>
     <p style="margin: 28px 0 0 0; font-size: 13px; color: #64748b;">If the button does not work, copy and paste this URL into your browser:<br><a href="${registerUrl}" style="color: #10b981; text-decoration: underline;">${registerUrl}</a></p>

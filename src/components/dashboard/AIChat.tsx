@@ -11,11 +11,11 @@ type Message = {
 };
 
 const SUGGESTED_QUESTIONS = [
-  "How can I reduce my expenses?",
-  "What are my biggest spending areas?",
-  "Am I saving enough?",
-  "Compare my spending vs last month",
-  "Where can I cut unnecessary costs?",
+  "Who owes me the most?",
+  "How do I settle up with fewest payments?",
+  "What did my groups spend this month?",
+  "Compare group spending vs last month",
+  "Who has paid for most of the bills?",
 ];
 
 export function AIChat() {
@@ -88,9 +88,9 @@ export function AIChat() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
               </svg>
             </div>
-            <h3 className="text-sm font-semibold text-[var(--foreground)]">AI Financial Advisor</h3>
+            <h3 className="text-sm font-semibold text-[var(--foreground)]">AI Group Advisor</h3>
             <p className="mt-1 max-w-sm text-xs text-[var(--foreground-muted)]">
-              Ask me anything about your finances. I&apos;ll analyze your spending data and provide personalized advice.
+              Ask me anything about your groups. I&apos;ll look at your shared expenses and balances and suggest how to settle up.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               {SUGGESTED_QUESTIONS.map((q) => (
@@ -163,7 +163,7 @@ export function AIChat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about your finances..."
+            placeholder="Ask about your groups..."
             className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--foreground)] placeholder-[var(--foreground-subtle)] outline-none transition-colors focus:border-[var(--border-focus)] focus:ring-1 focus:ring-[var(--accent-ring)]"
             disabled={loading}
           />

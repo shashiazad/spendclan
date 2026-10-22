@@ -6,7 +6,7 @@ import { getSession } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "About SpendClan — Privacy-First Financial Coordination",
-  description: "SpendClan is built with one absolute rule: strict financial isolation. Your personal records are yours alone, and your shared balances use advanced algorithmic optimization to eliminate debt complexity instantly.",
+  description: "SpendClan is built with one absolute rule: strict financial isolation. Your group records are visible only to the members of that group, and your shared balances use advanced algorithmic optimization to eliminate debt complexity instantly.",
 };
 
 export default async function AboutPage() {
@@ -57,17 +57,17 @@ export default async function AboutPage() {
             </div>
 
             <p className="text-sm sm:text-base text-muted leading-relaxed font-normal">
-              SpendClan is built with one absolute rule: **strict financial isolation**. Your personal records are yours alone. We do not sell tracking profiles, load third-party analytics scripts, or expose your data to telemetry networks. 
+              SpendClan is built with one absolute rule: **strict financial isolation**. Your group records are visible only to the members of that group. We do not sell tracking profiles, load third-party analytics scripts, or expose your data to telemetry networks. 
               When you join shared groups, your balances use advanced algorithmic optimization to simplify debt paths down to the absolute fewest payments, preventing unnecessary financial friction.
             </p>
 
             <div className="pt-4 border-t border-white/[0.04] dark:border-white/[0.04] light:border-zinc-200/50 flex flex-col sm:flex-row items-center gap-4 justify-start">
               {isLoggedIn ? (
                 <Link
-                  href="/dashboard"
+                  href="/groups"
                   className="w-full sm:w-auto apple-button-primary !px-6 !py-2.5 !text-sm"
                 >
-                  Go to Dashboard
+                  Go to my groups
                 </Link>
               ) : (
                 <>

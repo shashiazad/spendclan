@@ -29,10 +29,43 @@ export async function GET() {
     orderBy: { joinedAt: "desc" },
   });
 
+  // The caller's balance in each group, same formula as computeMemberBalances:
+  // paid − own shares + settlements sent − settlements received (active rows only)
+  const userId = auth.session.user.id;
+  const groupIds = memberships.map((m) => m.groupId);
+  const [paid, shares, sent, received] = groupIds.length === 0 ? [[], [], [], []] : await Promise.all([
+    prisma.groupExpense.groupBy({
+      by: ["groupId"],
+      where: { groupId: { in: groupIds }, paidById: userId, deletedAt: null },
+      _sum: { amount: true },
+    }),
+    prisma.groupSplit.findMany({
+      where: { userId, groupExpense: { groupId: { in: groupIds }, deletedAt: null } },
+      select: { amount: true, groupExpense: { select: { groupId: true } } },
+    }),
+    prisma.settlement.groupBy({
+      by: ["groupId"],
+      where: { groupId: { in: groupIds }, fromId: userId, deletedAt: null },
+      _sum: { amount: true },
+    }),
+    prisma.settlement.groupBy({
+      by: ["groupId"],
+      where: { groupId: { in: groupIds }, toId: userId, deletedAt: null },
+      _sum: { amount: true },
+    }),
+  ]);
+  const balances = new Map<string, number>();
+  const add = (groupId: string, amount: number) => balances.set(groupId, (balances.get(groupId) ?? 0) + amount);
+  for (const row of paid) add(row.groupId, row._sum.amount ?? 0);
+  for (const row of shares) add(row.groupExpense.groupId, -row.amount);
+  for (const row of sent) add(row.groupId, row._sum.amount ?? 0);
+  for (const row of received) add(row.groupId, -(row._sum.amount ?? 0));
+
   const groups = memberships.map((m) => ({
     ...m.group,
     expenseCount: m.group._count.expenses,
     myRole: m.role,
+    userBalance: Math.round((balances.get(m.groupId) ?? 0) * 100) / 100,
   }));
 
   return NextResponse.json({ groups });

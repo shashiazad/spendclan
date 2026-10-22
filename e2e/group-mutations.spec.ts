@@ -133,7 +133,7 @@ test("dialogs have an opaque surface", async ({ page }) => {
   await loginAs(page, USERS.alice.email);
   await openGroup(page);
   await chooseGroupAction(page, "Download report");
-  const dialog = page.getByRole("dialog", { name: "Download Pocket Expense Report" });
+  const dialog = page.getByRole("dialog", { name: "Download Group Expense Report" });
   await expect(dialog).toBeVisible();
   const background = await dialog.evaluate((el) => getComputedStyle(el).backgroundColor);
   // rgb(...) is opaque; rgba(..., <1) would let the page show through

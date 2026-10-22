@@ -15,12 +15,12 @@ export async function GET() {
         {
           type: "tip",
           title: "AI Features Available",
-          description: "Set your GEMINI_API_KEY environment variable to unlock AI-powered financial insights, spending analysis, and personalized recommendations.",
+          description: "Set the GROQ_API_KEY environment variable to unlock AI insights on your groups, balances and settle-ups.",
           savingsEstimate: null,
         },
       ],
       spendingScore: null,
-      topSuggestion: "Configure your Gemini API key to get started with AI insights.",
+      topSuggestion: "Configure the Groq API key to get started with AI insights.",
     });
   }
 
@@ -39,7 +39,7 @@ export async function GET() {
       parsed = {
         insights: [{ type: "tip", title: "Analysis Complete", description: raw.slice(0, 300), savingsEstimate: null }],
         spendingScore: 50,
-        topSuggestion: "Review your spending patterns for improvement opportunities.",
+        topSuggestion: "Review your group balances and settle up where you can.",
       };
     }
 

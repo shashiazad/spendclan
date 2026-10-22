@@ -55,7 +55,7 @@ export function ExpenseReport() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>SpendClan Expense Report — ${selectedMonthLabel} ${year}</title>
+          <title>SpendClan Group Expense Report — ${selectedMonthLabel} ${year}</title>
           <style>
             body {
               font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -183,11 +183,11 @@ export function ExpenseReport() {
               <img src="/logo.png" alt="SpendClan" class="brand-logo" />
               <div>
                 <h1 class="brand-name">SpendClan</h1>
-                <p class="brand-tagline">Personal Finance Advisor</p>
+                <p class="brand-tagline">Group Expense Advisor</p>
               </div>
             </div>
             <div class="meta-section">
-              <p class="meta-title">EXPENSE REPORT STATEMENT</p>
+              <p class="meta-title">GROUP EXPENSE REPORT</p>
               <p class="meta-item"><strong>Period:</strong> ${selectedMonthLabel} ${year}</p>
               <p class="meta-item"><strong>Generated:</strong> ${printedDate}</p>
             </div>
@@ -199,7 +199,7 @@ export function ExpenseReport() {
 
           <div class="letterhead-footer">
             <p>SpendClan Advisor Statement • Generated via SpendClan AI System</p>
-            <p>This statement is confidential and for personal reference only.</p>
+            <p>This statement is confidential and for your reference only.</p>
           </div>
         </body>
       </html>
@@ -214,7 +214,7 @@ export function ExpenseReport() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader title="Generate Expense Report" description="AI-powered analysis of your monthly spending" />
+        <CardHeader title="Generate Group Expense Report" description="AI-powered summary of your groups for the month" />
         <CardBody>
           <div className="flex flex-wrap items-end gap-4">
             <Select label="Month" value={month} onChange={(e) => setMonth(e.target.value)} options={months} />
