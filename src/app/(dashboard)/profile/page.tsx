@@ -8,6 +8,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { CURRENCIES, SECURITY_QUESTIONS } from "@/lib/constants";
+import { PersonalDataExport } from "@/components/profile/PersonalDataExport";
 
 export default function ProfilePage() {
   const { update, status } = useSession();
@@ -392,6 +393,8 @@ export default function ProfilePage() {
           </form>
         </CardBody>
       </Card>
+
+      <PersonalDataExport />
     </div>
   );
 }
