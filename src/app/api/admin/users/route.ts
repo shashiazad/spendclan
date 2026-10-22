@@ -18,9 +18,8 @@ export async function GET() {
       createdAt: true,
       _count: {
         select: {
-          personalExpenses: true,
-          incomes: true,
           groupMembers: true,
+          paidExpenses: true,
         },
       },
     },
@@ -29,9 +28,8 @@ export async function GET() {
   const result = users.map(({ _count, ...user }) => ({
     ...user,
     stats: {
-      expenses: _count.personalExpenses,
-      income: _count.incomes,
       groups: _count.groupMembers,
+      paidExpenses: _count.paidExpenses,
     },
   }));
 

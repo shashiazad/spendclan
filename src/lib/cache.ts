@@ -2,9 +2,8 @@ import { revalidateTag } from "next/cache";
 import { prisma } from "./prisma";
 
 /**
- * Invalidate the dashboard cache for a specific user.
- * Called after any mutation that affects dashboard data
- * (expenses, income, savings, group changes).
+ * Invalidate a user's cached Home data (group balances and activity).
+ * Called after any group change that affects them.
  */
 export function invalidateDashboard(userId: string) {
   revalidateTag(`dashboard-${userId}`, "max");

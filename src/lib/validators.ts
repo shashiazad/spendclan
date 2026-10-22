@@ -1,14 +1,5 @@
 import { z } from "zod";
-import {
-  CURRENCIES,
-  EXPENSE_CATEGORIES,
-  EXPENSE_TYPES,
-  FREQUENCIES,
-  INCOME_SOURCES,
-  PAYMENT_METHODS,
-  SECURITY_QUESTIONS,
-  SPLIT_TYPES,
-} from "./constants";
+import { CURRENCIES, SECURITY_QUESTIONS, SPLIT_TYPES } from "./constants";
 
 export const registerSchema = z.object({
   name: z.string().min(2).max(100),
@@ -38,50 +29,6 @@ export const resetPasswordQaSchema = z.object({
   email: z.string().min(1),
   answer: z.string().min(1).optional(),
   password: z.string().min(8).max(100).optional(),
-});
-
-export const expenseSchema = z.object({
-  amount: z.coerce.number().positive({ message: "Amount must be a positive number" }),
-  category: z.enum(EXPENSE_CATEGORIES),
-  date: z.coerce.date().refine((d) => d <= new Date(Date.now() + 5 * 60 * 1000), {
-    message: "Expense date cannot be in the future",
-  }),
-  paymentMethod: z.enum(PAYMENT_METHODS),
-  notes: z.string().max(500).optional().nullable(),
-  type: z.enum(EXPENSE_TYPES),
-});
-
-export const incomeSchema = z.object({
-  amount: z.coerce.number().positive({ message: "Amount must be a positive number" }),
-  source: z.enum(INCOME_SOURCES),
-  date: z.coerce.date().refine((d) => d <= new Date(Date.now() + 5 * 60 * 1000), {
-    message: "Income date cannot be in the future",
-  }),
-  notes: z.string().max(500).optional().nullable(),
-});
-
-export const recurringSchema = z.object({
-  amount: z.coerce.number().positive(),
-  category: z.enum(EXPENSE_CATEGORIES),
-  frequency: z.enum(FREQUENCIES),
-  nextDueDate: z.coerce.date(),
-  paymentMethod: z.enum(PAYMENT_METHODS),
-  notes: z.string().max(500).optional().nullable(),
-  isActive: z.boolean().optional(),
-});
-
-export const savingSchema = z.object({
-  amount: z.coerce.number(),
-  month: z.coerce.number().int().min(1).max(12),
-  year: z.coerce.number().int().min(2000).max(2100),
-  notes: z.string().max(500).optional().nullable(),
-});
-
-export const savingsGoalSchema = z.object({
-  name: z.string().min(1).max(100),
-  targetAmount: z.coerce.number().positive(),
-  currentAmount: z.coerce.number().min(0).optional(),
-  deadline: z.coerce.date().optional().nullable(),
 });
 
 export const groupSchema = z.object({

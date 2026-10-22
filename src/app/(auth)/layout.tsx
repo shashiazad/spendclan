@@ -28,7 +28,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             {/* Header of Bento Mock */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">Active Pocket</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">Active Group</span>
                 <h3 className="text-base font-semibold text-[var(--foreground)] mt-0.5">🏕️ Weekend Trip split</h3>
               </div>
               <span className="bg-[var(--accent-dim)] text-[var(--accent)] text-[10px] px-2.5 py-1 rounded-md font-medium border border-[var(--accent)]/20">
@@ -91,7 +91,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         {/* Bottom taglines & benefits */}
         <div className="relative z-10">
           <p className="text-sm font-semibold text-[var(--foreground)] mb-4">
-            Premium Personal Finance &amp; Smart Group Splits.
+            Fair group splits &amp; smart settlements.
           </p>
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] text-[var(--foreground-muted)] font-medium">
             <span className="flex items-center gap-1.5">
