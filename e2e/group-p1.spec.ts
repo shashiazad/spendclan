@@ -1,10 +1,12 @@
 import { expect, test } from "@playwright/test";
 import { GROUP_ID, USERS, query, resetDb } from "./db";
-import { chooseGroupAction, count, loginAs, openGroup } from "./helpers";
+import { chooseGroupAction, count, loginAs, openAddExpense, openGroup, settleAfterEach } from "./helpers";
 
 // QA_REPORT P1: permissions, edit/undo, split editor, dialogs, settle-up, header menu, chart.
 
 const HOTEL = "30000000-0000-4000-8000-000000000001";
+
+settleAfterEach();
 
 test.beforeEach(async () => {
   await resetDb();
@@ -81,6 +83,7 @@ test.describe("split editor", () => {
   test("equal split among selected people only", async ({ page }) => {
     await loginAs(page, USERS.alice.email);
     await openGroup(page);
+    await openAddExpense(page);
     await page.getByLabel("Amount", { exact: true }).fill("300");
     await page.getByLabel("Description").fill("Taxi");
     await page.getByRole("checkbox", { name: "Carol" }).uncheck();
@@ -102,6 +105,7 @@ test.describe("split editor", () => {
   test("exact amounts show what's left and say why submit is disabled", async ({ page }) => {
     await loginAs(page, USERS.alice.email);
     await openGroup(page);
+    await openAddExpense(page);
     await page.getByLabel("Amount", { exact: true }).fill("300");
     await page.getByLabel("Description").fill("Groceries");
     await page.getByRole("radio", { name: "Exact amounts" }).click();
