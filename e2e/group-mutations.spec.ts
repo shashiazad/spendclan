@@ -108,7 +108,8 @@ test.describe("add expense", () => {
 
     expect(posts).toBe(1);
     expect(await expenseCount()).toBe(2);
-    await expect(page.getByLabel("Description")).toHaveValue("");
+    // The dialog closes after a successful add
+    await expect(page.getByRole("dialog", { name: "Add expense" })).toHaveCount(0);
   });
 });
 

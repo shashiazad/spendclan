@@ -15,10 +15,12 @@ export async function openGroup(page: Page, tab?: "Balances" | "Settlements") {
   if (tab) await page.getByRole("button", { name: tab, exact: true }).click();
 }
 
-/** The add form is collapsed when the group already has expenses. */
+/** Opens the shared "Add expense" dialog from the group page header and waits for the form. */
 export async function openAddExpense(page: Page) {
   await page.getByRole("button", { name: "New expense" }).click();
-  await expect(page.getByRole("heading", { name: "Add an expense" })).toBeVisible();
+  const dialog = page.getByRole("dialog", { name: "Add expense" });
+  await expect(dialog.getByLabel("Amount", { exact: true })).toBeVisible();
+  return dialog;
 }
 
 export async function chooseGroupAction(page: Page, item: string) {
