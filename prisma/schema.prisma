@@ -92,6 +92,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
 }
 
+/// @deprecated Personal finance was retired (group-only product). Read-only: nothing writes here any more and the rows are kept for the Profile data export. Removing the table needs its own reviewed migration.
 model PersonalExpense {
   id            String        @id @default(uuid())
   amount        Float
@@ -111,6 +112,7 @@ model PersonalExpense {
   @@index([userId, category])
 }
 
+/// @deprecated Personal finance was retired (group-only product). Read-only: nothing writes here any more and the rows are kept for the Profile data export. Removing the table needs its own reviewed migration.
 model Income {
   id        String       @id @default(uuid())
   amount    Float
@@ -126,6 +128,7 @@ model Income {
   @@index([userId, date])
 }
 
+/// @deprecated Personal finance was retired (group-only product). Read-only: nothing writes here any more and the rows are kept for the Profile data export. Removing the table needs its own reviewed migration.
 model Saving {
   id        String   @id @default(uuid())
   amount    Float
@@ -140,6 +143,7 @@ model Saving {
   @@unique([userId, month, year])
 }
 
+/// @deprecated Personal finance was retired (group-only product). Read-only: nothing writes here any more and the rows are kept for the Profile data export. Removing the table needs its own reviewed migration.
 model SavingsGoal {
   id            String    @id @default(uuid())
   name          String
@@ -152,6 +156,7 @@ model SavingsGoal {
   updatedAt     DateTime  @updatedAt
 }
 
+/// @deprecated Personal finance was retired (group-only product). Read-only: nothing writes here any more and the rows are kept for the Profile data export. Removing the table needs its own reviewed migration.
 model RecurringExpense {
   id            String        @id @default(uuid())
   amount        Float
