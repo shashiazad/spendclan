@@ -4,8 +4,8 @@ import { useId, useState, type FormEvent } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { CURRENCY_SYMBOLS, formatCurrency } from "@/lib/constants";
+import { PaidByRadioGroup, type PayerOption } from "./PaidByRadioGroup";
 
 export type SplitMethod = "EQUAL" | "CUSTOM" | "PERCENTAGE";
 
@@ -215,7 +215,11 @@ export function ExpenseForm({
     }
   }
 
-  const memberOptions = members.map((m) => ({ value: m.id, label: m.name }));
+  // Only current members can be chosen; a payer who has left stays visible (checked, disabled) when editing
+  const payerOptions: PayerOption[] = activeMembers.map((m) => ({ id: m.id, name: m.name }));
+  if (initial && !activeMembers.some((m) => m.id === initial.paidBy.id)) {
+    payerOptions.push({ id: initial.paidBy.id, name: initial.paidBy.name, removed: true });
+  }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
@@ -242,15 +246,9 @@ export function ExpenseForm({
           onChange={(e) => setDescription(e.target.value)}
         />
         <Input id={`${uid}-date`} label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        <Select
-          id={`${uid}-paid-by`}
-          label="Paid By"
-          placeholder="Select who paid"
-          value={payer}
-          onChange={(e) => setPaidById(e.target.value)}
-          options={memberOptions}
-        />
       </div>
+
+      <PaidByRadioGroup members={payerOptions} value={payer} onChange={setPaidById} currentUserId={currentUserId} />
 
       <fieldset className="space-y-3 border-t border-[var(--border)] pt-4">
         <legend className="sr-only">How to split</legend>
