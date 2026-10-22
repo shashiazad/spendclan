@@ -16,7 +16,7 @@ type AdminUser = {
   role: string;
   lastActive?: string;
   createdAt: string;
-  stats: { expenses: number; income: number; groups: number };
+  stats: { groups: number; paidExpenses: number };
 };
 
 export default function AdminPage() {
@@ -29,7 +29,7 @@ export default function AdminPage() {
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/users");
     if (res.status === 403) {
-      router.push("/dashboard");
+      router.push("/groups");
       return;
     }
     const data = await res.json();
@@ -39,7 +39,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (session && session.user.role !== "ADMIN") {
-      router.push("/dashboard");
+      router.push("/groups");
       return;
     }
     if (session) {
@@ -117,7 +117,7 @@ export default function AdminPage() {
                       )}
                     </td>
                     <td className="px-6 py-3 text-slate-400">
-                      {user.stats.expenses} exp · {user.stats.income} inc · {user.stats.groups} grp
+                      {user.stats.groups} {user.stats.groups === 1 ? "group" : "groups"} · {user.stats.paidExpenses} paid
                     </td>
                     <td className="px-6 py-3">
                       {!isAdmin && !isSelf && (

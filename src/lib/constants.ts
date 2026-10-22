@@ -1,49 +1,3 @@
-export const DAILY_CATEGORIES = [
-  "Groceries",
-  "Travel",
-  "Food Delivery",
-  "Dining Out",
-  "Medicine",
-  "Consultation",
-  "Misc",
-] as const;
-
-export const MONTHLY_CATEGORIES = [
-  "Rent",
-  "Loan EMI",
-  "Credit Card Bill",
-  "Family Transfer",
-  "Monthly Expenses",
-] as const;
-
-export const LARGE_CATEGORIES = [
-  "Land",
-  "Home",
-  "Electronics",
-  "Vehicle",
-  "Trip",
-  "Misc Large",
-] as const;
-
-export const EXPENSE_CATEGORIES = [
-  ...DAILY_CATEGORIES,
-  ...MONTHLY_CATEGORIES,
-  ...LARGE_CATEGORIES,
-] as const;
-
-export const CATEGORIES_BY_TYPE: Record<string, readonly string[]> = {
-  DAILY: DAILY_CATEGORIES,
-  MONTHLY: MONTHLY_CATEGORIES,
-  LARGE: LARGE_CATEGORIES,
-};
-
-export const INCOME_SOURCES = [
-  "Salary",
-  "Freelance",
-  "Business",
-  "Other",
-] as const;
-
 export const CURRENCIES = ["INR", "USD", "EUR", "GBP"] as const;
 
 export const SECURITY_QUESTIONS = [
@@ -57,14 +11,9 @@ export const SECURITY_QUESTIONS = [
   "What was your first car?",
 ] as const;
 
-export const PAYMENT_METHODS = ["CASH", "UPI", "CARD"] as const;
-export const EXPENSE_TYPES = ["DAILY", "MONTHLY", "LARGE"] as const;
-export const FREQUENCIES = ["DAILY", "WEEKLY", "MONTHLY"] as const;
 export const SPLIT_TYPES = ["EQUAL", "PERCENTAGE", "CUSTOM"] as const;
 
 export type Currency = (typeof CURRENCIES)[number];
-export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
-export type IncomeSource = (typeof INCOME_SOURCES)[number];
 
 export const CURRENCY_SYMBOLS: Record<string, string> = {
   INR: "₹",
@@ -81,8 +30,3 @@ export function formatCurrency(amount: number, currency = "INR") {
   })}`;
 }
 
-export const TYPE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  DAILY: { bg: "bg-income/10", text: "text-income", label: "Daily" },
-  MONTHLY: { bg: "bg-savings/10", text: "text-savings", label: "Monthly" },
-  LARGE: { bg: "bg-ai-accent/10", text: "text-ai-accent", label: "Large" },
-};

@@ -68,7 +68,7 @@ export function Footer() {
               <span className="text-sm font-semibold text-[var(--foreground)]">SpendClan</span>
             </Link>
             <p className="text-xs text-[var(--foreground-muted)] leading-relaxed">
-              Track personal expenses, build savings habits, and settle group bills with bank-grade data isolation.
+              Split shared expenses, see who owes whom, and settle group bills with bank-grade data isolation.
             </p>
             <div className="pt-3 border-t border-[var(--border)]">
               <p className="text-[11px] text-[var(--foreground-subtle)]">

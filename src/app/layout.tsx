@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "SpendClan — Premium Expense Tracker & Smart Group Splits",
-  description: "Manage your personal finances and split group expenses effortlessly with SpendClan.",
+  description: "Split group expenses with flatmates, trips and friends, and settle up effortlessly with SpendClan.",
   manifest: "/manifest.json",
   icons: {
     icon: [

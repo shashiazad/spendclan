@@ -7,34 +7,6 @@ interface AutoTableDoc {
   };
 }
 
-export interface PersonalPDFExpense {
-  date: string;
-  notes?: string | null;
-  category: string;
-  paymentMethod: string;
-  type: string;
-  amount: number;
-}
-
-export interface PersonalPDFCategoryBreakdown {
-  category: string;
-  amount: number;
-  percentage: number;
-}
-
-export interface PersonalPDFData {
-  month: number;
-  year: number;
-  summary: {
-    totalIncome: number;
-    totalExpenses: number;
-    totalSavings: number;
-    netRemaining: number;
-  };
-  categoryBreakdown: PersonalPDFCategoryBreakdown[];
-  expenses: PersonalPDFExpense[];
-}
-
 export interface GroupTransaction {
   date: string;
   description: string;
@@ -164,7 +136,7 @@ async function addHeaderFooter(doc: jsPDF, titleText: string) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(148, 163, 184); // muted slate
-    doc.text("Personal Ledger & Group Splits", textStartX + 22, 14);
+    doc.text("Group Expense Splits", textStartX + 22, 14);
 
     // Right-aligned report name
     doc.setFont("helvetica", "normal");
@@ -189,129 +161,6 @@ async function addHeaderFooter(doc: jsPDF, titleText: string) {
     doc.text("© SpendClan. All rights reserved.", 14, 287);
     doc.text(`Page ${i} of ${totalPages}`, 196, 287, { align: "right" });
   }
-}
-
-/**
- * 1. Personal Expense Report PDF Generator
- */
-export async function generatePersonalPDF(data: PersonalPDFData, currency: string) {
-  const doc = new jsPDF({
-    orientation: "portrait",
-    unit: "mm",
-    format: "a4",
-  });
-
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-  const monthName = monthNames[data.month - 1];
-  const reportingPeriod = `${monthName} ${data.year}`;
-  const reportTitle = "Personal Expense Report";
-
-  // Page 1 Title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.setTextColor(15, 23, 42); // dark slate
-  doc.text(reportTitle, 14, 30);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9.5);
-  doc.setTextColor(100, 116, 139);
-  doc.text(`Reporting Period: ${reportingPeriod}  |  Generated on ${new Date().toLocaleDateString()}`, 14, 36);
-
-  // Draw Summary Cards
-  const cards = [
-    { label: "TOTAL INCOME", val: formatVal(data.summary.totalIncome, currency), bg: [236, 253, 245], text: [4, 120, 87] },
-    { label: "TOTAL EXPENSES", val: formatVal(data.summary.totalExpenses, currency), bg: [254, 242, 242], text: [153, 27, 27] },
-    { label: "TOTAL SAVINGS", val: formatVal(data.summary.totalSavings, currency), bg: [239, 246, 255], text: [30, 64, 175] }, // blue
-  ];
-
-  let cardX = 14;
-  cards.forEach((card) => {
-    // Background card rect
-    doc.setFillColor(card.bg[0], card.bg[1], card.bg[2]);
-    doc.rect(cardX, 42, 56, 20, "F");
-
-    // Text details inside card
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text(card.label, cardX + 5, 47);
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(card.text[0], card.text[1], card.text[2]);
-    doc.text(card.val, cardX + 5, 56);
-
-    cardX += 63;
-  });
-
-  // Net cashflow summary text
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9.5);
-  doc.setTextColor(15, 23, 42);
-  doc.text(`Remaining Balance: ${formatVal(data.summary.netRemaining, currency)}`, 14, 69);
-
-  let currentY = 74;
-
-  // Category summary table
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(15, 23, 42);
-  doc.text("Category-Wise Summary", 14, currentY);
-  currentY += 4;
-
-  const categoryHeaders = [["Category", "Total Spent", "Percentage of Spend"]];
-  const categoryRows = data.categoryBreakdown.map((c: PersonalPDFCategoryBreakdown) => [
-    c.category,
-    formatVal(c.amount, currency),
-    `${c.percentage.toFixed(1)}%`,
-  ]);
-
-  autoTable(doc, {
-    startY: currentY,
-    head: categoryHeaders,
-    body: categoryRows,
-    theme: "striped",
-    headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: "bold" },
-    styles: { fontSize: 8.5 },
-    margin: { top: 26, left: 14, right: 14, bottom: 20 },
-  });
-
-  currentY = (doc as jsPDF & AutoTableDoc).lastAutoTable!.finalY + 10;
-
-  // Detailed Transactions List
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(15, 23, 42);
-  doc.text("Detailed Transaction List", 14, currentY);
-  currentY += 4;
-
-  const transactionHeaders = [["Date", "Description", "Category", "Payment Method", "Type", "Amount"]];
-  const transactionRows = data.expenses.map((e: PersonalPDFExpense) => [
-    new Date(e.date).toLocaleDateString(),
-    e.notes || e.category,
-    e.category,
-    e.paymentMethod,
-    e.type,
-    formatVal(e.amount, currency),
-  ]);
-
-  autoTable(doc, {
-    startY: currentY,
-    head: transactionHeaders,
-    body: transactionRows,
-    theme: "striped",
-    headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: "bold" },
-    styles: { fontSize: 8.5 },
-    margin: { top: 26, left: 14, right: 14, bottom: 20 },
-  });
-
-  // Render headers and footers globally on all pages
-  await addHeaderFooter(doc, reportTitle);
-
-  doc.save(`SpendClan_Personal_Report_${monthName}_${data.year}.pdf`);
 }
 
 /**
@@ -399,7 +248,7 @@ export async function generateMyGroupsPDF(data: MyGroupsPDFData, currency: strin
     // Group Statistics Table
     const groupStatHeaders = [["Parameter", "Group Value", "Your Value", "Status / Notes"]];
     const groupStatRows = [
-      ["Group Total Expenses", formatVal(group.totalGroupExpenses, currency), "-", "Total spent in pocket during period"],
+      ["Group Total Expenses", formatVal(group.totalGroupExpenses, currency), "-", "Total spent in the group during period"],
       ["Your Contribution", "-", formatVal(group.userContribution, currency), "Amount paid directly by you"],
       ["Your Share of Expenses", "-", formatVal(group.userShare, currency), "Your split share allocation"],
       ["Settlements Paid by You", "-", formatVal(group.settlementsPaid, currency), "Repayments you paid to others"],
@@ -471,7 +320,7 @@ export async function generateIndividualGroupPDF(data: IndividualGroupPDFData, c
     format: "a4",
   });
 
-  const reportTitle = "Pocket Expense Ledger Report";
+  const reportTitle = "Group Expense Ledger Report";
   const groupName = data.groupName;
 
   // Title section

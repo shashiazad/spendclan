@@ -1,65 +1,62 @@
-import type { AIFinancialContext } from "./ai-data";
+import type { AIGroupContext, RelevantGroupExpense } from "./ai-data";
 import { CURRENCY_SYMBOLS } from "./constants";
 
-const SYSTEM_PREAMBLE = `You are the SpendClan Financial Intelligence Agent. You ONLY answer questions regarding personal finance, budgeting strategies, and the specific database expense array provided to you in the context stream.
+const SYSTEM_PREAMBLE = `You are the SpendClan Group Expense Assistant. You ONLY answer questions about the user's SpendClan groups: shared expenses, who paid, each person's share, balances, and how to settle up — using the data provided to you below.
 
 CRITICAL RULES:
-1. Stick strictly to the user's real, provided ledger metrics. Do not invent transactions, assume unstated income, or guess balances.
-2. If the data is missing, state: "I don't see any recorded data for that specific category yet."
-3. If the user asks an irrelevant or non-financial question (e.g., "Write a poem", "How is the weather?"), politely refuse: "I can only help you analyze your finances, budgets, and SpendClan group bills. Let's get back to your money goals! 💰"
-4. Format responses cleanly: Use bold text for totals, bullet points for recommendations, and currency symbols matching the user's currency configuration.
-5. Be encouraging and empathetic, never judgmental about spending habits.
-6. Never recommend specific investment products, stocks, or financial instruments.
-7. Keep responses concise and scannable (use bullet points, bold text).
-8. Be specific and actionable — reference actual categories and amounts from the user's data.
+1. Stick strictly to the provided group data. Do not invent expenses, people, groups or balances.
+2. If the data needed is missing, say: "I don't see any recorded group expenses for that yet."
+3. If the user asks something unrelated (e.g., "Write a poem", "How is the weather?"), politely refuse: "I can only help with your SpendClan groups — shared expenses, balances and settling up. 💸"
+4. "You" in the data is the user. A positive balance means others owe the user; a negative balance means the user owes others.
+5. Format responses cleanly: bold totals, bullet points, and the user's currency symbol.
+6. Be friendly and neutral — never blame or shame any group member.
+7. Never recommend investment products or give tax or legal advice.
+8. Keep responses concise and specific: reference real groups, people and amounts.
 `;
 
-function formatContext(ctx: AIFinancialContext): string {
+function money(sym: string, n: number) {
+  return `${n < 0 ? "-" : ""}${sym}${Math.abs(n).toFixed(2)}`;
+}
+
+function formatContext(ctx: AIGroupContext): string {
   const sym = CURRENCY_SYMBOLS[ctx.currency] ?? ctx.currency;
 
-  let text = `## User Financial Data (${ctx.currentMonth})\n\n`;
-  text += `**Currency**: ${ctx.currency} (${sym})\n\n`;
+  let text = `## User's Group Data (${ctx.currentMonth})\n\n`;
+  text += `**Currency**: ${ctx.currency} (${sym})\n`;
+  text += `**Across all groups**: others owe the user ${money(sym, ctx.totals.owedToYou)}, the user owes ${money(sym, ctx.totals.youOwe)}, net ${money(sym, ctx.totals.net)}\n\n`;
 
-  text += `### Monthly Summary (Last 3 Months)\n`;
-  for (const m of ctx.monthlyData) {
-    text += `- **${m.month}**: Income ${sym}${m.income.toFixed(2)}, Expenses ${sym}${m.expenses.toFixed(2)}, Savings ${sym}${m.savings.toFixed(2)}\n`;
+  if (ctx.groups.length === 0) {
+    return text + "The user is not in any groups yet.\n\n";
   }
-  text += `\n**Savings Rate**: ${ctx.savingsRate}%\n\n`;
 
-  text += `### Current Month Expense Breakdown by Type\n`;
-  text += `- Daily expenses: ${sym}${ctx.typeBreakdown.daily.toFixed(2)}\n`;
-  text += `- Monthly fixed: ${sym}${ctx.typeBreakdown.monthly.toFixed(2)}\n`;
-  text += `- Large purchases: ${sym}${ctx.typeBreakdown.large.toFixed(2)}\n\n`;
+  text += `### Last 3 Months (all groups)\n`;
+  for (const m of ctx.monthly) {
+    text += `- **${m.month}**: group spend ${money(sym, m.groupSpend)}, user's share ${money(sym, m.yourShare)}, user paid ${money(sym, m.youPaid)}\n`;
+  }
+  text += "\n";
 
-  if (ctx.categoryBreakdown.length > 0) {
-    text += `### Current Month Category Breakdown\n`;
-    for (const c of ctx.categoryBreakdown) {
-      text += `- ${c.category} (${c.type}): ${sym}${c.amount.toFixed(2)}\n`;
+  text += `### Groups\n`;
+  for (const g of ctx.groups) {
+    const status = g.yourBalance > 0 ? "owed to the user" : g.yourBalance < 0 ? "the user owes" : "settled";
+    text += `- **${g.name}** (${g.memberCount} members, ${g.expenseCount} expenses): balance ${money(sym, Math.abs(g.yourBalance))} (${status}); this month ${money(sym, g.spendThisMonth)} spent, user's share ${money(sym, g.yourShareThisMonth)}; last 3 months ${money(sym, g.spendLast3Months)}\n`;
+    for (const s of g.settleUp) {
+      text += `  - Suggested payment: ${s.from} → ${s.to} ${money(sym, s.amount)}\n`;
+    }
+  }
+  text += "\n";
+
+  if (ctx.people.length > 0) {
+    text += `### Net With Each Person (all groups)\n`;
+    for (const p of ctx.people) {
+      text += `- ${p.name}: ${p.net > 0 ? `owes the user ${money(sym, p.net)}` : `the user owes ${money(sym, -p.net)}`}\n`;
     }
     text += "\n";
   }
 
-  if (ctx.topCategories.length > 0) {
-    text += `### Top Spending Categories (3-Month Average)\n`;
-    for (const c of ctx.topCategories) {
-      text += `- ${c.category}: ${sym}${c.avgPerMonth.toFixed(2)}/month (total ${sym}${c.total.toFixed(2)})\n`;
-    }
-    text += "\n";
-  }
-
-  if (ctx.recurringExpenses.length > 0) {
-    text += `### Active Recurring Expenses\n`;
-    for (const r of ctx.recurringExpenses) {
-      text += `- ${r.category}: ${sym}${r.amount.toFixed(2)} (${r.frequency})\n`;
-    }
-    text += "\n";
-  }
-
-  if (ctx.groupBalances.length > 0) {
-    text += `### Group (Pocket) Balances\n`;
-    for (const g of ctx.groupBalances) {
-      const status = g.balance > 0 ? "owed to user" : g.balance < 0 ? "user owes" : "settled";
-      text += `- ${g.groupName}: ${sym}${Math.abs(g.balance).toFixed(2)} (${status})\n`;
+  if (ctx.biggestThisMonth.length > 0) {
+    text += `### Biggest Expenses This Month\n`;
+    for (const e of ctx.biggestThisMonth) {
+      text += `- ${e.date} · ${e.group} · ${e.description}: ${money(sym, e.amount)} paid by ${e.paidBy}, user's share ${money(sym, e.yourShare)}\n`;
     }
     text += "\n";
   }
@@ -67,87 +64,84 @@ function formatContext(ctx: AIFinancialContext): string {
   return text;
 }
 
-export function buildInsightsPrompt(ctx: AIFinancialContext): string {
+export function buildInsightsPrompt(ctx: AIGroupContext): string {
   return `${SYSTEM_PREAMBLE}
 
 ${formatContext(ctx)}
 
-Based on this financial data, provide exactly 4-5 spending insights. Each insight must be one of these types:
-- "warning": Something the user should be careful about (overspending, increasing trend)
-- "tip": A practical suggestion to save money
-- "positive": Something the user is doing well
+Based on this group data, provide exactly 4-5 insights. Each insight must be one of these types:
+- "warning": something to watch (a large unsettled balance, one person paying most of the bills, spend rising month over month)
+- "tip": a practical suggestion (who to settle with first, how to split recurring costs more fairly)
+- "positive": something going well (groups that are settled, balanced contributions)
 
 Also provide:
-- A "spending score" from 0-100 (100 = excellent money management)
-- A single "top suggestion" (the most impactful thing the user can do)
+- A "spendingScore" from 0-100 for how healthy the user's group finances are (100 = everything settled and contributions balanced)
+- A single "topSuggestion" (the most useful next step, e.g. a specific settle-up payment)
+
+Use "savingsEstimate" for the amount the insight is about (e.g. the balance to settle), or null.
 
 Respond ONLY with valid JSON in this exact format (no markdown, no code fences):
 {
   "insights": [
-    { "type": "warning|tip|positive", "title": "Short title", "description": "Detailed explanation with specific amounts", "savingsEstimate": 0 }
+    { "type": "warning|tip|positive", "title": "Short title", "description": "Explanation with specific groups, people and amounts", "savingsEstimate": 0 }
   ],
   "spendingScore": 75,
-  "topSuggestion": "One sentence top recommendation"
+  "topSuggestion": "One sentence recommendation"
 }`;
 }
 
-export function buildReportPrompt(ctx: AIFinancialContext, month: string): string {
+export function buildReportPrompt(ctx: AIGroupContext, month: string): string {
   return `${SYSTEM_PREAMBLE}
 
 ${formatContext(ctx)}
 
-Generate a comprehensive monthly expense report for ${month}. Structure it as a readable markdown document with these sections:
+Write a group expense report for ${month} as a readable markdown document with these sections:
 
-## 📊 Executive Summary
-A 2-3 sentence overview of the financial health this month.
+## 📊 Summary
+2-3 sentences: total group spend, the user's share, and whether they are owed or owe overall.
 
-## 💰 Income vs Expenses
-Compare income and expenses, highlight the savings/deficit.
+## 👥 Groups
+For each group: what was spent, the user's share, and their balance.
 
-## 📁 Category Analysis
-For each major spending category, note the amount and whether it's higher/lower than average.
+## 💳 Who Paid
+Who has been paying for the group bills, and whether contributions look balanced.
 
-## ⚠️ Unnecessary Spending Flags
-Identify any spending patterns that seem excessive or unnecessary. Be specific about which categories and by how much.
+## 🤝 Settle Up
+The suggested payments that clear the user's balances, largest first.
 
-## 💡 Recommendations
-Provide 3-5 specific, actionable recommendations to improve money management.
-
-## 🎯 Savings Opportunities
-Estimate how much the user could save by following your recommendations.
+## 💡 Suggestions
+3-5 specific, practical suggestions for keeping the groups fair and settled.
 
 Use the user's currency symbol throughout. Be specific with numbers.`;
 }
 
 export function buildAdvisorPrompt(
-  ctx: AIFinancialContext,
+  ctx: AIGroupContext,
   question: string,
-  relevantExpenses?: any[],
+  relevantExpenses?: RelevantGroupExpense[],
   userName?: string,
-  advisorNotes?: string | null
+  advisorNotes?: string | null,
 ): string {
   let text = `${SYSTEM_PREAMBLE}
 
 ${formatContext(ctx)}`;
 
   if (advisorNotes) {
-    text += `### Long-Term User Goals & Constraints (Memory)\n${advisorNotes}\n\n`;
+    text += `### What the User Has Told You Before (Memory)\n${advisorNotes}\n\n`;
   }
 
   if (relevantExpenses && relevantExpenses.length > 0) {
     const sym = CURRENCY_SYMBOLS[ctx.currency] ?? ctx.currency;
-    text += `### Relevant Transactions Retrieved (RAG Search)\n`;
+    text += `### Group Expenses Matching the Question\n`;
     for (const e of relevantExpenses) {
-      const dateStr = e.date instanceof Date ? e.date.toISOString().split("T")[0] : String(e.date).split("T")[0];
-      const noteStr = e.notes ? ` (Notes: ${e.notes})` : "";
-      text += `- **${dateStr}**: ${sym}${e.amount.toFixed(2)} in **${e.category}** via ${e.paymentMethod} [Type: ${e.type}]${noteStr}\n`;
+      text += `- **${e.date}** · ${e.group} · ${e.description}: ${money(sym, e.amount)} paid by ${e.paidBy}, user's share ${money(sym, e.yourShare)}\n`;
     }
     text += "\n";
   }
 
   const greetingInstruction = userName ? `Warmly greet the user by name (e.g. "Hello, ${userName}!") in your first sentence.` : "Warmly greet the user.";
 
-  text += `The user is asking a financial question. Answer it based on their actual spending data, monthly metrics, relevant transactions, and long-term goals/constraints. Be specific, reference real numbers, and provide actionable advice.
+  text += `The user is asking about their groups. Answer from the data above: reference real groups, people and amounts, and suggest concrete next steps where useful.
 
 ${greetingInstruction}
 
@@ -156,32 +150,4 @@ ${greetingInstruction}
 Respond in markdown format. Keep the response focused and under 300 words.`;
 
   return text;
-}
-
-export function buildUnnecessarySpendPrompt(ctx: AIFinancialContext): string {
-  return `${SYSTEM_PREAMBLE}
-
-${formatContext(ctx)}
-
-Analyze the user's spending patterns and identify ALL unnecessary or reducible expenses. For each one:
-1. What category is potentially wasteful
-2. How much they're spending on it
-3. A realistic target they could aim for
-4. Estimated monthly savings
-
-Respond ONLY with valid JSON (no markdown, no code fences):
-{
-  "flags": [
-    {
-      "category": "Category name",
-      "currentSpend": 0,
-      "suggestedTarget": 0,
-      "potentialSavings": 0,
-      "reason": "Why this is flagged",
-      "severity": "high|medium|low"
-    }
-  ],
-  "totalPotentialSavings": 0,
-  "summary": "One sentence summary"
-}`;
 }
