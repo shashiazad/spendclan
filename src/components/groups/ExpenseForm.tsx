@@ -46,6 +46,8 @@ interface ExpenseFormProps {
   onSubmit: (payload: ExpensePayload) => Promise<boolean>;
   onCancel?: () => void;
   resetOnSuccess?: boolean;
+  /** Focus the amount field on mount (for forms that appear after loading). */
+  autoFocus?: boolean;
 }
 
 // Short visible labels fit three across on a phone; the accessible names stay descriptive
@@ -99,6 +101,7 @@ export function ExpenseForm({
   onSubmit,
   onCancel,
   resetOnSuccess = false,
+  autoFocus = false,
 }: ExpenseFormProps) {
   const uid = useId();
   const reasonId = `${uid}-reason`;
@@ -225,6 +228,7 @@ export function ExpenseForm({
           step="0.01"
           min="0"
           enterKeyHint="next"
+          autoFocus={autoFocus}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
         />

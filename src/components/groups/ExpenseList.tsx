@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -25,6 +25,8 @@ interface ExpenseListProps {
   pending: string | null;
   onEdit: (expense: ListExpense) => void;
   onDelete: (expense: ListExpense) => void;
+  /** Shown in the empty state, e.g. an "Add the first expense" button. */
+  emptyAction?: ReactNode;
 }
 
 const SPLIT_LABELS: Record<string, string> = {
@@ -53,7 +55,7 @@ const EFFECT_STYLES: Record<Effect["tone"], string> = {
 };
 
 /** Group expenses grouped by month (newest first), with search and a per-row personal summary. */
-export function ExpenseList({ expenses, currency, currentUserId, pending, onEdit, onDelete }: ExpenseListProps) {
+export function ExpenseList({ expenses, currency, currentUserId, pending, onEdit, onDelete, emptyAction }: ExpenseListProps) {
   const searchId = useId();
   const [query, setQuery] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -95,7 +97,8 @@ export function ExpenseList({ expenses, currency, currentUserId, pending, onEdit
           </svg>
         }
         title="No expenses yet"
-        description="Add the first expense above and choose exactly who it is split with."
+        description="Add the first expense and choose exactly who it is split with."
+        action={emptyAction}
       />
     );
   }
