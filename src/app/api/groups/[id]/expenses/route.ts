@@ -23,8 +23,11 @@ function computeSplits(
   paidById: string,
   splits?: { userId: string; amount: number; percentage?: number }[],
   participantIds?: string[],
+  // People who have left the group but are already on the expense being edited
+  formerIds: string[] = [],
 ): { splits: { userId: string; amount: number }[] } | { error: string } {
   const totalCents = Math.round(amount * 100);
+  const allowedIds = [...memberIds, ...formerIds];
 
   if (splitType === "EQUAL") {
     // Equal split among the chosen participants (everyone by default)
@@ -33,7 +36,7 @@ function computeSplits(
     if (new Set(participants).size !== participants.length) {
       return { error: "Each person can only appear once in a split" };
     }
-    if (participants.some((uid) => !memberIds.includes(uid))) {
+    if (participants.some((uid) => !allowedIds.includes(uid))) {
       return { error: "All split users must be group members" };
     }
 
@@ -56,7 +59,7 @@ function computeSplits(
   }
 
   for (const split of splits) {
-    if (!memberIds.includes(split.userId)) {
+    if (!allowedIds.includes(split.userId)) {
       return { error: "All split users must be group members" };
     }
   }
@@ -165,8 +168,14 @@ const expenseInclude = {
 /**
  * Validates an expense body against the group's active members and computes its splits.
  * People with a zero share are left out, so they show as "not involved".
+ * When editing, `existing` lets the payer and people already on the expense stay even if
+ * they have since left the group, so a small fix doesn't force rewriting the whole split.
  */
-async function prepareExpense(groupId: string, body: unknown) {
+async function prepareExpense(
+  groupId: string,
+  body: unknown,
+  existing?: { paidById: string; splits: { userId: string }[] },
+) {
   const data = groupExpenseSchema.parse(body);
 
   const members = await prisma.groupMember.findMany({
@@ -174,8 +183,11 @@ async function prepareExpense(groupId: string, body: unknown) {
     select: { userId: true },
   });
   const memberIds = members.map((m) => m.userId);
+  const formerIds = existing
+    ? [existing.paidById, ...existing.splits.map((s) => s.userId)].filter((id) => !memberIds.includes(id))
+    : [];
 
-  if (!memberIds.includes(data.paidById)) {
+  if (!memberIds.includes(data.paidById) && !(existing && data.paidById === existing.paidById)) {
     return { error: "Payer must be a group member" } as const;
   }
 
@@ -186,6 +198,7 @@ async function prepareExpense(groupId: string, body: unknown) {
     data.paidById,
     data.splits,
     data.participantIds,
+    formerIds,
   );
   if ("error" in splitResult) return { error: splitResult.error } as const;
 
@@ -282,7 +295,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   try {
-    const prepared = await prepareExpense(groupId, await request.json());
+    const prepared = await prepareExpense(groupId, await request.json(), existing);
     if ("error" in prepared) {
       return NextResponse.json({ error: prepared.error }, { status: 400 });
     }
