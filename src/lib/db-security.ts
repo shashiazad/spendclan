@@ -19,6 +19,18 @@ function withFilter(
 }
 
 /**
+ * The single group a query targets, when it names one as a plain id. Any other shape
+ * (e.g. `{ in: [...] }`) returns undefined so the caller falls back to the membership filter,
+ * which checks every matched row instead of just one of the listed groups.
+ */
+function directGroupId(a: PrismaArgs): string | undefined {
+  const fromWhere = a.where?.groupId;
+  if (typeof fromWhere === "string") return fromWhere;
+  const fromData = a.data && !Array.isArray(a.data) ? a.data.groupId : undefined;
+  return typeof fromData === "string" ? fromData : undefined;
+}
+
+/**
  * Creates an isolated, tenant-safe Prisma Client instance for the current request context.
  * 
  * - Automatic row-level enforcement: All queries on personal data models (expenses, income,
@@ -155,10 +167,10 @@ export function getIsolatedClient(userId: string) {
       groupExpense: {
         async $allOperations({ operation, args, query }) {
           const a = args as PrismaArgs;
-          let groupId = ((a.where && a.where.groupId) || (a.data && !Array.isArray(a.data) && a.data.groupId)) as string | undefined;
+          let groupId = directGroupId(a);
 
           // If the query does not specify a groupId directly, look it up by ID using basePrisma
-          if (!groupId && a.where?.id) {
+          if (!groupId && typeof a.where?.id === "string") {
             const expense = await basePrisma.groupExpense.findUnique({
               where: { id: a.where.id as string },
               select: { groupId: true },
@@ -192,10 +204,10 @@ export function getIsolatedClient(userId: string) {
       settlement: {
         async $allOperations({ operation, args, query }) {
           const a = args as PrismaArgs;
-          let groupId = ((a.where && a.where.groupId) || (a.data && !Array.isArray(a.data) && a.data.groupId)) as string | undefined;
+          let groupId = directGroupId(a);
 
           // Resolve groupId if not directly present in where/data blocks
-          if (!groupId && a.where?.id) {
+          if (!groupId && typeof a.where?.id === "string") {
             const sett = await basePrisma.settlement.findUnique({
               where: { id: a.where.id as string },
               select: { groupId: true },
