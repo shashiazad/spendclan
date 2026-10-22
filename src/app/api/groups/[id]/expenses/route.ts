@@ -13,6 +13,8 @@ import {
 } from "@/lib/group-permissions";
 import { prisma } from "@/lib/prisma";
 import { groupExpenseSchema } from "@/lib/validators";
+import { hasSearchParams } from "@/lib/expense-search";
+import { handleSearchRequest } from "@/lib/expense-search-server";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -210,7 +212,12 @@ async function prepareExpense(
   } as const;
 }
 
-export async function GET(_request: Request, context: RouteContext) {
+/**
+ * GET with no query string: every active expense, newest first (`{ expenses }`), as before.
+ * GET with search params (q, amount, paidBy, from, sort, cursor, …): one page of matching
+ * expenses (`{ items, nextCursor, totalCount, totalAmountMinor }`). See lib/expense-search.ts.
+ */
+export async function GET(request: Request, context: RouteContext) {
   const auth = await requireAuth();
   if ("error" in auth) return auth.error;
 
@@ -218,6 +225,11 @@ export async function GET(_request: Request, context: RouteContext) {
 
   const memberCheck = await requireGroupMember(groupId, auth.session.user.id);
   if ("error" in memberCheck) return memberCheck.error;
+
+  if (hasSearchParams(new URL(request.url).searchParams)) {
+    // This endpoint only ever searches its own group, whatever groupId filter is passed
+    return handleSearchRequest(request, auth.session.user.id, () => [groupId]);
+  }
 
   const expenses = await prisma.groupExpense.findMany({
     where: { groupId, deletedAt: null },
