@@ -13,9 +13,10 @@ Tracks every finding from `FIX_AND_ENHANCEMENT_PROMPT.md`, plus new ones found w
 
 ## Regression tests
 
-66 tests, each run on Chromium mobile, Chromium desktop and WebKit mobile:
+78 tests, each run on Chromium mobile, Chromium desktop and WebKit mobile:
 
 - `e2e/group-mutations.spec.ts` (P0) covers G-1, G-2, G-8, NEW-1 and NEW-2. All of them fail against the code before the P0 fix.
+- `e2e/fab.spec.ts` covers the floating + as the group-expense button: on a group page it opens that group's form; elsewhere it shows a group picker with "Change group"; the empty-group and no-groups states; and the page refreshing after an add.
 - `e2e/expense-list.spec.ts` covers month grouping and order, month totals, "you lent / borrowed / not involved", search, the split toggle and the summary tiles.
 - `e2e/group-p1.spec.ts` (P1) covers creator-only edit and delete (API and UI), edit with revision history, delete with Undo, equal split among selected people, the exact-amount editor, dialog focus, the FAB hidden under dialogs, the typed-name group delete, admin-only settings, Settle up with the overpay warning, and all six chart months.
 
@@ -123,6 +124,7 @@ The suite refuses to run if `E2E_DATABASE_URL` is missing, not on localhost, or 
 
 ## Changelog
 
+- **Floating + adds group expenses (2026-10-22):** the + button and the group page's "New expense" open one shared "Add expense" dialog (`AddExpenseProvider`). On a group page it targets that group; elsewhere it first asks which group. The previous personal quick-add was removed; personal expenses are still added on the Expenses page.
 - **Expenses tab redesign (2026-10-22):** expenses grouped by month (newest first) with sticky month headers showing spend, count and your share; rows with a date tile, payer, and what the expense means for you; collapsible split details; search; summary tiles (group spend, this month, your balance); the Add form is collapsed behind "New expense". The test harness now waits for network idle after each test, fixing a reset race that logged spurious server errors.
 - **P1 (2026-10-22):** fixed G-3, G-4, G-5, G-6, G-7 (group page), G-8 (UI), N-1, N-2, N-3, N-7, D-1 and NEW-7; added expense edit with revision history (`GroupExpenseRevision`), Undo for deletes, and new `DropdownMenu`, `ConfirmDialog` and `ExpenseForm` components. Schema change is additive only (`GroupExpense.createdById`, `updatedById`, and the new `GroupExpenseRevision` table).
 - **P0 (2026-10-22):** fixed G-1, G-2 (client side), G-8, NEW-1, NEW-2 and NEW-8; replaced `alert()` with toasts on the group page; data now refreshes without the full-page spinner after a change; added the Playwright e2e suite.

@@ -150,7 +150,7 @@ test.describe("dialogs", () => {
   test("the floating add button is hidden while a dialog is open", async ({ page }) => {
     await loginAs(page, USERS.alice.email);
     await openGroup(page);
-    const fab = page.getByRole("button", { name: "Quick add expense" });
+    const fab = page.getByRole("button", { name: "Add group expense" });
     await expect(fab).toBeVisible();
     await chooseGroupAction(page, "Download report");
     await expect(fab).toBeHidden();
