@@ -1,6 +1,8 @@
 # High-Level & Low-Level Design Specifications (Spec-Driven Dev Resource)
 
-This specification defines the production-level system design of **SpendClan**, a responsive personal finance manager and shared pocket split settlement app. It serves as the definitive reference document for Spec-Driven Development (SDD), leaving no API contract, database constraint, or algorithmic invariant undefined.
+This specification defines the production-level system design of **SpendClan**, a responsive group expense splitting and settlement app.
+
+> **Product change:** personal finance (dashboard, personal expenses, income, recurring, savings) was retired. Those pages redirect to `/groups`, `/api/personal/*` returns `410 Gone`, and the personal tables are kept read-only for the Profile data export (`GET /api/users/me/export`). Sections below that describe personal finance are historical. It serves as the definitive reference document for Spec-Driven Development (SDD), leaving no API contract, database constraint, or algorithmic invariant undefined.
 
 ---
 
@@ -412,7 +414,7 @@ Every endpoint validates payload inputs against strict schemas using Zod. Reques
     - `200 OK`: `{ correct: true, message?: string }` (if password omitted, validates answer; if password provided, updates database).
     - `401 Unauthorized`: Incorrect security answer.
 
-#### 2.2.2 Personal Finance Suite Contracts
+#### 2.2.2 Personal Finance Suite Contracts (retired — all return `410 Gone`)
 - **`GET /api/personal/expenses`**
   - **Query Params**: `?month=number&year=number&category=string&type=DAILY|LARGE`
   - **Responses**: `200 OK`: `{ expenses: PersonalExpense[] }`
@@ -426,7 +428,7 @@ Every endpoint validates payload inputs against strict schemas using Zod. Reques
   - **Responses**:
     - `200 OK`: `{ calculatedSaving: number, manualSaving: number | null, incomesTotal: number, expensesTotal: number }`
 
-#### 2.2.3 Shared Group Splitting (Pockets) Contracts
+#### 2.2.3 Shared Group Splitting Contracts
 - **`POST /api/groups`**
   - **Request Body**: `{ name: string, description?: string, memberEmails?: string }` (comma-separated existing user emails).
   - **Responses**: `200 OK`: `{ group: Group }`
@@ -474,7 +476,7 @@ $$S_i = S_{base} \quad (\forall i > 0)$$
 
 #### 2.3.3 Next.js Cache Tag Dictionary
 - `dashboard-${userId}`: Invalidated upon logs edits, goal changes, or when group transactions occur.
-- `group-detail-${groupId}`: Cache key representing overall balances inside a pocket.
+- `group-detail-${groupId}`: Cache key representing overall balances inside a group.
 
 ---
 
