@@ -10,6 +10,8 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   size?: "sm" | "md" | "lg";
+  /** "sheet": slides up from the bottom on phones (footer stays above the keyboard), centred from 640px. */
+  variant?: "dialog" | "sheet";
 }
 
 const FOCUSABLE =
@@ -34,7 +36,9 @@ export function Modal({
   children,
   footer,
   size = "md",
+  variant = "dialog",
 }: ModalProps) {
+  const sheet = variant === "sheet";
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   // Keep the latest onClose without re-running the focus effect on every parent render
@@ -92,7 +96,11 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-4 animate-fade-in">
+    <div
+      className={`fixed inset-0 z-[var(--z-modal)] flex justify-center animate-fade-in ${
+        sheet ? "items-end sm:items-center sm:p-4" : "items-center p-4"
+      }`}
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
@@ -106,7 +114,11 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`relative w-full max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl outline-none border border-[var(--border)] bg-[var(--surface-solid)] shadow-[var(--shadow-xl)] animate-scale-in ${sizeClasses[size]}`}
+        className={`relative w-full outline-none border border-[var(--border)] bg-[var(--surface-solid)] shadow-[var(--shadow-xl)] ${sizeClasses[size]} ${
+          sheet
+            ? "flex max-h-[88dvh] flex-col overflow-hidden rounded-t-2xl pb-[env(safe-area-inset-bottom)] animate-slide-up sm:max-h-[calc(100dvh-2rem)] sm:rounded-xl sm:pb-0"
+            : "max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl animate-scale-in"
+        }`}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
@@ -137,10 +149,14 @@ export function Modal({
           </button>
         </div>
         {/* Body */}
-        <div data-modal-body className="px-5 py-4">{children}</div>
+        <div data-modal-body className={`px-5 py-4 ${sheet ? "min-h-0 flex-1 overflow-y-auto" : ""}`}>{children}</div>
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-2 border-t border-[var(--border)] px-5 py-4">
+          <div
+            className={`flex items-center justify-end gap-2 border-t border-[var(--border)] px-5 py-4 ${
+              sheet ? "sticky bottom-0 bg-[var(--surface-solid)]" : ""
+            }`}
+          >
             {footer}
           </div>
         )}

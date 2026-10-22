@@ -18,6 +18,7 @@ import { ExpenseForm, type ExpensePayload } from "@/components/groups/ExpenseFor
 import { useAddExpense } from "@/components/groups/AddExpenseProvider";
 import { NETWORK_ERROR, readError } from "@/lib/api-errors";
 import { ExpenseList } from "@/components/groups/ExpenseList";
+import { GroupExpenseSearch } from "@/components/groups/GroupExpenseSearch";
 
 const monthsList = Array.from({ length: 12 }, (_, i) => ({
   value: String(i + 1),
@@ -222,6 +223,17 @@ export default function GroupDetailPage() {
   useEffect(() => onExpenseAdded((groupId) => {
     if (groupId === id) refresh();
   }), [onExpenseAdded, id, refresh]);
+
+  // Everyone who can appear on an expense: current members plus anyone already on one
+  const searchPeople = (() => {
+    const map = new Map<string, string>();
+    for (const m of members) map.set(memberId(m), m.user?.name ?? m.name);
+    for (const e of expenses) {
+      map.set(e.paidBy.id, map.get(e.paidBy.id) ?? e.paidBy.name);
+      for (const sp of e.splits) map.set(sp.user.id, map.get(sp.user.id) ?? sp.user.name);
+    }
+    return [...map].map(([pid, name]) => ({ id: pid, name }));
+  })();
 
   const currentMember = group?.members?.find((m) => m.userId === userId);
   const isAdmin = currentMember?.role === "ADMIN";
@@ -533,18 +545,41 @@ export default function GroupDetailPage() {
             )}
           </div>
 
-          <ExpenseList
-            expenses={expenses}
-            currency={currency}
-            currentUserId={userId}
-            pending={pending}
-            onEdit={(exp) => {
-              setEditError(null);
-              setEditing(exp);
-            }}
-            onDelete={(exp) => setExpenseToDelete(exp)}
-            emptyAction={<Button onClick={() => openAddExpense(id)}>Add the first expense</Button>}
-          />
+          {expenses.length === 0 ? (
+            <ExpenseList
+              expenses={expenses}
+              currency={currency}
+              currentUserId={userId}
+              pending={pending}
+              emptyAction={<Button onClick={() => openAddExpense(id)}>Add the first expense</Button>}
+            />
+          ) : (
+            <GroupExpenseSearch
+              groupId={id}
+              people={searchPeople}
+              currentUserId={userId}
+              currency={currency}
+              pending={pending}
+              onEdit={(exp) => {
+                setEditError(null);
+                setEditing(exp as Expense);
+              }}
+              onDelete={(exp) => setExpenseToDelete(exp as Expense)}
+              refreshKey={expenses}
+            >
+              <ExpenseList
+                expenses={expenses}
+                currency={currency}
+                currentUserId={userId}
+                pending={pending}
+                onEdit={(exp) => {
+                  setEditError(null);
+                  setEditing(exp);
+                }}
+                onDelete={(exp) => setExpenseToDelete(exp)}
+              />
+            </GroupExpenseSearch>
+          )}
         </div>
       )}
 
