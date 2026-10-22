@@ -70,6 +70,8 @@ The suite refuses to run if `E2E_DATABASE_URL` is missing, not on localhost, or 
 
 ## A3. Dashboard / personal finance
 
+> **Retired (2026-10-23):** the dashboard and personal pages were removed in the group-only refocus, so D-1…D-5 no longer apply. D-5 (`confirm()` on personal pages) is closed with them.
+
 | ID | Sev | Status | Evidence | Root cause | Fix |
 |---|---|---|---|---|---|
 | D-1 | P1 | CONFIRMED | @390 the axis shows May, Jun, Jul, Aug, Oct (no Sep); @1280 all 6 months appear | The data has 6 months (`dashboard.ts`). Recharts' default `interval="preserveEnd"` hides labels that don't fit (`dashboard/page.tsx` XAxis) | **FIXED** (P1): `interval={0}` and short `MMM` labels (the tooltip keeps the year). Tested |
@@ -110,6 +112,9 @@ The suite refuses to run if `E2E_DATABASE_URL` is missing, not on localhost, or 
 | NEW-6 | P3 | CODE | A zero balance renders green, as if money were owed | `page.tsx:750` (`>= 0`) | OPEN (P3) |
 | NEW-7 | P1 | CODE | Every member sees Delete on every expense, and the API allows it | Group page plus `expenses/route.ts` DELETE | **FIXED** (P1): only the person who added an expense can edit, delete or restore it (`src/lib/group-permissions.ts`, enforced by the API and reflected in the UI). Legacy rows without a creator fall back to the payer. Tested |
 | NEW-8 | P2 | CODE | Toasts were not announced to screen readers | `Toast.tsx` | **FIXED**: container is `role="status"` `aria-live="polite"` |
+| NEW-9 | P1 | CONFIRMED | The groups list said "All settled up" for every group: `GET /api/groups` never returned `userBalance` | `api/groups/route.ts` | **FIXED** (group-only Phase 1): the API returns the caller's balance per group (paid − own shares + settlements sent − received, active rows only). Tested |
+| NEW-10 | P1 | CODE | `db-security` treated a `groupId` filter like `{ in: [...] }` as one id: membership in any one listed group passed the check, and an empty list threw "Access Denied" | `db-security.ts` | **FIXED**: only a plain string id gets the direct membership check; other shapes fall back to the per-row "active member" filter. Tested (no-groups case) |
+| NEW-11 | P2 | CONFIRMED | With the light theme saved, Next's dev overlay reports 1 issue on every page (likely the theme class hydration mismatch, related to NEW-3) | `layout.tsx` theme init | OPEN (Phase 3 theming) |
 
 ## Safari / WebKit (Part D)
 
@@ -124,7 +129,8 @@ The suite refuses to run if `E2E_DATABASE_URL` is missing, not on localhost, or 
 
 ## Changelog
 
-- **Floating + adds group expenses (2026-10-22):** the + button and the group page's "New expense" open one shared "Add expense" dialog (`AddExpenseProvider`). On a group page it targets that group; elsewhere it first asks which group. The previous personal quick-add was removed; personal expenses are still added on the Expenses page.
+- **Group-only Phase 1 (2026-10-23):** retired personal finance. Removed the dashboard and the personal expenses, income, recurring and savings pages and APIs; `/dashboard` and `/personal/*` redirect (308) to `/groups`; `/api/personal/*` and `/api/reports/personal` return 410. No tables, columns or rows were dropped: the five personal models are marked deprecated and users can download their data from Profile (`GET /api/users/me/export`, JSON or per-dataset CSV with formula-safe cells). Navigation is Groups · AI Advisor · About (· Admin), with Groups · Advisor · Profile · Menu on phones. "Pocket" renamed to "Group" everywhere. The AI Advisor now uses group data only (balances, settle-up suggestions, spend per group and month, matching group expenses) instead of personal finance and embeddings. The all-groups monthly PDF report moved from the dashboard to a "Download report" button on the Groups page. Removed `recharts`, `@google/genai`, `lib/dashboard.ts`, `savings-sync.ts`, `delete-null-users.js` and the embeddings script. Fixed NEW-9 and NEW-10. New e2e tests ×3 browsers: redirects, 410s, navigation, export and its isolation, balances unchanged, group-list balances, all-groups report (96 passing in total).
+- **Floating + adds group expenses (2026-10-22):** the + button and the group page's "New expense" open one shared "Add expense" dialog (`AddExpenseProvider`). On a group page it targets that group; elsewhere it first asks which group. The previous personal quick-add was removed; personal expenses were later retired (group-only Phase 1).
 - **Expenses tab redesign (2026-10-22):** expenses grouped by month (newest first) with sticky month headers showing spend, count and your share; rows with a date tile, payer, and what the expense means for you; collapsible split details; search; summary tiles (group spend, this month, your balance); the Add form is collapsed behind "New expense". The test harness now waits for network idle after each test, fixing a reset race that logged spurious server errors.
 - **P1 (2026-10-22):** fixed G-3, G-4, G-5, G-6, G-7 (group page), G-8 (UI), N-1, N-2, N-3, N-7, D-1 and NEW-7; added expense edit with revision history (`GroupExpenseRevision`), Undo for deletes, and new `DropdownMenu`, `ConfirmDialog` and `ExpenseForm` components. Schema change is additive only (`GroupExpense.createdById`, `updatedById`, and the new `GroupExpenseRevision` table).
 - **P0 (2026-10-22):** fixed G-1, G-2 (client side), G-8, NEW-1, NEW-2 and NEW-8; replaced `alert()` with toasts on the group page; data now refreshes without the full-page spinner after a change; added the Playwright e2e suite.

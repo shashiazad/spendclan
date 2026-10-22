@@ -1,6 +1,6 @@
 # SpendClan Requirements
 
-Personal finance group expense management web app.
+Group expense splitting web app. (Personal finance — dashboard, expenses, income, recurring, savings — was retired; see §9.)
 
 ## 1. Tech Stack
 
@@ -25,22 +25,17 @@ Personal finance group expense management web app.
 ## 3. Database Models
 
 - **User**: id (UUID), name, email (unique), hashedPassword, currency (default `"INR"`), role (USER/ADMIN), securityQuestion?, securityAnswer? (hashed), lastActive?, createdAt, updatedAt
-- **PersonalExpense**: id, amount (Float), category (String), date, paymentMethod (CASH/UPI/CARD), notes?, type (DAILY/LARGE), userId (FK, cascade). Indexes: userId, userId+date, userId+category
-- **Income**: id, amount, source (Salary/Freelance/Business/Other — validated server-side), date, notes?, userId (FK, cascade). Indexes: userId, userId+date
-- **Saving**: id, amount, month (Int), year (Int), notes?, userId (FK, cascade). Unique: userId+month+year (upsert on duplicate)
-- **SavingsGoal**: id, name, targetAmount, currentAmount (default 0), deadline?, userId (FK, cascade)
-- **RecurringExpense**: id, amount, category, frequency (DAILY/WEEKLY/MONTHLY), nextDueDate, paymentMethod (CASH/UPI/CARD), notes?, isActive (default true), userId (FK, cascade)
-- **Group**: id, name, description?, createdAt, updatedAt
-- **GroupMember**: id, role (ADMIN/MEMBER), userId (FK, cascade), groupId (FK, cascade), joinedAt. Unique: userId+groupId
-- **GroupExpense**: id, amount, description, date, splitType (EQUAL/PERCENTAGE/CUSTOM), paidById (FK), groupId (FK, cascade)
-- **GroupSplit**: id, amount, groupExpenseId (FK, cascade), userId (FK, cascade)
-- **Settlement**: id, amount, fromId (FK), toId (FK), groupId (FK, cascade), createdAt
+- **PersonalExpense, Income, Saving, SavingsGoal, RecurringExpense**: *Deprecated, read-only.* Kept with all rows for the Profile data export; nothing writes to them. Removing them requires a separate, reviewed migration.
+- **Group**: id, name, description?, createdAt, updatedAt, deletedAt?, deletedById?
+- **GroupMember**: id, role (ADMIN/MEMBER), userId (FK, restrict), groupId (FK, restrict), joinedAt, removedAt?, removedById?. Unique: userId+groupId
+- **GroupExpense**: id, amount, description, date, splitType (EQUAL/PERCENTAGE/CUSTOM), paidById (FK), groupId (FK, restrict), createdById?, updatedById?, deletedAt?, deletedById?
+- **GroupExpenseRevision**: id, groupExpenseId (FK, restrict), editedById, snapshot (JSON of the expense before the edit), createdAt
+- **GroupSplit**: id, amount, groupExpenseId (FK, restrict), userId (FK, restrict)
+- **Settlement**: id, amount, fromId (FK), toId (FK), groupId (FK, restrict), createdAt, deletedAt?, deletedById?
 - **PasswordResetToken**: id, token (unique, indexed), userId (FK, cascade), expiresAt, createdAt
 
 ## 4. Constants
 
-- **Expense Categories**: Groceries, Rent, Family Transfer, Credit Card Bill, Loan EMI, Trip, Dining Out, Food Delivery, Medicine, Consultation, Misc
-- **Income Sources**: Salary, Freelance, Business, Other
 - **Currencies**: INR (default), USD, EUR, GBP
 - **Security Questions**: 8 predefined (first pet, mother's maiden name, birth city, first school, favorite book, childhood nickname, street name, first car)
 
@@ -53,50 +48,18 @@ Personal finance group expense management web app.
 | `/(auth)/forgot-password` | Email reset request |
 | `/(auth)/reset-password` | Token-based reset form |
 | `/(auth)/reset-password-qa` | Security Q&A reset |
-| `/` | Redirect to `/dashboard` |
-| `/(dashboard)/dashboard` | Financial overview |
-| `/(dashboard)/personal/expenses` | Expense CRUD with filters |
-| `/(dashboard)/personal/income` | Income CRUD with filters |
-| `/(dashboard)/personal/recurring` | Recurring expense management |
-| `/(dashboard)/personal/savings` | Savings entries + goals |
+| `/` | Landing page; signed-in users go to `/groups` |
 | `/(dashboard)/groups` | Group list + creation |
 | `/(dashboard)/groups/[id]` | Group detail (tabs: Expenses, Balances, Settlements) |
+| `/(dashboard)/advisor` | AI Group Advisor (insights, report, chat) |
+| `/(dashboard)/profile` | Profile, credentials, personal data export |
 | `/(dashboard)/admin` | Admin user management |
+| `/dashboard`, `/personal/*` | Permanent redirect (308) to `/groups` |
 
 ### Layouts
 
 - **Auth**: Centered card on dark gradient background
-- **Dashboard**: Left sidebar (collapsible on mobile) + footer. Sidebar links: Dashboard, Expenses, Income, Recurring, Savings, Groups
-
-### Dashboard
-
-- 6 summary cards: Total Income, Total Expenses, Savings, Net Worth, Others Owe You, You Owe
-- **Spending Trends**: Area chart (last 6 months income, expenses, savings)
-- **Category Breakdown**: Pie chart for current month
-- Recent 5 expenses list
-
-### Personal Expenses
-
-- Month/year filter dropdowns
-- Add form: Amount, Category, Date, Payment Method, Type, Notes
-- Table with totals. Delete with `confirm()`
-- Full CRUD with month/year/category/type query filters
-
-### Income
-
-- Month/year filter. Warning: "only real earnings."
-- Add form: Amount, Source, Date, Notes. Server validates source.
-- Table with totals. Full CRUD.
-
-### Recurring Expenses
-
-- Add form: Amount, Category, Frequency, Next Due Date, Payment Method, Notes
-- Card grid (Active/Inactive sections). Toggle active state. Overdue highlighting.
-
-### Savings
-
-- **Monthly Savings**: 3 summary cards (income, expenses, calculated savings). Manual savings entry (upsert per month/year).
-- **Savings Goals**: Card grid with progress bars. Inline progress update. CRUD.
+- **Dashboard**: Left sidebar (collapsible on mobile) + footer. Sidebar links: Groups, AI Advisor, About, Admin (admins). Phone bottom bar: Groups, Advisor, Profile, Menu. Floating + adds a group expense.
 
 ### Groups
 
@@ -111,7 +74,7 @@ Personal finance group expense management web app.
 
 ### Admin
 
-- ADMIN-only. User table with role, last active, stats (expenses/income/groups). Inactive highlighting (30+ days). Delete non-admin users (two-click confirm). Cannot delete self or other admins.
+- ADMIN-only. User table with role, last active, stats (groups, expenses paid). Inactive highlighting (30+ days). Delete non-admin users without group history (confirm dialog). Cannot delete self or other admins.
 
 ## 6. API Endpoints
 
@@ -125,19 +88,12 @@ Personal finance group expense management web app.
 | POST | `/api/auth/reset-password` |
 | GET/POST | `/api/auth/reset-password-qa` |
 
-### Personal
+### Retired personal endpoints
 
 | Method | Endpoint |
 | --- | --- |
-| GET/POST/PUT/DELETE | `/api/personal/expenses` |
-| GET/POST/PUT/DELETE | `/api/personal/income` |
-| GET/POST/PUT/DELETE | `/api/personal/recurring` |
-| GET/POST/DELETE | `/api/personal/savings` |
-| GET | `/api/personal/savings/calculate` |
-| GET/POST/PUT/DELETE | `/api/personal/savings/goals` |
-| GET | `/api/personal/categories` |
-| GET | `/api/personal/dashboard` |
-| GET | `/api/personal/summary` |
+| any | `/api/personal/*`, `/api/reports/personal` → `410 Gone` |
+| GET | `/api/users/me/export` (counts), `?format=json`, `?format=csv&dataset=expenses\|income\|savings\|savings-goals\|recurring` |
 
 ### Groups
 
@@ -163,13 +119,14 @@ Personal finance group expense management web app.
 
 ## 8. Business Rules
 
-1. **Savings**: Income − Expenses per month. Manual savings entries are independent.
-2. **Net Worth**: Personal Savings + Others Owe You − You Owe
-3. **Group Splits**: Equal (auto), Percentage (must sum to 100%), Custom (exact amounts)
-4. **Group Balance**: `sum(paid) − sum(share) + sum(settlements_sent) − sum(settlements_received)`
-5. **Simplified Debts**: Greedy matching of largest creditors/debtors (threshold 0.01)
-6. **Income Validation**: Only Salary/Freelance/Business/Other accepted server-side
-7. **Recurring Expenses**: Manual tracking only (not auto-executed). Overdue items highlighted.
-8. **Data Isolation**: Personal queries scoped to userId. Group queries verify membership.
-9. **Cascade Deletes**: User deletion cascades to all personal data. Group deletion cascades to members/expenses/splits/settlements.
-10. **Admin Constraints**: Cannot delete self or other admins. Only group admins can delete groups or remove members.
+1. **Group Splits**: Equal (auto), Percentage (must sum to 100%), Custom (exact amounts)
+2. **Group Balance**: `sum(paid) − sum(share) + sum(settlements_sent) − sum(settlements_received)`
+3. **Simplified Debts**: Greedy matching of largest creditors/debtors (threshold 0.01)
+4. **Data Isolation**: Group queries verify active membership.
+5. **No hard deletes in groups**: Groups, expenses, settlements and memberships are soft-deleted; users with group history are never deleted.
+6. **Expense ownership**: Only the person who added an expense can edit or delete it (legacy rows: the payer).
+7. **Admin Constraints**: Cannot delete self or other admins. Only group admins can delete groups or remove members.
+
+## 9. Retired: Personal Finance
+
+SpendClan is group-only. The personal dashboard, expenses, income, recurring and savings pages were removed; their URLs redirect to `/groups` and their APIs return `410 Gone`. No tables, columns or rows were dropped — the data stays read-only and users can download it from Profile.

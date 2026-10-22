@@ -1,6 +1,8 @@
 # SpendClan
 
-> **SpendClan** is a premium, high-performance, and secure personal finance and group expense management web application. Built with Next.js 16 (App Router), React 19, Tailwind CSS 4, and Prisma 7, it empowers users to track daily budgets, manage shared group bills, compute simplified debt settlements, and get financial insights.
+> **SpendClan** is a secure group expense app. Built with Next.js 16 (App Router), React 19, Tailwind CSS 4, and Prisma 7, it lets flatmates, trips and teams share expenses, split them any way they like, see who owes whom, and settle up in the fewest payments.
+>
+> Personal finance (expenses, income, recurring, savings) was retired. Existing personal records are kept read-only and can be downloaded from **Profile → Your personal finance data**.
 
 ---
 
@@ -14,36 +16,29 @@
 *   **Role-Based Access Control (RBAC)**: Secure separation between standard `USER` accounts and system `ADMIN` accounts.
 *   **Data Isolation**: Session-level row security prevents unauthorized data access between users. Group membership is strictly validated on every action.
 
-### 📊 2. Interactive Dashboard & Analytics
-*   **Key Financial Metrics**: Real-time display of *Total Income*, *Total Expenses*, *Net Worth*, *Savings*, *Others Owe You*, and *You Owe*.
-*   **Visual Spending Trends**: 6-month interactive Area Chart visualizing income vs. expenses vs. savings.
-*   **Category Breakdown**: Responsive Pie Chart displaying category distributions for the current month's expenses.
-*   **Activity Ledger**: Instant lookup of the most recent financial activities.
+### 👥 2. Group Expense Splitting
+*   **Groups**: Create groups and add members by search or email invitation.
+*   **Flexible splits**: Equal, exact amounts or percentages, with a choice of exactly who is included.
+*   **Month-wise expense list**: Monthly totals, your share, and what each expense means for you (you lent / you borrowed).
+*   **Simplified debts**: A greedy matching algorithm settles the group in the fewest payments.
+*   **Settlements**: Record who paid whom; balances update immediately.
+*   **Nothing is lost**: Groups, expenses, settlements and memberships are soft-deleted; every edit keeps a revision. Only the person who added an expense can edit or delete it.
 
-### 💰 3. Personal Finance Suite
-*   **Expense Management**: Full CRUD operations with detailed categorization (Groceries, Rent, Medical, Dining, etc.) and payment method logging (Cash, Card, UPI).
-*   **Income Tracking**: Log earnings from validated sources (Salary, Freelance, Business, Other).
-*   **Recurring Expenses**: Monitor daily, weekly, or monthly repeating bills with due dates and overdue highlighting.
-*   **Savings Goals**: Create savings goals with progress tracking bars, target deadlines, and inline status updates.
+### ✨ 3. AI Group Advisor
+*   **Insights, reports and chat** about your groups: spend per group and month, who has been paying, balances, and suggested settle-up payments. Only data from groups you belong to is used.
 
-### 👥 4. Group Expense Splitting
-*   **Multi-Member Groups**: Group creation with invite-by-email functionality.
-*   **Smart Splitting**:
-    *   *Equal Splits*: Evenly distributes expenses across all group members.
-    *   *Percentage Splits*: Customizable percentage split validation (checks that sum equals 100%).
-    *   *Custom Splits*: Splits by exact specified currency amounts.
-*   **Simplified Debts**: Employs a greedy matching algorithm to resolve group debts using the minimum number of transactions.
-*   **Settlement Logs**: Keep an active ledger of who paid whom with real-time balance sheet updates.
+### 📄 4. Reports
+*   **PDF reports** per group and across all your groups.
 
 ### 🛡️ 5. Administrative Control Panel
-*   **User Auditing**: Admins can audit registered users, viewing statistics (roles, active status, group/expense/income counts).
-*   **System Actions**: Identify and clean up accounts idle for 30+ days (deletions cascade cleanly; admins cannot delete themselves or other admins).
+*   **User Auditing**: Admins can audit registered users, viewing statistics (roles, active status, groups and expenses paid).
+*   **System Actions**: Identify accounts idle for 30+ days and delete them — except users with any group history, which are never deleted (admins cannot delete themselves or other admins).
 
 ---
 
 ## 🛠️ Tech Stack & Architecture
 
-- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS 4, Recharts 3
+- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS 4
 - **Database & ORM**: PostgreSQL 16, Prisma 7 (optimized with `@prisma/adapter-pg` driver)
 - **Authentication**: NextAuth.js 4 (JWT Sessions)
 - **Utilities**: Nodemailer (SMTP), Zod (Validation), date-fns, UUID v4
@@ -130,7 +125,7 @@ The application reads the following configuration variables. Ensure they are con
 | `SMTP_USER` | SMTP authentication user | `apikey` (Resend) or your email |
 | `SMTP_PASS` | SMTP authentication password | Your SMTP password or app-specific password |
 | `SMTP_FROM` | Sender address shown on transactional emails | `SpendClan <noreply@yourdomain.com>` |
-| `GEMINI_API_KEY` | Gemini API key for AI Insights *(Optional)* | Get key from Google AI Studio |
+
 
 ---
 
