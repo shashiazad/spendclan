@@ -104,6 +104,9 @@ export const groupExpenseSchema = z.object({
   date: z.coerce.date(),
   splitType: z.enum(SPLIT_TYPES),
   paidById: z.string().uuid(),
+  // EQUAL only: who shares the expense. Defaults to every active member.
+  participantIds: z.array(z.string().uuid()).min(1).max(100).optional(),
+  // PERCENTAGE / CUSTOM: one entry per person involved (a subset of members is allowed)
   splits: z
     .array(
       z.object({
@@ -112,6 +115,7 @@ export const groupExpenseSchema = z.object({
         percentage: z.coerce.number().min(0).optional(),
       }),
     )
+    .max(100)
     .optional(),
 });
 

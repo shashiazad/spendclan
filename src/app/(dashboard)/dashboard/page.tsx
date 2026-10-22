@@ -396,7 +396,8 @@ export default function DashboardPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="1 6" stroke={gridStroke} vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: textFill, fontSize: 10 }} axisLine={false} tickLine={false} />
+                {/* Show every month (the default hides labels that collide on narrow screens); the tooltip keeps the year */}
+                <XAxis dataKey="month" interval={0} tickFormatter={(m: string) => m.slice(0, 3)} tick={{ fill: textFill, fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: textFill, fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{

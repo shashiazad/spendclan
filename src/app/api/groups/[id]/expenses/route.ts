@@ -7,6 +7,10 @@ import {
 } from "@/lib/auth";
 
 import { invalidateGroupMemberDashboards } from "@/lib/cache";
+import {
+  EXPENSE_FORBIDDEN_MESSAGE,
+  canModifyExpense,
+} from "@/lib/group-permissions";
 import { prisma } from "@/lib/prisma";
 import { groupExpenseSchema } from "@/lib/validators";
 
@@ -18,24 +22,31 @@ function computeSplits(
   memberIds: string[],
   paidById: string,
   splits?: { userId: string; amount: number; percentage?: number }[],
+  participantIds?: string[],
 ): { splits: { userId: string; amount: number }[] } | { error: string } {
   const totalCents = Math.round(amount * 100);
 
   if (splitType === "EQUAL") {
-    const n = memberIds.length;
-    if (n === 0) return { error: "No members in group" };
+    // Equal split among the chosen participants (everyone by default)
+    const participants = participantIds ?? memberIds;
+    if (participants.length === 0) return { error: "Choose at least one person to split with" };
+    if (new Set(participants).size !== participants.length) {
+      return { error: "Each person can only appear once in a split" };
+    }
+    if (participants.some((uid) => !memberIds.includes(uid))) {
+      return { error: "All split users must be group members" };
+    }
 
+    const n = participants.length;
     const baseCents = Math.floor(totalCents / n);
     const remainderCents = totalCents - baseCents * n;
+    // Leftover paise go to the payer when they share the expense, otherwise to the first participant
+    const remainderTo = participants.includes(paidById) ? paidById : participants[0];
 
-    const computed = memberIds.map((userId) => {
-      const isPayer = userId === paidById;
-      const shareCents = baseCents + (isPayer ? remainderCents : 0);
-      return {
-        userId,
-        amount: shareCents / 100,
-      };
-    });
+    const computed = participants.map((userId) => ({
+      userId,
+      amount: (baseCents + (userId === remainderTo ? remainderCents : 0)) / 100,
+    }));
 
     return { splits: computed };
   }
@@ -50,9 +61,10 @@ function computeSplits(
     }
   }
 
+  // A subset of members is allowed; each person may appear only once
   const splitUserIds = new Set(splits.map((s) => s.userId));
-  if (splitUserIds.size !== memberIds.length) {
-    return { error: "Splits must include all group members" };
+  if (splitUserIds.size !== splits.length) {
+    return { error: "Each person can only appear once in a split" };
   }
 
   if (splitType === "PERCENTAGE") {
@@ -141,6 +153,50 @@ function computeSplits(
   return { error: "Invalid split type" };
 }
 
+const expenseInclude = {
+  paidBy: { select: { id: true, name: true } },
+  splits: {
+    include: {
+      user: { select: { id: true, name: true } },
+    },
+  },
+} as const;
+
+/**
+ * Validates an expense body against the group's active members and computes its splits.
+ * People with a zero share are left out, so they show as "not involved".
+ */
+async function prepareExpense(groupId: string, body: unknown) {
+  const data = groupExpenseSchema.parse(body);
+
+  const members = await prisma.groupMember.findMany({
+    where: { groupId, removedAt: null },
+    select: { userId: true },
+  });
+  const memberIds = members.map((m) => m.userId);
+
+  if (!memberIds.includes(data.paidById)) {
+    return { error: "Payer must be a group member" } as const;
+  }
+
+  const splitResult = computeSplits(
+    data.splitType,
+    data.amount,
+    memberIds,
+    data.paidById,
+    data.splits,
+    data.participantIds,
+  );
+  if ("error" in splitResult) return { error: splitResult.error } as const;
+
+  return {
+    data,
+    splits: splitResult.splits
+      .filter((s) => s.amount > 0)
+      .map((s) => ({ userId: s.userId, amount: s.amount })),
+  } as const;
+}
+
 export async function GET(_request: Request, context: RouteContext) {
   const auth = await requireAuth();
   if ("error" in auth) return auth.error;
@@ -152,18 +208,14 @@ export async function GET(_request: Request, context: RouteContext) {
 
   const expenses = await prisma.groupExpense.findMany({
     where: { groupId, deletedAt: null },
-    include: {
-      paidBy: { select: { id: true, name: true } },
-      splits: {
-        include: {
-          user: { select: { id: true, name: true } },
-        },
-      },
-    },
+    include: expenseInclude,
     orderBy: { date: "desc" },
   });
 
-  return NextResponse.json({ expenses });
+  const userId = auth.session.user.id;
+  return NextResponse.json({
+    expenses: expenses.map((e) => ({ ...e, canEdit: canModifyExpense(e, userId) })),
+  });
 }
 
 export async function POST(request: Request, context: RouteContext) {
@@ -176,33 +228,11 @@ export async function POST(request: Request, context: RouteContext) {
   if ("error" in memberCheck) return memberCheck.error;
 
   try {
-    const body = await request.json();
-    const data = groupExpenseSchema.parse(body);
-
-    const members = await prisma.groupMember.findMany({
-      where: { groupId, removedAt: null },
-      select: { userId: true },
-    });
-    const memberIds = members.map((m) => m.userId);
-
-    if (!memberIds.includes(data.paidById)) {
-      return NextResponse.json(
-        { error: "Payer must be a group member" },
-        { status: 400 },
-      );
+    const prepared = await prepareExpense(groupId, await request.json());
+    if ("error" in prepared) {
+      return NextResponse.json({ error: prepared.error }, { status: 400 });
     }
-
-    const splitResult = computeSplits(
-      data.splitType,
-      data.amount,
-      memberIds,
-      data.paidById,
-      data.splits,
-    );
-
-    if ("error" in splitResult) {
-      return NextResponse.json({ error: splitResult.error }, { status: 400 });
-    }
+    const { data, splits } = prepared;
 
     const expense = await prisma.groupExpense.create({
       data: {
@@ -212,25 +242,86 @@ export async function POST(request: Request, context: RouteContext) {
         splitType: data.splitType,
         paidById: data.paidById,
         groupId,
-        splits: {
-          create: splitResult.splits.map((s) => ({
-            userId: s.userId,
-            amount: s.amount,
-          })),
-        },
+        createdById: auth.session.user.id,
+        splits: { create: splits },
       },
-      include: {
-        paidBy: { select: { id: true, name: true } },
-        splits: {
-          include: {
-            user: { select: { id: true, name: true } },
-          },
-        },
-      },
+      include: expenseInclude,
     });
 
     await invalidateGroupMemberDashboards(groupId);
-    return NextResponse.json({ expense }, { status: 201 });
+    return NextResponse.json({ expense: { ...expense, canEdit: true } }, { status: 201 });
+  } catch (error) {
+    return handleZodError(error);
+  }
+}
+
+export async function PATCH(request: Request, context: RouteContext) {
+  const auth = await requireAuth();
+  if ("error" in auth) return auth.error;
+
+  const { id: groupId } = await context.params;
+  const userId = auth.session.user.id;
+
+  const memberCheck = await requireGroupMember(groupId, userId);
+  if ("error" in memberCheck) return memberCheck.error;
+
+  const expenseId = new URL(request.url).searchParams.get("id");
+  if (!expenseId) {
+    return NextResponse.json({ error: "Missing expense id" }, { status: 400 });
+  }
+
+  const existing = await prisma.groupExpense.findFirst({
+    where: { id: expenseId, groupId, deletedAt: null },
+    include: { splits: { select: { userId: true, amount: true } } },
+  });
+  if (!existing) {
+    return NextResponse.json({ error: "Expense not found" }, { status: 404 });
+  }
+  if (!canModifyExpense(existing, userId)) {
+    return NextResponse.json({ error: EXPENSE_FORBIDDEN_MESSAGE }, { status: 403 });
+  }
+
+  try {
+    const prepared = await prepareExpense(groupId, await request.json());
+    if ("error" in prepared) {
+      return NextResponse.json({ error: prepared.error }, { status: 400 });
+    }
+    const { data, splits } = prepared;
+
+    const expense = await prisma.$transaction(async (tx) => {
+      // Keep the previous version: snapshot first, then replace the splits
+      await tx.groupExpenseRevision.create({
+        data: {
+          groupExpenseId: existing.id,
+          editedById: userId,
+          snapshot: {
+            amount: existing.amount,
+            description: existing.description,
+            date: existing.date.toISOString(),
+            splitType: existing.splitType,
+            paidById: existing.paidById,
+            splits: existing.splits,
+          },
+        },
+      });
+      await tx.groupSplit.deleteMany({ where: { groupExpenseId: existing.id } });
+      return tx.groupExpense.update({
+        where: { id: existing.id },
+        data: {
+          amount: data.amount,
+          description: data.description,
+          date: data.date,
+          splitType: data.splitType,
+          paidById: data.paidById,
+          updatedById: userId,
+          splits: { create: splits },
+        },
+        include: expenseInclude,
+      });
+    });
+
+    await invalidateGroupMemberDashboards(groupId);
+    return NextResponse.json({ expense: { ...expense, canEdit: true } });
   } catch (error) {
     return handleZodError(error);
   }
@@ -256,6 +347,9 @@ export async function DELETE(request: Request, context: RouteContext) {
 
   if (!expense) {
     return NextResponse.json({ error: "Expense not found" }, { status: 404 });
+  }
+  if (!canModifyExpense(expense, auth.session.user.id)) {
+    return NextResponse.json({ error: EXPENSE_FORBIDDEN_MESSAGE }, { status: 403 });
   }
 
   // Soft delete: the expense and its splits are kept for history and audit

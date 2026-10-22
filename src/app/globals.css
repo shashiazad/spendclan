@@ -7,6 +7,16 @@
   --surface:      rgba(15, 15, 24, 0.45);
   --card:         rgba(20, 20, 32, 0.4);
   --card-hover:   rgba(30, 30, 48, 0.55);
+  /* Opaque surface for layers over content (dialogs, dropdowns, toasts) */
+  --surface-solid: #12121C;
+
+  /* Layering scale: nav < FAB < dropdown < overlay < modal < toast */
+  --z-nav: 40;
+  --z-fab: 45;
+  --z-dropdown: 50;
+  --z-overlay: 60;
+  --z-modal: 70;
+  --z-toast: 80;
   --overlay:      #040407;
 
   /* Borders */
@@ -58,6 +68,7 @@
   --surface:      rgba(255, 255, 255, 0.65);
   --card:         rgba(255, 255, 255, 0.7);
   --card-hover:   rgba(255, 255, 255, 0.85);
+  --surface-solid: #FFFFFF;
   --overlay:      #FFFFFF;
 
   /* Borders */
@@ -432,4 +443,23 @@ body {
   padding-left: 1rem;
   margin: 0.75rem 0;
   color: var(--foreground-muted);
+}
+
+/* ── Floating add button ──────────────────────────────────────────────
+   Hidden while any dialog is open, and on touch-size screens while a form
+   field has focus, so it never covers the field being typed into. */
+body:has([aria-modal="true"]) [data-fab] {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  body:has(:is(input, select, textarea):focus) [data-fab] {
+    display: none;
+  }
+
+  /* Keep focused fields clear of the fixed mobile header and bottom nav when the browser scrolls to them */
+  html {
+    scroll-padding-top: 4.5rem;
+    scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
 }
