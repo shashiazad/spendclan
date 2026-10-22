@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import bcrypt from "bcryptjs";
 import { parse } from "dotenv";
@@ -8,7 +9,9 @@ export const USERS = {
   bob: { id: "00000000-0000-4000-8000-00000000000b", name: "Bob", email: "bob@e2e.local" },
   carol: { id: "00000000-0000-4000-8000-00000000000c", name: "Carol", email: "carol@e2e.local" },
 } as const;
-export const PASSWORD = "Password123!";
+// Generated per run (no credential in source). Tests both seed and log in with it, and
+// resetDb() re-hashes it before every test, so any value works. Override with E2E_USER_PASSWORD.
+export const PASSWORD = process.env.E2E_USER_PASSWORD ?? randomBytes(18).toString("base64url");
 export const GROUP_ID = "10000000-0000-4000-8000-000000000001";
 
 /**

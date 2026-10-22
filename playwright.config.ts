@@ -1,8 +1,11 @@
+import { randomBytes } from "node:crypto";
 import { defineConfig, devices } from "@playwright/test";
 import { e2eDatabaseUrl } from "./e2e/db";
 
 const PORT = 3100;
 const databaseUrl = e2eDatabaseUrl();
+// The test server signs its own sessions; generate the secret per run instead of keeping one in source
+const nextAuthSecret = process.env.E2E_NEXTAUTH_SECRET ?? randomBytes(32).toString("hex");
 
 export default defineConfig({
   testDir: "./e2e",
@@ -34,7 +37,7 @@ export default defineConfig({
       POSTGRES_PRISMA_URL: databaseUrl,
       POSTGRES_URL: databaseUrl,
       NEXTAUTH_URL: `http://localhost:${PORT}`,
-      NEXTAUTH_SECRET: "e2e-only-not-a-real-secret",
+      NEXTAUTH_SECRET: nextAuthSecret,
       // Never send real email from tests
       SMTP_HOST: "127.0.0.1",
       SMTP_PORT: "1",
