@@ -15,6 +15,8 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { DropdownMenu } from "@/components/ui/DropdownMenu";
 import { useToast } from "@/components/ui/Toast";
 import { ExpenseForm, type ExpensePayload } from "@/components/groups/ExpenseForm";
+import { useAddExpense } from "@/components/groups/AddExpenseProvider";
+import { NETWORK_ERROR, readError } from "@/lib/api-errors";
 import { ExpenseList } from "@/components/groups/ExpenseList";
 
 const monthsList = Array.from({ length: 12 }, (_, i) => ({
@@ -62,23 +64,6 @@ type Tab = "expenses" | "balances" | "settlements";
 
 type MutationResult = { ok: true } | { ok: false; error: string };
 
-const NETWORK_ERROR = "Couldn't reach the server. Check your connection and try again. Your entry has been kept.";
-
-/** Reads a user-facing message from a failed API response. */
-async function readError(res: Response, fallback: string): Promise<string> {
-  try {
-    const data = await res.json();
-    const issue = Array.isArray(data?.details) ? data.details[0] : undefined;
-    if (data?.error === "Validation failed" && issue?.message) {
-      const field = Array.isArray(issue.path) && issue.path.length ? `${issue.path.join(".")}: ` : "";
-      return `${field}${issue.message}`;
-    }
-    return data?.error ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 function initials(name: string) {
   if (!name) return "?";
   return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
@@ -94,6 +79,7 @@ export default function GroupDetailPage() {
   const currency = session?.user?.currency ?? "INR";
   const userId = session?.user?.id;
   const { addToast } = useToast();
+  const { openAddExpense, onExpenseAdded } = useAddExpense();
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportPeriodType, setReportPeriodType] = useState<"all-time" | "monthly">("all-time");
@@ -147,15 +133,12 @@ export default function GroupDetailPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [confirmDeleteGroup, setConfirmDeleteGroup] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
-  // null = automatic: open when the group has no expenses yet
-  const [showAddForm, setShowAddForm] = useState<boolean | null>(null);
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
   const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
 
   // Mutation state: which action is in flight, plus inline form errors
   const [pending, setPending] = useState<string | null>(null);
   const inFlight = useRef(false);
-  const [expenseError, setExpenseError] = useState<string | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
   const [settleError, setSettleError] = useState<string | null>(null);
   const settlePrefilled = useRef(false);
@@ -235,6 +218,11 @@ export default function GroupDetailPage() {
     };
   }, [loadAll]);
 
+  // Expenses are added from the shared dialog (header button or floating +); refresh when one lands here
+  useEffect(() => onExpenseAdded((groupId) => {
+    if (groupId === id) refresh();
+  }), [onExpenseAdded, id, refresh]);
+
   const currentMember = group?.members?.find((m) => m.userId === userId);
   const isAdmin = currentMember?.role === "ADMIN";
 
@@ -265,29 +253,6 @@ export default function GroupDetailPage() {
     }
     setConfirmDeleteGroup(false);
     router.push("/groups");
-  }
-
-  async function addExpense(payload: ExpensePayload): Promise<boolean> {
-    setExpenseError(null);
-    const result = await runMutation(
-      "expense",
-      () =>
-        fetch(`/api/groups/${id}/expenses`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }),
-      "Couldn't add the expense.",
-    );
-    if (!result) return false;
-    if (!result.ok) {
-      // The form keeps everything the user typed so they can fix it and retry
-      setExpenseError(result.error);
-      return false;
-    }
-    addToast("Expense added");
-    await refresh();
-    return true;
   }
 
   async function saveEdit(payload: ExpensePayload): Promise<boolean> {
@@ -458,7 +423,6 @@ export default function GroupDetailPage() {
     ? members
     : balances.map((b) => ({ userId: b.userId, name: b.name }));
   const formMembers = memberList.map((m) => ({ id: memberId(m), name: memberName(m) }));
-  const addFormOpen = showAddForm ?? expenses.length === 0;
 
   // Summary figures for the Expenses tab
   const monthKey = format(new Date(), "yyyy-MM");
@@ -557,11 +521,10 @@ export default function GroupDetailPage() {
             </div>
           </div>
 
-          {/* The add form stays tucked away until needed, so the list is visible first */}
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold text-[var(--foreground)]">Expenses</h2>
-            {!addFormOpen && (
-              <Button onClick={() => setShowAddForm(true)} aria-expanded={false} aria-controls="add-expense-panel">
+            {expenses.length > 0 && (
+              <Button onClick={() => openAddExpense(id)}>
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
@@ -569,36 +532,6 @@ export default function GroupDetailPage() {
               </Button>
             )}
           </div>
-
-          {addFormOpen && (
-            <Card className="animate-fade-in">
-              <div id="add-expense-panel">
-                <CardHeader
-                  title="Add an expense"
-                  description="Enter the total, who paid, and who it is shared with."
-                  action={
-                    expenses.length > 0 && (
-                      <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)} aria-label="Close add expense form">
-                        Close
-                      </Button>
-                    )
-                  }
-                />
-                <CardBody>
-                  <ExpenseForm
-                    members={formMembers}
-                    currentUserId={userId}
-                    currency={currency}
-                    submitLabel="Add Expense"
-                    pending={pending === "expense"}
-                    error={expenseError}
-                    onSubmit={addExpense}
-                    resetOnSuccess
-                  />
-                </CardBody>
-              </div>
-            </Card>
-          )}
 
           <ExpenseList
             expenses={expenses}
@@ -610,6 +543,7 @@ export default function GroupDetailPage() {
               setEditing(exp);
             }}
             onDelete={(exp) => setExpenseToDelete(exp)}
+            emptyAction={<Button onClick={() => openAddExpense(id)}>Add the first expense</Button>}
           />
         </div>
       )}
