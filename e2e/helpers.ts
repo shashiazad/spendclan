@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { GROUP_ID, PASSWORD, query } from "./db";
 
 export async function loginAs(page: Page, email: string) {
@@ -15,6 +15,14 @@ export async function openGroup(page: Page, tab?: "Balances" | "Settlements") {
   if (tab) await page.getByRole("button", { name: tab, exact: true }).click();
 }
 
+/** Opens the shared "Add expense" dialog from the group page header and waits for the form. */
+export async function openAddExpense(page: Page) {
+  await page.getByRole("button", { name: "New expense" }).click();
+  const dialog = page.getByRole("dialog", { name: "Add expense" });
+  await expect(dialog.getByLabel("Amount", { exact: true })).toBeVisible();
+  return dialog;
+}
+
 export async function chooseGroupAction(page: Page, item: string) {
   await page.getByRole("button", { name: "Group actions" }).click();
   await page.getByRole("menuitem", { name: item }).click();
@@ -22,3 +30,13 @@ export async function chooseGroupAction(page: Page, item: string) {
 
 export const count = async (sql: string, params: unknown[] = []) =>
   Number((await query<{ n: string }>(sql, params))[0].n);
+
+/**
+ * Let the page finish its background requests (e.g. the refresh after a save) before the
+ * next test resets the database; otherwise a request can read rows that were just truncated.
+ */
+export function settleAfterEach() {
+  test.afterEach(async ({ page }) => {
+    await page.waitForLoadState("networkidle").catch(() => {});
+  });
+}

@@ -1,12 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 import { USERS, query, resetDb } from "./db";
-import { chooseGroupAction, loginAs, openGroup } from "./helpers";
+import { chooseGroupAction, loginAs, openAddExpense, openGroup, settleAfterEach } from "./helpers";
 
 // QA_REPORT G-1, G-2, G-8 and NEW-1: group page mutations must never fail silently.
 
 const settlementCount = async () => Number((await query<{ n: string }>(`SELECT count(*) n FROM "Settlement"`))[0].n);
 const expenseCount = async () =>
   Number((await query<{ n: string }>(`SELECT count(*) n FROM "GroupExpense" WHERE "deletedAt" IS NULL`))[0].n);
+
+settleAfterEach();
 
 test.beforeEach(async () => {
   await resetDb();
@@ -66,6 +68,7 @@ test.describe("record payment", () => {
 
 test.describe("add expense", () => {
   async function fillExpense(page: Page) {
+    await openAddExpense(page);
     await page.getByLabel("Amount", { exact: true }).fill("300");
     await page.getByLabel("Description").fill("Scooter rental");
   }
@@ -105,7 +108,8 @@ test.describe("add expense", () => {
 
     expect(posts).toBe(1);
     expect(await expenseCount()).toBe(2);
-    await expect(page.getByLabel("Description")).toHaveValue("");
+    // The dialog closes after a successful add
+    await expect(page.getByRole("dialog", { name: "Add expense" })).toHaveCount(0);
   });
 });
 

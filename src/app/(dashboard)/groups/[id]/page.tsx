@@ -15,6 +15,9 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { DropdownMenu } from "@/components/ui/DropdownMenu";
 import { useToast } from "@/components/ui/Toast";
 import { ExpenseForm, type ExpensePayload } from "@/components/groups/ExpenseForm";
+import { useAddExpense } from "@/components/groups/AddExpenseProvider";
+import { NETWORK_ERROR, readError } from "@/lib/api-errors";
+import { ExpenseList } from "@/components/groups/ExpenseList";
 
 const monthsList = Array.from({ length: 12 }, (_, i) => ({
   value: String(i + 1),
@@ -61,23 +64,6 @@ type Tab = "expenses" | "balances" | "settlements";
 
 type MutationResult = { ok: true } | { ok: false; error: string };
 
-const NETWORK_ERROR = "Couldn't reach the server. Check your connection and try again. Your entry has been kept.";
-
-/** Reads a user-facing message from a failed API response. */
-async function readError(res: Response, fallback: string): Promise<string> {
-  try {
-    const data = await res.json();
-    const issue = Array.isArray(data?.details) ? data.details[0] : undefined;
-    if (data?.error === "Validation failed" && issue?.message) {
-      const field = Array.isArray(issue.path) && issue.path.length ? `${issue.path.join(".")}: ` : "";
-      return `${field}${issue.message}`;
-    }
-    return data?.error ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 function initials(name: string) {
   if (!name) return "?";
   return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
@@ -93,6 +79,7 @@ export default function GroupDetailPage() {
   const currency = session?.user?.currency ?? "INR";
   const userId = session?.user?.id;
   const { addToast } = useToast();
+  const { openAddExpense, onExpenseAdded } = useAddExpense();
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportPeriodType, setReportPeriodType] = useState<"all-time" | "monthly">("all-time");
@@ -152,7 +139,6 @@ export default function GroupDetailPage() {
   // Mutation state: which action is in flight, plus inline form errors
   const [pending, setPending] = useState<string | null>(null);
   const inFlight = useRef(false);
-  const [expenseError, setExpenseError] = useState<string | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
   const [settleError, setSettleError] = useState<string | null>(null);
   const settlePrefilled = useRef(false);
@@ -232,6 +218,11 @@ export default function GroupDetailPage() {
     };
   }, [loadAll]);
 
+  // Expenses are added from the shared dialog (header button or floating +); refresh when one lands here
+  useEffect(() => onExpenseAdded((groupId) => {
+    if (groupId === id) refresh();
+  }), [onExpenseAdded, id, refresh]);
+
   const currentMember = group?.members?.find((m) => m.userId === userId);
   const isAdmin = currentMember?.role === "ADMIN";
 
@@ -262,29 +253,6 @@ export default function GroupDetailPage() {
     }
     setConfirmDeleteGroup(false);
     router.push("/groups");
-  }
-
-  async function addExpense(payload: ExpensePayload): Promise<boolean> {
-    setExpenseError(null);
-    const result = await runMutation(
-      "expense",
-      () =>
-        fetch(`/api/groups/${id}/expenses`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }),
-      "Couldn't add the expense.",
-    );
-    if (!result) return false;
-    if (!result.ok) {
-      // The form keeps everything the user typed so they can fix it and retry
-      setExpenseError(result.error);
-      return false;
-    }
-    addToast("Expense added");
-    await refresh();
-    return true;
   }
 
   async function saveEdit(payload: ExpensePayload): Promise<boolean> {
@@ -456,6 +424,21 @@ export default function GroupDetailPage() {
     : balances.map((b) => ({ userId: b.userId, name: b.name }));
   const formMembers = memberList.map((m) => ({ id: memberId(m), name: memberName(m) }));
 
+  // Summary figures for the Expenses tab
+  const monthKey = format(new Date(), "yyyy-MM");
+  const thisMonthSpend = expenses
+    .filter((e) => format(new Date(e.date), "yyyy-MM") === monthKey)
+    .reduce((sum, e) => sum + e.amount, 0);
+  const myBalance = balances.find((b) => b.userId === userId)?.balance ?? 0;
+  const myBalanceText =
+    myBalance > 0.004
+      ? `You're owed ${formatCurrency(myBalance, currency)}`
+      : myBalance < -0.004
+        ? `You owe ${formatCurrency(-myBalance, currency)}`
+        : "All settled up";
+  const myBalanceTone =
+    myBalance > 0.004 ? "text-[var(--income)]" : myBalance < -0.004 ? "text-[var(--expense)]" : "text-[var(--foreground)]";
+
   // What the current user owes the selected payee, for "Full amount" and the overpay warning
   const payee = memberList.find((m) => memberId(m) === settleForm.toId);
   const owedToPayee = debts.find((d) => d.fromId === userId && d.toId === settleForm.toId)?.amount;
@@ -522,84 +505,46 @@ export default function GroupDetailPage() {
       {/* Tab: Expenses */}
       {tab === "expenses" && (
         <div className="space-y-6">
-          <Card>
-            <CardHeader title="Add Expense" />
-            <CardBody>
-              <ExpenseForm
-                members={formMembers}
-                currentUserId={userId}
-                currency={currency}
-                submitLabel="Add Expense"
-                pending={pending === "expense"}
-                error={expenseError}
-                onSubmit={addExpense}
-                resetOnSuccess
-              />
-            </CardBody>
-          </Card>
-
-          {expenses.length === 0 ? (
-            <p className="text-center py-12 text-muted text-xs">No expenses yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {expenses.map((exp) => {
-                // People with a zero share were not involved, so they are not listed
-                const involved = exp.splits.filter((s) => s.amount > 0);
-                return (
-                  <Card key={exp.id} padding="sm" className="hover-lift hover:border-accent/40 dark:hover:border-accent/40 transition-all duration-400 ease-[cubic-bezier(0.25,1,0.5,1)]">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-foreground">{exp.description}</p>
-                          <span className="inline-block rounded-full bg-accent/10 text-accent text-[9px] font-semibold px-2 py-0.5 border border-accent/20 select-none">
-                            {exp.splitType}
-                          </span>
-                        </div>
-                        <p className="text-xl font-bold text-[#1D1D1F] dark:text-white">{formatCurrency(exp.amount, currency)}</p>
-                        <p className="text-[10px] text-muted">
-                          Paid by <span className="font-semibold text-foreground">{exp.paidBy.name}</span> · {format(new Date(exp.date), "MMM d, yyyy")}
-                        </p>
-                        <div className="mt-3 grid gap-1.5 pl-3 border-l border-[#E8E8ED] dark:border-[#2C2C2E]">
-                          {involved.map((s, i) => (
-                            <p key={i} className="text-xs text-muted flex items-center justify-between max-w-xs gap-6">
-                              <span>{s.user.name}</span>
-                              <span className="font-medium text-foreground">{formatCurrency(s.amount, currency)}</span>
-                            </p>
-                          ))}
-                        </div>
-                      </div>
-                      {exp.canEdit && (
-                        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => {
-                              setEditError(null);
-                              setEditing(exp);
-                            }}
-                            disabled={pending !== null}
-                            aria-label={`Edit ${exp.description}`}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="danger"
-                            onClick={() => setExpenseToDelete(exp)}
-                            loading={pending === `delete-expense:${exp.id}`}
-                            disabled={pending !== null}
-                            aria-label={`Delete ${exp.description}`}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
+          {/* At-a-glance summary */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3.5 sm:p-4">
+              <p className="text-xs font-medium text-[var(--foreground-muted)]">Group spend</p>
+              <p className="mt-1 text-lg font-bold tabular-nums sm:text-xl text-[var(--foreground)]">{formatCurrency(totalSpend, currency)}</p>
             </div>
-          )}
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3.5 sm:p-4">
+              <p className="text-xs font-medium text-[var(--foreground-muted)]">This month</p>
+              <p className="mt-1 text-lg font-bold tabular-nums sm:text-xl text-[var(--foreground)]">{formatCurrency(thisMonthSpend, currency)}</p>
+            </div>
+            <div className="col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3.5 sm:col-span-1 sm:p-4">
+              <p className="text-xs font-medium text-[var(--foreground-muted)]">Your balance</p>
+              <p className={`mt-1 text-lg font-bold tabular-nums sm:text-xl ${myBalanceTone}`}>{myBalanceText}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-base font-semibold text-[var(--foreground)]">Expenses</h2>
+            {expenses.length > 0 && (
+              <Button onClick={() => openAddExpense(id)}>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                New expense
+              </Button>
+            )}
+          </div>
+
+          <ExpenseList
+            expenses={expenses}
+            currency={currency}
+            currentUserId={userId}
+            pending={pending}
+            onEdit={(exp) => {
+              setEditError(null);
+              setEditing(exp);
+            }}
+            onDelete={(exp) => setExpenseToDelete(exp)}
+            emptyAction={<Button onClick={() => openAddExpense(id)}>Add the first expense</Button>}
+          />
         </div>
       )}
 
