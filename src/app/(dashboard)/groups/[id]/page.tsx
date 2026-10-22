@@ -468,8 +468,8 @@ export default function GroupDetailPage() {
       {/* Header: one overflow menu instead of a row of buttons (destructive actions live in Group settings) */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <span className="text-[10px] font-semibold text-muted uppercase tracking-widest">Pocket Detail Panel</span>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground mt-1 break-words">{group?.name ?? "Pocket Details"}</h1>
+          <span className="text-[10px] font-semibold text-muted uppercase tracking-widest">Group</span>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground mt-1 break-words">{group?.name ?? "Group"}</h1>
           <p className="text-xs text-muted mt-1 font-normal">{group?.description ?? "Manage shared expenses and settlements"}</p>
         </div>
         <DropdownMenu
@@ -656,7 +656,7 @@ export default function GroupDetailPage() {
           </Card>
 
           <Card>
-            <CardHeader title="Pocket Members" />
+            <CardHeader title="Group Members" />
             <CardBody>
               <div className="space-y-3.5 divide-y divide-[#E8E8ED]/60 dark:divide-[#2C2C2E]/40">
                 {memberList.map((m) => {
@@ -866,7 +866,7 @@ export default function GroupDetailPage() {
       <Modal
         open={showReportModal}
         onClose={() => setShowReportModal(false)}
-        title="Download Pocket Expense Report"
+        title="Download Group Expense Report"
         size="sm"
       >
         <div className="space-y-4">

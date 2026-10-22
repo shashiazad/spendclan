@@ -2,16 +2,15 @@ import type { Metadata } from "next";
 import { HomePageClient } from "@/components/HomePageClient";
 
 export const metadata: Metadata = {
-  title: "SpendClan — Premium Expense Tracker & Smart Group Splits",
+  title: "SpendClan — Split Group Expenses & Settle Up",
   description:
-    "Manage your personal finances and split group expenses effortlessly. Track income, expenses, savings goals, and settle debts with friends — all in one premium, high-contrast, privacy-first platform.",
+    "Split shared expenses with flatmates, trips and friends. See who owes whom and settle up in the fewest payments — on a privacy-first platform.",
   keywords: [
-    "expense tracker",
+    "group expenses",
     "group splits",
-    "personal finance",
     "bill splitting",
-    "savings goals",
-    "budget manager",
+    "split with friends",
+    "settle up",
   ],
 };
 

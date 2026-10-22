@@ -61,10 +61,10 @@ function BoltIcon() {
 /* ─────────────── MOCK DASHBOARD ─────────────── */
 function MockDashboard() {
   const transactions = [
-    { name: "Groceries",     amount: -2450,  icon: "🛒", time: "Today",     cat: "expense" },
-    { name: "Salary Credit", amount:  54000, icon: "💼", time: "Yesterday", cat: "income" },
-    { name: "Dining Out",    amount: -1200,  icon: "🍽️", time: "2d ago",    cat: "expense" },
-    { name: "Rent Transfer", amount: -12000, icon: "🏠", time: "3d ago",    cat: "expense" },
+    { name: "Hotel · Goa Trip",     amount:  3600, icon: "🏨", time: "Today · you lent",        cat: "lent" },
+    { name: "Groceries · Flat 4B",  amount: -820,  icon: "🛒", time: "Yesterday · you borrowed", cat: "borrowed" },
+    { name: "Dinner · Goa Trip",    amount: -1150, icon: "🍽️", time: "2d ago · you borrowed",    cat: "borrowed" },
+    { name: "Internet · Flat 4B",   amount:  900,  icon: "📶", time: "3d ago · you lent",        cat: "lent" },
   ];
 
   return (
@@ -74,16 +74,16 @@ function MockDashboard() {
         <span className="h-2.5 w-2.5 rounded-full bg-[var(--expense)]/50" />
         <span className="h-2.5 w-2.5 rounded-full bg-[var(--warning)]/50" />
         <span className="h-2.5 w-2.5 rounded-full bg-[var(--income)]/50" />
-        <span className="ml-auto text-[10px] text-[var(--foreground-subtle)]">SpendClan Dashboard</span>
+        <span className="ml-auto text-[10px] text-[var(--foreground-subtle)]">SpendClan · Groups</span>
       </div>
 
       <div className="p-5">
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3 mb-5">
           {[
-            { label: "Income",   value: "₹54K", color: "var(--income)" },
-            { label: "Expenses", value: "₹38K", color: "var(--expense)" },
-            { label: "Saved",    value: "₹16K", color: "var(--accent)" },
+            { label: "Groups",      value: "3",     color: "var(--accent)" },
+            { label: "You're owed", value: "₹6.2K", color: "var(--income)" },
+            { label: "You owe",     value: "₹1.9K", color: "var(--expense)" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 text-center">
               <p className="text-[10px] text-[var(--foreground-subtle)] mb-1">{s.label}</p>
@@ -94,23 +94,24 @@ function MockDashboard() {
 
         {/* Balance */}
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 mb-4">
-          <p className="text-[10px] text-[var(--foreground-muted)] mb-1">Available Balance</p>
+          <p className="text-[10px] text-[var(--foreground-muted)] mb-1">Net balance across groups</p>
           <p className="text-2xl font-semibold text-[var(--foreground)] tabular-nums">
-            ₹51,700<span className="text-sm font-normal text-[var(--foreground-muted)]">.00</span>
+            You&apos;re owed ₹4,330<span className="text-sm font-normal text-[var(--foreground-muted)]">.00</span>
           </p>
-          <div className="mt-3 h-1 w-full rounded-full bg-[var(--border)]">
-            <div className="h-full w-[68%] rounded-full bg-[var(--accent)]" />
+          <div className="mt-3 flex h-1 w-full overflow-hidden rounded-full bg-[var(--border)]">
+            <div className="h-full w-[76%] bg-[var(--income)]" />
+            <div className="h-full w-[24%] bg-[var(--expense)]" />
           </div>
           <div className="mt-1.5 flex items-center justify-between">
-            <span className="text-[10px] text-[var(--foreground-subtle)]">68% of savings goal</span>
-            <span className="text-[10px] font-medium" style={{ color: "var(--income)" }}>+12.4%</span>
+            <span className="text-[10px] text-[var(--foreground-subtle)]">Owed to you vs you owe</span>
+            <span className="text-[10px] font-medium" style={{ color: "var(--income)" }}>2 people to settle</span>
           </div>
         </div>
 
         {/* Recent transactions */}
         <div>
           <div className="flex items-center justify-between mb-2.5">
-            <p className="text-[10px] font-semibold text-[var(--foreground-muted)] uppercase tracking-wider">Recent</p>
+            <p className="text-[10px] font-semibold text-[var(--foreground-muted)] uppercase tracking-wider">Recent group activity</p>
             <span className="text-[10px] text-[var(--accent)] cursor-pointer hover:opacity-75">View all</span>
           </div>
           <div className="space-y-1.5">
@@ -125,9 +126,9 @@ function MockDashboard() {
                 </div>
                 <span
                   className="text-xs font-semibold tabular-nums"
-                  style={{ color: tx.amount > 0 ? "var(--income)" : "var(--foreground-muted)" }}
+                  style={{ color: tx.amount > 0 ? "var(--income)" : "var(--expense)" }}
                 >
-                  {tx.amount > 0 ? "+" : "-"}₹{Math.abs(tx.amount).toLocaleString("en-IN")}
+                  {tx.amount > 0 ? "+" : "−"}₹{Math.abs(tx.amount).toLocaleString("en-IN")}
                 </span>
               </div>
             ))}
@@ -176,12 +177,12 @@ function FeatureCard({
 }
 
 /* ─────────────── MINI COMPONENTS ─────────────── */
-function PersonalFinanceMini() {
+function GroupSpendMini() {
   const categories = [
-    { name: "Rent & Bills", pct: 38, color: "var(--accent)" },
-    { name: "Groceries",    pct: 29, color: "var(--income)" },
-    { name: "Dining Out",   pct: 18, color: "var(--warning)" },
-    { name: "Others",       pct: 15, color: "var(--foreground-muted)" },
+    { name: "Goa Trip",    pct: 46, color: "var(--accent)" },
+    { name: "Flat 4B",     pct: 32, color: "var(--income)" },
+    { name: "Office Lunch", pct: 14, color: "var(--warning)" },
+    { name: "Others",      pct: 8,  color: "var(--foreground-muted)" },
   ];
   return (
     <div className="space-y-3">
@@ -322,7 +323,7 @@ export function HomePageClient() {
           <div className="relative text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 mb-6 reveal-on-scroll">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--income)]" />
-              <span className="text-[11px] font-medium text-[var(--foreground-muted)]">Shared Pockets · Group Splitting · Smart Settlements</span>
+              <span className="text-[11px] font-medium text-[var(--foreground-muted)]">Shared Groups · Fair Splits · Smart Settlements</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-[var(--foreground)] leading-[1.1] mb-5 reveal-on-scroll">
@@ -335,7 +336,7 @@ export function HomePageClient() {
               </span>
             </h1>
             <p className="text-base sm:text-lg text-[var(--foreground-muted)] font-normal max-w-2xl mx-auto leading-relaxed mb-8 reveal-on-scroll">
-              Seamless group splitting meets personal expense tracking. Create shared pockets, track group trips, and settle debts instantly — all in one place.
+              Track shared expenses with flatmates, trips and teams. Split any way you like, see who owes whom, and settle up in the fewest payments.
             </p>
             <div className="flex justify-center items-center gap-3 reveal-on-scroll">
               <Link href="/register" className="btn-primary">
@@ -388,17 +389,17 @@ export function HomePageClient() {
 
             <FeatureCard
               icon={<WalletIcon />}
-              title="Personal Finance Suite"
-              description="Track recurring expenses, log monthly income, set strict budgets, and monitor savings goals dynamically."
+              title="Every Group at a Glance"
+              description="See what each group spent this month, your share of it, and who you need to settle with — month by month."
               className="reveal-on-scroll"
             >
-              <PersonalFinanceMini />
+              <GroupSpendMini />
             </FeatureCard>
 
             <FeatureCard
               icon={<SparklesIcon />}
               title="AI Insights"
-              description="Personalized, contextual financial warnings and reports to help you reduce expenses and build savings."
+              description="Ask about your groups: who owes whom, where the money went, and how to settle up in the fewest payments."
               badge="Coming Soon"
               className="reveal-on-scroll"
             >
@@ -430,9 +431,9 @@ export function HomePageClient() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { icon: "⚡", title: "Sub-Second Load",   desc: "Engineered for lightning-fast page loads and instant navigation." },
-              { icon: "🔒", title: "Isolated Data",      desc: "No tracker libraries. Your transactions stay private." },
+              { icon: "🔒", title: "Isolated Data",      desc: "No tracker libraries. Group data is visible only to its members." },
               { icon: "🎨", title: "Adaptive UI",        desc: "Clean light and dark modes that adapt to your preference." },
-              { icon: "📊", title: "Clear Analytics",    desc: "Visualize budget progress with high-contrast charts." },
+              { icon: "📊", title: "Clear Analytics",    desc: "See group spending month by month at a glance." },
             ].map((prop) => (
               <div key={prop.title} className="reveal-on-scroll">
                 <span className="text-2xl inline-block mb-3">{prop.icon}</span>
@@ -494,7 +495,7 @@ export function HomePageClient() {
               Ready to take control?
             </h2>
             <p className="text-base text-[var(--foreground-muted)] max-w-lg mx-auto leading-relaxed">
-              Join SpendClan today. Completely free for personal budgets and small friend groups.
+              Join SpendClan today. Completely free for flatmates, trips and small friend groups.
             </p>
             <div className="flex justify-center items-center gap-3 pt-2">
               <Link href="/register" className="btn-primary">

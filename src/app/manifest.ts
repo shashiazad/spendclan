@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "SpendClan Personal Finance",
+    name: "SpendClan Group Expenses",
     short_name: "SpendClan",
-    description: "Premium Expense Tracker & Smart Group Splits",
-    start_url: "/",
+    description: "Split group expenses and settle up with friends",
+    start_url: "/groups",
     display: "standalone",
     background_color: "#0b1120",
     theme_color: "#0b1120",
