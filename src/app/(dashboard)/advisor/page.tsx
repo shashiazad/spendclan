@@ -46,8 +46,8 @@ export default function AdvisorPage() {
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-100">AI Financial Advisor</h1>
-            <p className="mt-0.5 text-slate-400">Powered by Groq LLM — Personalized insights, reports, and advice</p>
+            <h1 className="text-2xl font-bold text-slate-100">AI Group Advisor</h1>
+            <p className="mt-0.5 text-slate-400">Insights, reports and answers about your groups, balances and settle-ups</p>
           </div>
         </div>
       </div>

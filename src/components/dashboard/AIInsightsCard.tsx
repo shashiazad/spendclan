@@ -111,7 +111,7 @@ export function AIInsightsCard() {
               Ready to analyze your spending
             </p>
             <p className="text-xs text-[var(--foreground-muted)] max-w-sm mx-auto mb-4">
-              Click below to get AI-powered insights on your income, expenses, and savings patterns.
+              Click below to get AI-powered insights on your group spending, balances and settle-ups.
             </p>
             <Button onClick={fetchInsights} size="sm">
               <svg className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
