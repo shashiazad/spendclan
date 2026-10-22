@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import Link from "next/link";
+import { useState, type ReactNode } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -15,6 +16,10 @@ export interface ListExpense {
   canEdit?: boolean;
   paidBy: { id: string; name: string };
   splits: { amount: number; user: { id: string; name: string } }[];
+  /** Present in search results. */
+  group?: { id: string; name: string };
+  deletedAt?: string | null;
+  edited?: boolean;
 }
 
 interface ExpenseListProps {
@@ -23,10 +28,36 @@ interface ExpenseListProps {
   currentUserId?: string;
   /** Key of the mutation in flight, used to show a spinner on the matching row. */
   pending: string | null;
-  onEdit: (expense: ListExpense) => void;
-  onDelete: (expense: ListExpense) => void;
+  /** Without these the rows have no Edit/Delete buttons (e.g. the all-groups list). */
+  onEdit?: (expense: ListExpense) => void;
+  onDelete?: (expense: ListExpense) => void;
   /** Shown in the empty state, e.g. an "Add the first expense" button. */
   emptyAction?: ReactNode;
+  /** Search text to highlight in descriptions. */
+  highlight?: string;
+  /** Show which group each expense belongs to (all-groups search). */
+  showGroup?: boolean;
+}
+
+/** Wraps case-insensitive matches of `term` in <mark>. */
+function Highlight({ text, term }: { text: string; term?: string }) {
+  const t = term?.trim();
+  if (!t) return <>{text}</>;
+  const lower = text.toLowerCase();
+  const needle = t.toLowerCase();
+  const parts: ReactNode[] = [];
+  let from = 0;
+  for (let i = lower.indexOf(needle); i !== -1; i = lower.indexOf(needle, from)) {
+    if (i > from) parts.push(text.slice(from, i));
+    parts.push(
+      <mark key={i} className="rounded-sm bg-[var(--accent-dim)] text-[var(--accent)]">
+        {text.slice(i, i + t.length)}
+      </mark>,
+    );
+    from = i + t.length;
+  }
+  if (from < text.length) parts.push(text.slice(from));
+  return <>{parts}</>;
 }
 
 const SPLIT_LABELS: Record<string, string> = {
@@ -54,24 +85,31 @@ const EFFECT_STYLES: Record<Effect["tone"], string> = {
   none: "text-[var(--foreground-subtle)]",
 };
 
-/** Group expenses grouped by month (newest first), with search and a per-row personal summary. */
-export function ExpenseList({ expenses, currency, currentUserId, pending, onEdit, onDelete, emptyAction }: ExpenseListProps) {
-  const searchId = useId();
-  const [query, setQuery] = useState("");
+/**
+ * Expenses grouped by calendar month with a per-row personal summary. Rows keep the order they are
+ * given in (newest first by default), so a sorted search result stays sorted.
+ */
+export function ExpenseList({
+  expenses,
+  currency,
+  currentUserId,
+  pending,
+  onEdit,
+  onDelete,
+  emptyAction,
+  highlight,
+  showGroup = false,
+}: ExpenseListProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const fmt = (n: number) => formatCurrency(n, currency);
 
-  const q = query.trim().toLowerCase();
-  const visible = q
-    ? expenses.filter((e) => e.description.toLowerCase().includes(q) || e.paidBy.name.toLowerCase().includes(q))
-    : expenses;
-
-  // Group by calendar month in the viewer's timezone, newest month first
+  // Group by calendar month in the viewer's timezone
   const months: { key: string; label: string; items: ListExpense[] }[] = [];
-  for (const e of [...visible].sort((a, b) => +new Date(b.date) - +new Date(a.date))) {
+  for (const e of expenses) {
     const d = new Date(e.date);
     const key = format(d, "yyyy-MM");
-    let month = months.find((m) => m.key === key);
+    // Consecutive rows of the same month share a section (sorting by amount can revisit a month)
+    let month = months[months.length - 1]?.key === key ? months[months.length - 1] : undefined;
     if (!month) {
       month = { key, label: format(d, "MMMM yyyy"), items: [] };
       months.push(month);
@@ -105,35 +143,14 @@ export function ExpenseList({ expenses, currency, currentUserId, pending, onEdit
 
   return (
     <div className="space-y-6">
-      <div className="relative">
-        <label htmlFor={searchId} className="sr-only">Search expenses</label>
-        <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-subtle)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
-        </svg>
-        <input
-          id={searchId}
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by description or who paid"
-          autoComplete="off"
-          enterKeyHint="search"
-          className="w-full min-h-[44px] rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-base text-[var(--foreground)] placeholder:text-[var(--foreground-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)] sm:text-sm"
-        />
-      </div>
-
-      {months.length === 0 && (
-        <p className="py-8 text-center text-sm text-[var(--foreground-muted)]">No expenses match &ldquo;{query.trim()}&rdquo;.</p>
-      )}
-
-      {months.map((month) => {
+      {months.map((month, index) => {
         const total = month.items.reduce((sum, e) => sum + e.amount, 0);
         const myShare = currentUserId
           ? month.items.reduce((sum, e) => sum + (e.splits.find((s) => s.user.id === currentUserId)?.amount ?? 0), 0)
           : 0;
-        const headingId = `month-${month.key}`;
+        const headingId = `month-${month.key}-${index}`;
         return (
-          <section key={month.key} aria-labelledby={headingId} className="space-y-2">
+          <section key={headingId} aria-labelledby={headingId} className="space-y-2">
             <div className="sticky top-14 z-10 -mx-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 rounded-lg bg-[var(--background)]/90 px-1 py-2 backdrop-blur-sm lg:top-0">
               <h3 id={headingId} className="text-sm font-semibold text-[var(--foreground)]">
                 {month.label}
@@ -161,10 +178,28 @@ export function ExpenseList({ expenses, currency, currentUserId, pending, onEdit
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-[var(--foreground)]">{exp.description}</p>
+                        <p className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-[var(--foreground)]">
+                          <span className="truncate" title={exp.description}>
+                            <Highlight text={exp.description} term={highlight} />
+                          </span>
+                          {exp.deletedAt && (
+                            <span className="shrink-0 rounded-full bg-[var(--expense-dim)] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[var(--expense)]">Deleted</span>
+                          )}
+                          {exp.edited && !exp.deletedAt && (
+                            <span className="shrink-0 rounded-full bg-[var(--sidebar-hover)] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[var(--foreground-muted)]">Edited</span>
+                          )}
+                        </p>
                         <p className="truncate text-xs text-[var(--foreground-muted)]">
                           <span className="sr-only">{format(d, "MMMM d, yyyy")} · </span>
                           {exp.paidBy.id === currentUserId ? "You" : exp.paidBy.name} paid
+                          {showGroup && exp.group && (
+                            <>
+                              {" · "}
+                              <Link href={`/groups/${exp.group.id}`} className="font-medium text-[var(--accent)] hover:underline">
+                                {exp.group.name}
+                              </Link>
+                            </>
+                          )}
                         </p>
                       </div>
 
@@ -187,7 +222,7 @@ export function ExpenseList({ expenses, currency, currentUserId, pending, onEdit
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
                       </button>
-                      {exp.canEdit && (
+                      {exp.canEdit && onEdit && onDelete && (
                         <div className="ml-auto flex gap-2">
                           <Button
                             size="sm"
