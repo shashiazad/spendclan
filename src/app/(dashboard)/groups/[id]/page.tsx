@@ -15,6 +15,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { DropdownMenu } from "@/components/ui/DropdownMenu";
 import { useToast } from "@/components/ui/Toast";
 import { ExpenseForm, type ExpensePayload } from "@/components/groups/ExpenseForm";
+import { ExpenseList } from "@/components/groups/ExpenseList";
 
 const monthsList = Array.from({ length: 12 }, (_, i) => ({
   value: String(i + 1),
@@ -146,6 +147,8 @@ export default function GroupDetailPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [confirmDeleteGroup, setConfirmDeleteGroup] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
+  // null = automatic: open when the group has no expenses yet
+  const [showAddForm, setShowAddForm] = useState<boolean | null>(null);
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
   const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
 
@@ -455,6 +458,22 @@ export default function GroupDetailPage() {
     ? members
     : balances.map((b) => ({ userId: b.userId, name: b.name }));
   const formMembers = memberList.map((m) => ({ id: memberId(m), name: memberName(m) }));
+  const addFormOpen = showAddForm ?? expenses.length === 0;
+
+  // Summary figures for the Expenses tab
+  const monthKey = format(new Date(), "yyyy-MM");
+  const thisMonthSpend = expenses
+    .filter((e) => format(new Date(e.date), "yyyy-MM") === monthKey)
+    .reduce((sum, e) => sum + e.amount, 0);
+  const myBalance = balances.find((b) => b.userId === userId)?.balance ?? 0;
+  const myBalanceText =
+    myBalance > 0.004
+      ? `You're owed ${formatCurrency(myBalance, currency)}`
+      : myBalance < -0.004
+        ? `You owe ${formatCurrency(-myBalance, currency)}`
+        : "All settled up";
+  const myBalanceTone =
+    myBalance > 0.004 ? "text-[var(--income)]" : myBalance < -0.004 ? "text-[var(--expense)]" : "text-[var(--foreground)]";
 
   // What the current user owes the selected payee, for "Full amount" and the overpay warning
   const payee = memberList.find((m) => memberId(m) === settleForm.toId);
@@ -522,84 +541,76 @@ export default function GroupDetailPage() {
       {/* Tab: Expenses */}
       {tab === "expenses" && (
         <div className="space-y-6">
-          <Card>
-            <CardHeader title="Add Expense" />
-            <CardBody>
-              <ExpenseForm
-                members={formMembers}
-                currentUserId={userId}
-                currency={currency}
-                submitLabel="Add Expense"
-                pending={pending === "expense"}
-                error={expenseError}
-                onSubmit={addExpense}
-                resetOnSuccess
-              />
-            </CardBody>
-          </Card>
-
-          {expenses.length === 0 ? (
-            <p className="text-center py-12 text-muted text-xs">No expenses yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {expenses.map((exp) => {
-                // People with a zero share were not involved, so they are not listed
-                const involved = exp.splits.filter((s) => s.amount > 0);
-                return (
-                  <Card key={exp.id} padding="sm" className="hover-lift hover:border-accent/40 dark:hover:border-accent/40 transition-all duration-400 ease-[cubic-bezier(0.25,1,0.5,1)]">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-foreground">{exp.description}</p>
-                          <span className="inline-block rounded-full bg-accent/10 text-accent text-[9px] font-semibold px-2 py-0.5 border border-accent/20 select-none">
-                            {exp.splitType}
-                          </span>
-                        </div>
-                        <p className="text-xl font-bold text-[#1D1D1F] dark:text-white">{formatCurrency(exp.amount, currency)}</p>
-                        <p className="text-[10px] text-muted">
-                          Paid by <span className="font-semibold text-foreground">{exp.paidBy.name}</span> · {format(new Date(exp.date), "MMM d, yyyy")}
-                        </p>
-                        <div className="mt-3 grid gap-1.5 pl-3 border-l border-[#E8E8ED] dark:border-[#2C2C2E]">
-                          {involved.map((s, i) => (
-                            <p key={i} className="text-xs text-muted flex items-center justify-between max-w-xs gap-6">
-                              <span>{s.user.name}</span>
-                              <span className="font-medium text-foreground">{formatCurrency(s.amount, currency)}</span>
-                            </p>
-                          ))}
-                        </div>
-                      </div>
-                      {exp.canEdit && (
-                        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => {
-                              setEditError(null);
-                              setEditing(exp);
-                            }}
-                            disabled={pending !== null}
-                            aria-label={`Edit ${exp.description}`}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="danger"
-                            onClick={() => setExpenseToDelete(exp)}
-                            loading={pending === `delete-expense:${exp.id}`}
-                            disabled={pending !== null}
-                            aria-label={`Delete ${exp.description}`}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
+          {/* At-a-glance summary */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3.5 sm:p-4">
+              <p className="text-xs font-medium text-[var(--foreground-muted)]">Group spend</p>
+              <p className="mt-1 text-lg font-bold tabular-nums sm:text-xl text-[var(--foreground)]">{formatCurrency(totalSpend, currency)}</p>
             </div>
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3.5 sm:p-4">
+              <p className="text-xs font-medium text-[var(--foreground-muted)]">This month</p>
+              <p className="mt-1 text-lg font-bold tabular-nums sm:text-xl text-[var(--foreground)]">{formatCurrency(thisMonthSpend, currency)}</p>
+            </div>
+            <div className="col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3.5 sm:col-span-1 sm:p-4">
+              <p className="text-xs font-medium text-[var(--foreground-muted)]">Your balance</p>
+              <p className={`mt-1 text-lg font-bold tabular-nums sm:text-xl ${myBalanceTone}`}>{myBalanceText}</p>
+            </div>
+          </div>
+
+          {/* The add form stays tucked away until needed, so the list is visible first */}
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-base font-semibold text-[var(--foreground)]">Expenses</h2>
+            {!addFormOpen && (
+              <Button onClick={() => setShowAddForm(true)} aria-expanded={false} aria-controls="add-expense-panel">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                New expense
+              </Button>
+            )}
+          </div>
+
+          {addFormOpen && (
+            <Card className="animate-fade-in">
+              <div id="add-expense-panel">
+                <CardHeader
+                  title="Add an expense"
+                  description="Enter the total, who paid, and who it is shared with."
+                  action={
+                    expenses.length > 0 && (
+                      <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)} aria-label="Close add expense form">
+                        Close
+                      </Button>
+                    )
+                  }
+                />
+                <CardBody>
+                  <ExpenseForm
+                    members={formMembers}
+                    currentUserId={userId}
+                    currency={currency}
+                    submitLabel="Add Expense"
+                    pending={pending === "expense"}
+                    error={expenseError}
+                    onSubmit={addExpense}
+                    resetOnSuccess
+                  />
+                </CardBody>
+              </div>
+            </Card>
           )}
+
+          <ExpenseList
+            expenses={expenses}
+            currency={currency}
+            currentUserId={userId}
+            pending={pending}
+            onEdit={(exp) => {
+              setEditError(null);
+              setEditing(exp);
+            }}
+            onDelete={(exp) => setExpenseToDelete(exp)}
+          />
         </div>
       )}
 
