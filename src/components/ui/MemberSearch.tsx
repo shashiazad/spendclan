@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- profile photos are small data URLs that next/image cannot optimise */
+
 import React, { useState, useEffect, useRef } from "react";
 import { Input } from "./Input";
 

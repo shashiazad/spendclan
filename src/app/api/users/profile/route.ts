@@ -130,7 +130,7 @@ export async function PUT(request: Request) {
         name: name !== undefined ? name : undefined,
         mobileNumber: cleanMobile !== undefined ? (cleanMobile === "" ? null : cleanMobile) : undefined,
         currency: currency !== undefined ? currency : undefined,
-        securityQuestion: securityQuestion !== undefined ? (!securityQuestion ? null : (securityQuestion as any)) : undefined,
+        securityQuestion: securityQuestion !== undefined ? securityQuestion || null : undefined,
         securityAnswer: hashedSecurityAnswer !== undefined ? hashedSecurityAnswer : undefined,
         hashedPassword: hashedPassword !== undefined ? hashedPassword : undefined,
         profilePhoto: profilePhoto !== undefined ? profilePhoto : undefined,

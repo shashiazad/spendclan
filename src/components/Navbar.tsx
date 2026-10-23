@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- the logo is a tiny static PNG */
+
 import React from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
