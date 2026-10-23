@@ -17,6 +17,7 @@ const SPLIT_OPTIONS = [
   { value: "EQUAL", label: "Equal" },
   { value: "CUSTOM", label: "Exact" },
   { value: "PERCENTAGE", label: "Percentage" },
+  { value: "RATIO", label: "Ratio" },
 ];
 
 const STATUS_OPTIONS = [
