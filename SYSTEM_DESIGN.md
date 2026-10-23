@@ -480,9 +480,18 @@ $$S_i = S_{base} \quad (\forall i > 0)$$
 
 ---
 
+#### 2.2.4 Group-only additions (current)
+- **`GET /api/home`** → `{ totals: { owedToYou, youOwe, net }, groups: HomeGroup[], people: HomePerson[], spendThisMonth }` (read-only; also rendered on the server for `/groups` and `/balances`).
+- **`GET /api/activity?groupId&cursor&limit≤50`** → `{ items: ActivityEvent[], nextCursor }`, derived from expense, revision, settlement and membership timestamps.
+- **`GET /api/expenses`** and **`GET /api/groups/[id]/expenses?…`** → `{ items, nextCursor, totalCount, totalAmountMinor }`; filters `q, match, amount, approx, minAmount, maxAmount, paidBy, involving, addedBy, groupId, splitType, from, to, dateField, status, sort, cursor, limit≤50`. Keyset pagination; 120 searches/min per user.
+- **`GET /api/users/me/export`** → counts, `?format=json`, or `?format=csv&dataset=…` for the retired personal data.
+- Schema changes ship as Prisma migrations (`prisma/migrations`, applied by `scripts/db-migrate.mjs`).
+
 ### 2.4 Data Security & Session Isolation Invariants
 1. **Row-Level Query Injection Isolation**: Every server-side Prisma lookup enforces direct session boundaries, mapping:
    `where: { userId: session.user.id }`
 2. **Strict Membership Validation**: Group endpoints verify that the current user exists in `GroupMember` for the requested `groupId` before querying transactional split trees.
+3. **Active membership only**: removed members and soft-deleted groups get no access; search and activity are limited to groups where the caller is an active member, and only a plain group id is trusted for direct membership checks.
+4. **Sessions**: 90-day JWT sessions that slide forward while in use; never re-validated against the database, so a database or network error cannot sign anyone out.
 3. **Password Security**: Credentials passwords are hashed using `bcryptjs` with a factor of 12. Security answers are normalized (lowercased/trimmed) and compared after hashing to prevent timing attacks.
 4. **Token Life Cycle**: Reset tokens are deleted atomically using `basePrisma.$transaction` during retrieval to block concurrent replay submissions.
