@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { CURRENCIES, SECURITY_QUESTIONS } from "@/lib/constants";
 import { PersonalDataExport } from "@/components/profile/PersonalDataExport";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function ProfilePage() {
   const { update, status } = useSession();
@@ -222,11 +223,8 @@ export default function ProfilePage() {
     !!securityAnswer;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">Profile Settings</h1>
-        <p className="mt-1 text-[var(--foreground-muted)]">Manage your SpendClan details and account credentials</p>
-      </div>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <PageHeader title="Profile" description="Your details, sign-in and data" />
 
       <Card>
         <CardHeader title="Account Profile" />
@@ -294,6 +292,7 @@ export default function ProfilePage() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
                 required
+                autoComplete="name"
               />
 
               <div>
@@ -311,6 +310,8 @@ export default function ProfilePage() {
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
                 placeholder="+919876543210"
+                autoComplete="tel"
+                inputMode="tel"
               />
 
               <Select
@@ -344,6 +345,7 @@ export default function ProfilePage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 8 characters"
                   minLength={8}
+                  autoComplete="new-password"
                 />
 
                 <div className="hidden sm:block"></div>
@@ -364,6 +366,7 @@ export default function ProfilePage() {
                   value={securityAnswer}
                   onChange={(e) => setSecurityAnswer(e.target.value)}
                   placeholder={profile.hasSecurityQA ? "Change security answer" : "Set security answer"}
+                  autoComplete="off"
                 />
               </div>
             </div>

@@ -18,7 +18,7 @@ export function initials(name: string) {
   );
 }
 
-const SIZES = { sm: "h-7 w-7 text-[11px]", md: "h-9 w-9 text-xs", lg: "h-11 w-11 text-sm" } as const;
+const SIZES = { sm: "h-7 w-7 text-xs", md: "h-9 w-9 text-xs", lg: "h-11 w-11 text-sm" } as const;
 
 export function Avatar({ person, size = "md", className = "" }: { person: AvatarPerson; size?: keyof typeof SIZES; className?: string }) {
   const base = `${SIZES[size]} shrink-0 rounded-full ring-2 ring-[var(--card)] ${className}`;

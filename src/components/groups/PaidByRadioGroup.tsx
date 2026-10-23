@@ -69,7 +69,7 @@ export function PaidByRadioGroup({ members, value, onChange, currentUserId, labe
               />
               <span
                 aria-hidden="true"
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-dim)] text-[11px] font-bold text-[var(--accent)]"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-dim)] text-xs font-bold text-[var(--accent)]"
               >
                 {initials(m.name)}
               </span>

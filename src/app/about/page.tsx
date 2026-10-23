@@ -18,10 +18,10 @@ export default async function AboutPage() {
       <Navbar />
       
       <main className="flex-1 pt-36 pb-24 px-6 max-w-4xl mx-auto flex flex-col justify-center w-full">
-        <div className="space-y-12 animate-slide-up">
+        <div className="space-y-12">
           {/* Header Section */}
           <div className="text-center space-y-4">
-            <p className="text-[11px] font-semibold tracking-[0.2em] text-accent uppercase">
+            <p className="text-xs font-semibold tracking-[0.2em] text-accent uppercase">
               Our Philosophy
             </p>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-foreground leading-tight">
@@ -52,7 +52,7 @@ export default async function AboutPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-foreground tracking-tight">Strict Financial Isolation</h2>
-                <p className="text-[11px] text-muted font-normal uppercase tracking-wider mt-0.5">The Core Principle</p>
+                <p className="text-xs text-muted font-normal uppercase tracking-wider mt-0.5">The Core Principle</p>
               </div>
             </div>
 

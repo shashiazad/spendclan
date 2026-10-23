@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { differenceInDays, format } from "date-fns";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 type AdminUser = {
   id: string;
@@ -69,10 +70,7 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">Admin</h1>
-        <p className="mt-1 text-[var(--foreground-muted)]">User management</p>
-      </div>
+      <PageHeader title="Admin" description="User management" />
 
       <Card padding="none">
         <div className="overflow-x-auto">
