@@ -17,6 +17,7 @@ interface ExpenseSearchResultsProps {
   pending?: string | null;
   onEdit?: (expense: ListExpense) => void;
   onDelete?: (expense: ListExpense) => void;
+  headingLevel?: 2 | 3;
 }
 
 function Skeleton() {
@@ -47,6 +48,7 @@ export function ExpenseSearchResults({
   pending = null,
   onEdit,
   onDelete,
+  headingLevel,
 }: ExpenseSearchResultsProps) {
   const sentinel = useRef<HTMLDivElement>(null);
   const { items, totalCount, totalAmountMinor, loading, loadingMore, error, nextCursor, loadMore, reload } = search;
@@ -98,6 +100,7 @@ export function ExpenseSearchResults({
             onDelete={onDelete}
             highlight={filters.match === "starts" || filters.match === "contains" ? filters.q : undefined}
             showGroup={showGroup}
+            headingLevel={headingLevel}
           />
         </div>
       )}

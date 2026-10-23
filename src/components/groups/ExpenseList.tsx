@@ -37,6 +37,8 @@ interface ExpenseListProps {
   highlight?: string;
   /** Show which group each expense belongs to (all-groups search). */
   showGroup?: boolean;
+  /** Month headings are h3 under a section's h2; use 2 on pages without one. */
+  headingLevel?: 2 | 3;
 }
 
 /** Wraps case-insensitive matches of `term` in <mark>. */
@@ -99,7 +101,9 @@ export function ExpenseList({
   emptyAction,
   highlight,
   showGroup = false,
+  headingLevel = 3,
 }: ExpenseListProps) {
+  const MonthHeading = headingLevel === 2 ? "h2" : "h3";
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const fmt = (n: number) => formatCurrency(n, currency);
 
@@ -152,9 +156,9 @@ export function ExpenseList({
         return (
           <section key={headingId} aria-labelledby={headingId} className="space-y-2">
             <div className="sticky top-14 z-10 -mx-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 rounded-lg bg-[var(--background)]/90 px-1 py-2 backdrop-blur-sm lg:top-0">
-              <h3 id={headingId} className="text-sm font-semibold text-[var(--foreground)]">
+              <MonthHeading id={headingId} className="text-sm font-semibold text-[var(--foreground)]">
                 {month.label}
-              </h3>
+              </MonthHeading>
               <p className="text-xs tabular-nums text-[var(--foreground-muted)]">
                 {fmt(total)} spent · {month.items.length} {month.items.length === 1 ? "expense" : "expenses"}
                 {myShare > 0 && <> · your share {fmt(myShare)}</>}
@@ -173,7 +177,7 @@ export function ExpenseList({
                     <div className="flex items-center gap-3">
                       {/* Date tile */}
                       <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] leading-none" aria-hidden="true">
-                        <span className="text-[11px] font-semibold uppercase text-[var(--foreground-muted)]">{format(d, "MMM")}</span>
+                        <span className="text-xs font-semibold uppercase text-[var(--foreground-muted)]">{format(d, "MMM")}</span>
                         <span className="mt-0.5 text-base font-bold tabular-nums text-[var(--foreground)]">{format(d, "d")}</span>
                       </div>
 
@@ -183,10 +187,10 @@ export function ExpenseList({
                             <Highlight text={exp.description} term={highlight} />
                           </span>
                           {exp.deletedAt && (
-                            <span className="shrink-0 rounded-full bg-[var(--expense-dim)] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[var(--expense)]">Deleted</span>
+                            <span className="shrink-0 rounded-full bg-[var(--expense-dim)] px-1.5 py-0.5 text-xs font-semibold uppercase text-[var(--expense)]">Deleted</span>
                           )}
                           {exp.edited && !exp.deletedAt && (
-                            <span className="shrink-0 rounded-full bg-[var(--sidebar-hover)] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[var(--foreground-muted)]">Edited</span>
+                            <span className="shrink-0 rounded-full bg-[var(--sidebar-hover)] px-1.5 py-0.5 text-xs font-semibold uppercase text-[var(--foreground-muted)]">Edited</span>
                           )}
                         </p>
                         <p className="truncate text-xs text-[var(--foreground-muted)]">

@@ -154,6 +154,7 @@ export default function ResetPasswordQaPage() {
             onChange={(e) => setAnswer(e.target.value)}
             placeholder="Security answer"
             required
+            autoComplete="off"
           />
 
           <Input

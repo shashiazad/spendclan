@@ -9,7 +9,7 @@ interface AuthCardProps {
 
 export function AuthCard({ children, title, subtitle }: AuthCardProps) {
   return (
-    <div className="w-full max-w-md animate-slide-up">
+    <div className="w-full max-w-md">
       <div className="mb-6 text-center">
         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl">
           <BrandIcon className="h-8 w-8" />

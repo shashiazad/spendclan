@@ -85,10 +85,13 @@ interface ActivityFeedProps {
   currency: string;
   /** Hide the group name (inside a group's own page). */
   hideGroup?: boolean;
+  /** Day headings are h3 inside a tile; use 2 on the Activity page. */
+  headingLevel?: 2 | 3;
 }
 
 /** Events grouped by day, newest first, each in one plain sentence. */
-export function ActivityFeed({ items, currentUserId, currency, hideGroup = false }: ActivityFeedProps) {
+export function ActivityFeed({ items, currentUserId, currency, hideGroup = false, headingLevel = 3 }: ActivityFeedProps) {
+  const DayHeading = headingLevel === 2 ? "h2" : "h3";
   const fmt = (n: number) => formatCurrency(n, currency);
   const who = (p: { id: string; name: string } | null | undefined, fallback = "Someone") => (!p ? fallback : p.id === currentUserId ? "You" : p.name);
 
@@ -137,7 +140,7 @@ export function ActivityFeed({ items, currentUserId, currency, hideGroup = false
     <div className="space-y-5">
       {days.map((day) => (
         <section key={day.label} aria-label={day.label}>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">{day.label}</h3>
+          <DayHeading className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">{day.label}</DayHeading>
           <ol className="space-y-3">
             {day.events.map((e) => {
               const icon = ICONS[e.type];
@@ -177,12 +180,14 @@ export function ActivityPanel({
   currentUserId,
   currency,
   hideGroup,
+  headingLevel,
   emptyText = "No activity yet. Add an expense to get started.",
 }: {
   activity: ReturnType<typeof useActivity>;
   currentUserId?: string;
   currency: string;
   hideGroup?: boolean;
+  headingLevel?: 2 | 3;
   emptyText?: string;
 }) {
   const { items, error, nextCursor, loadMore, loadingMore } = activity;
@@ -204,7 +209,7 @@ export function ActivityPanel({
   if (items.length === 0) return <p className="text-sm text-[var(--foreground-muted)]">{emptyText}</p>;
   return (
     <div className="space-y-4">
-      <ActivityFeed items={items} currentUserId={currentUserId} currency={currency} hideGroup={hideGroup} />
+      <ActivityFeed items={items} currentUserId={currentUserId} currency={currency} hideGroup={hideGroup} headingLevel={headingLevel} />
       {error && <p role="alert" className="text-sm text-[var(--expense)]">{error}</p>}
       {nextCursor && (
         <Button variant="secondary" onClick={loadMore} loading={loadingMore}>

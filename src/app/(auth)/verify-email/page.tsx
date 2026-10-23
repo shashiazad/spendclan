@@ -99,13 +99,13 @@ function VerifyEmailForm() {
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         {displayError && (
-          <div className="rounded-lg border border-[var(--expense)]/30 bg-[var(--expense-dim)] px-4 py-3 text-sm text-[var(--expense)] animate-slide-up">
+          <div className="rounded-lg border border-[var(--expense)]/30 bg-[var(--expense-dim)] px-4 py-3 text-sm text-[var(--expense)]">
             {displayError}
           </div>
         )}
 
         {success && (
-          <div className="rounded-lg border border-[var(--income)]/30 bg-[var(--income-dim)] px-4 py-3 text-sm text-[var(--income)] animate-slide-up">
+          <div className="rounded-lg border border-[var(--income)]/30 bg-[var(--income-dim)] px-4 py-3 text-sm text-[var(--income)]">
             {success}
           </div>
         )}
@@ -121,6 +121,8 @@ function VerifyEmailForm() {
           pattern="[0-9]{6}"
           className="text-center text-xl font-bold tracking-widest"
           hint="Check your email inbox or spam folder for the 6-digit code"
+          autoComplete="one-time-code"
+          inputMode="numeric"
         />
 
         <Button type="submit" className="w-full" loading={loading} disabled={!email || token.length !== 6}>

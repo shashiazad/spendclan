@@ -10,6 +10,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { NETWORK_ERROR, readError } from "@/lib/api-errors";
 import type { Named } from "@/lib/search-tokens";
 import { EMPTY_FILTERS } from "@/lib/search-url";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 type GroupSummary = { id: string; name: string; members?: { user: { id: string; name: string } }[] };
 
@@ -48,12 +49,8 @@ function AllExpenses() {
   }, [groups]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 animate-fade-in">
-      <div>
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted">All groups</span>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground">Expenses</h1>
-        <p className="mt-1 text-sm text-[var(--foreground-muted)]">Search every expense across the groups you&apos;re in.</p>
-      </div>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <PageHeader title="Expenses" eyebrow="Across all your groups" description="Search every expense in the groups you're in." />
 
       {groupsError && <p role="alert" className="text-sm text-[var(--expense)]">{groupsError}</p>}
 
@@ -74,6 +71,7 @@ function AllExpenses() {
         currentUserId={userId}
         onClear={() => setFilters({ ...EMPTY_FILTERS })}
         showGroup
+        headingLevel={2}
       />
     </div>
   );
