@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, requireGroupAdmin } from "@/lib/auth";
 import { invalidateGroupMemberDashboards } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
+import { getGroupDetail } from "@/lib/group-data";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -35,17 +36,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
   const { id } = await context.params;
 
-  const group = await prisma.group.findUnique({
-    where: { id, deletedAt: null },
-    include: {
-      members: {
-        where: { removedAt: null },
-        include: {
-          user: { select: { id: true, name: true, email: true } },
-        },
-      },
-    },
-  });
+  const group = await getGroupDetail(id);
 
   if (!group) {
     return NextResponse.json({ error: "Group not found" }, { status: 404 });
