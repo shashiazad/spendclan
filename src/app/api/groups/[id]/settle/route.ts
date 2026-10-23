@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth";
 import { invalidateGroupMemberDashboards } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
+import { getGroupSettlements } from "@/lib/group-data";
 import { settlementSchema } from "@/lib/validators";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -19,32 +20,7 @@ export async function GET(_request: Request, context: RouteContext) {
   const memberCheck = await requireGroupMember(groupId, auth.session.user.id);
   if ("error" in memberCheck) return memberCheck.error;
 
-  const [settlements, members] = await Promise.all([
-    prisma.settlement.findMany({
-      where: { groupId, deletedAt: null },
-      include: {
-        from: { select: { id: true, name: true } },
-        to: { select: { id: true, name: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.groupMember.findMany({
-      where: { groupId, removedAt: null },
-      include: {
-        user: { select: { id: true, name: true, email: true, profilePhoto: true } },
-      },
-    }),
-  ]);
-
-  return NextResponse.json({
-    settlements,
-    members: members.map((m) => ({
-      userId: m.userId,
-      name: m.user.name,
-      role: m.role,
-      user: m.user,
-    })),
-  });
+  return NextResponse.json(await getGroupSettlements(groupId));
 }
 
 export async function POST(request: Request, context: RouteContext) {

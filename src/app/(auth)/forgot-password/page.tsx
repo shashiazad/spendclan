@@ -47,13 +47,13 @@ export default function ForgotPasswordPage() {
     >
       {success ? (
         <div className="space-y-5 text-center">
-          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+          <div className="rounded-lg border border-[var(--income)]/30 bg-[var(--income-dim)] px-4 py-3 text-sm text-[var(--income)]">
             If an account exists with that email, a reset link has been sent.
             Check your inbox.
           </div>
           <Link
             href="/login"
-            className="inline-block text-sm font-medium text-emerald-400 transition-colors hover:text-emerald-300"
+            className="inline-block text-sm font-medium text-[var(--income)] transition-colors hover:text-[var(--income)]"
           >
             Back to sign in
           </Link>
@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            <div className="rounded-lg border border-[var(--expense)]/30 bg-[var(--expense-dim)] px-4 py-3 text-sm text-[var(--expense)]">
               {error}
             </div>
           )}
@@ -83,13 +83,13 @@ export default function ForgotPasswordPage() {
           <div className="flex flex-col items-center gap-2 text-sm">
             <Link
               href="/reset-password-qa"
-              className="text-emerald-400 transition-colors hover:text-emerald-300"
+              className="text-[var(--income)] transition-colors hover:text-[var(--income)]"
             >
               Reset via security question
             </Link>
             <Link
               href="/login"
-              className="text-slate-400 transition-colors hover:text-slate-300"
+              className="text-[var(--foreground-muted)] transition-colors hover:text-[var(--foreground-muted)]"
             >
               Back to sign in
             </Link>

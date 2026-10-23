@@ -74,7 +74,7 @@ function MockDashboard() {
         <span className="h-2.5 w-2.5 rounded-full bg-[var(--expense)]/50" />
         <span className="h-2.5 w-2.5 rounded-full bg-[var(--warning)]/50" />
         <span className="h-2.5 w-2.5 rounded-full bg-[var(--income)]/50" />
-        <span className="ml-auto text-[10px] text-[var(--foreground-subtle)]">SpendClan · Groups</span>
+        <span className="ml-auto text-xs text-[var(--foreground-subtle)]">SpendClan · Groups</span>
       </div>
 
       <div className="p-5">
@@ -86,7 +86,7 @@ function MockDashboard() {
             { label: "You owe",     value: "₹1.9K", color: "var(--expense)" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 text-center">
-              <p className="text-[10px] text-[var(--foreground-subtle)] mb-1">{s.label}</p>
+              <p className="text-xs text-[var(--foreground-subtle)] mb-1">{s.label}</p>
               <p className="text-sm font-semibold tabular-nums" style={{ color: s.color }}>{s.value}</p>
             </div>
           ))}
@@ -94,7 +94,7 @@ function MockDashboard() {
 
         {/* Balance */}
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 mb-4">
-          <p className="text-[10px] text-[var(--foreground-muted)] mb-1">Net balance across groups</p>
+          <p className="text-xs text-[var(--foreground-muted)] mb-1">Net balance across groups</p>
           <p className="text-2xl font-semibold text-[var(--foreground)] tabular-nums">
             You&apos;re owed ₹4,330<span className="text-sm font-normal text-[var(--foreground-muted)]">.00</span>
           </p>
@@ -103,16 +103,16 @@ function MockDashboard() {
             <div className="h-full w-[24%] bg-[var(--expense)]" />
           </div>
           <div className="mt-1.5 flex items-center justify-between">
-            <span className="text-[10px] text-[var(--foreground-subtle)]">Owed to you vs you owe</span>
-            <span className="text-[10px] font-medium" style={{ color: "var(--income)" }}>2 people to settle</span>
+            <span className="text-xs text-[var(--foreground-subtle)]">Owed to you vs you owe</span>
+            <span className="text-xs font-medium" style={{ color: "var(--income)" }}>2 people to settle</span>
           </div>
         </div>
 
         {/* Recent transactions */}
         <div>
           <div className="flex items-center justify-between mb-2.5">
-            <p className="text-[10px] font-semibold text-[var(--foreground-muted)] uppercase tracking-wider">Recent group activity</p>
-            <span className="text-[10px] text-[var(--accent)] cursor-pointer hover:opacity-75">View all</span>
+            <p className="text-xs font-semibold text-[var(--foreground-muted)] uppercase tracking-wider">Recent group activity</p>
+            <span className="text-xs text-[var(--accent)] cursor-pointer hover:opacity-75">View all</span>
           </div>
           <div className="space-y-1.5">
             {transactions.map((tx) => (
@@ -121,7 +121,7 @@ function MockDashboard() {
                   <span className="text-base">{tx.icon}</span>
                   <div>
                     <p className="text-xs font-medium text-[var(--foreground)]">{tx.name}</p>
-                    <p className="text-[10px] text-[var(--foreground-subtle)]">{tx.time}</p>
+                    <p className="text-xs text-[var(--foreground-subtle)]">{tx.time}</p>
                   </div>
                 </div>
                 <span
@@ -160,7 +160,7 @@ function FeatureCard({
       className={`group relative rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-7 transition-all duration-200 hover:border-[var(--border-hover)] hover:shadow-[var(--shadow-md)] overflow-hidden flex flex-col justify-between ${className}`}
     >
       {badge && (
-        <span className="absolute top-5 right-5 rounded-md bg-[var(--accent-dim)] border border-[var(--accent)]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--accent)]">
+        <span className="absolute top-5 right-5 rounded-md bg-[var(--accent-dim)] border border-[var(--accent)]/20 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
           {badge}
         </span>
       )}
@@ -189,11 +189,11 @@ function GroupSpendMini() {
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5">
         {categories.map((cat) => (
           <div key={cat.name} className="flex items-center gap-3 mb-2 last:mb-0">
-            <span className="text-[11px] text-[var(--foreground-muted)] w-20 shrink-0">{cat.name}</span>
+            <span className="text-xs text-[var(--foreground-muted)] w-20 shrink-0">{cat.name}</span>
             <div className="flex-1 h-1.5 rounded-full bg-[var(--border)] overflow-hidden">
               <div className="h-full rounded-full" style={{ width: `${cat.pct}%`, background: cat.color }} />
             </div>
-            <span className="text-[10px] text-[var(--foreground-subtle)] w-7 text-right">{cat.pct}%</span>
+            <span className="text-xs text-[var(--foreground-subtle)] w-7 text-right">{cat.pct}%</span>
           </div>
         ))}
       </div>
@@ -212,7 +212,7 @@ function GroupSplitMini() {
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-medium text-[var(--foreground)]">🍕 Weekend Pizza Night</p>
-        <span className="text-[10px] font-medium text-[var(--accent)] bg-[var(--accent-dim)] px-2 py-0.5 rounded-md">₹3,000</span>
+        <span className="text-xs font-medium text-[var(--accent)] bg-[var(--accent-dim)] px-2 py-0.5 rounded-md">₹3,000</span>
       </div>
       <div className="grid grid-cols-2 gap-1.5">
         {members.map((m) => (
@@ -225,8 +225,8 @@ function GroupSplitMini() {
             }`}
           >
             <span className="text-sm">{m.avatar}</span>
-            <span className="text-[11px] text-[var(--foreground)] font-medium flex-1 truncate">{m.name}</span>
-            <span className="text-[10px] text-[var(--foreground-muted)]">{m.share}</span>
+            <span className="text-xs text-[var(--foreground)] font-medium flex-1 truncate">{m.name}</span>
+            <span className="text-xs text-[var(--foreground-muted)]">{m.share}</span>
           </div>
         ))}
       </div>
@@ -237,18 +237,18 @@ function GroupSplitMini() {
 function DebtSimplificationMini() {
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
-      <p className="text-[10px] text-[var(--foreground-muted)] mb-3 font-medium uppercase tracking-wider">Goa Vacation Clan</p>
+      <p className="text-xs text-[var(--foreground-muted)] mb-3 font-medium uppercase tracking-wider">Goa Vacation Clan</p>
       <div className="flex items-center gap-2">
         <div className="flex-1 rounded-lg bg-[var(--expense-dim)] border border-[var(--expense)]/15 p-3">
-          <p className="text-[10px] font-semibold text-[var(--expense)] mb-1">Before</p>
-          <p className="text-[11px] text-[var(--foreground-muted)]">12 messy transactions</p>
+          <p className="text-xs font-semibold text-[var(--expense)] mb-1">Before</p>
+          <p className="text-xs text-[var(--foreground-muted)]">12 messy transactions</p>
         </div>
         <svg className="h-4 w-4 shrink-0 text-[var(--foreground-subtle)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
         </svg>
         <div className="flex-1 rounded-lg bg-[var(--income-dim)] border border-[var(--income)]/15 p-3">
-          <p className="text-[10px] font-semibold text-[var(--income)] mb-1">After</p>
-          <p className="text-[11px] text-[var(--foreground-muted)]">2 clean settlements</p>
+          <p className="text-xs font-semibold text-[var(--income)] mb-1">After</p>
+          <p className="text-xs text-[var(--foreground-muted)]">2 clean settlements</p>
         </div>
       </div>
     </div>
@@ -267,8 +267,8 @@ function AIInsightsMini() {
             Your spending in <span className="font-semibold text-[var(--warning)]">Dining Out</span> rose 32% this month. Setting a ₹5,000 cap could save ₹2,400.
           </p>
           <div className="flex gap-1.5">
-            <span className="rounded-md bg-[var(--accent-dim)] px-2 py-0.5 text-[9px] font-semibold text-[var(--accent)] uppercase tracking-wider border border-[var(--accent)]/15">Insight</span>
-            <span className="rounded-md bg-[var(--warning-dim)] px-2 py-0.5 text-[9px] font-semibold text-[var(--warning)] uppercase tracking-wider border border-[var(--warning)]/15">Actionable</span>
+            <span className="rounded-md bg-[var(--accent-dim)] px-2 py-0.5 text-xs font-semibold text-[var(--accent)] uppercase tracking-wider border border-[var(--accent)]/15">Insight</span>
+            <span className="rounded-md bg-[var(--warning-dim)] px-2 py-0.5 text-xs font-semibold text-[var(--warning)] uppercase tracking-wider border border-[var(--warning)]/15">Actionable</span>
           </div>
         </div>
       </div>
@@ -292,9 +292,9 @@ function SecurityMini() {
         >
           <div className="flex items-center gap-1.5 mb-0.5">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--income)] shrink-0" />
-            <p className="text-[10px] font-semibold text-[var(--foreground)]">{b.label}</p>
+            <p className="text-xs font-semibold text-[var(--foreground)]">{b.label}</p>
           </div>
-          <p className="text-[9px] text-[var(--foreground-subtle)]">{b.desc}</p>
+          <p className="text-xs text-[var(--foreground-subtle)]">{b.desc}</p>
         </div>
       ))}
     </div>
@@ -323,7 +323,7 @@ export function HomePageClient() {
           <div className="relative text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 mb-6 reveal-on-scroll">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--income)]" />
-              <span className="text-[11px] font-medium text-[var(--foreground-muted)]">Shared Groups · Fair Splits · Smart Settlements</span>
+              <span className="text-xs font-medium text-[var(--foreground-muted)]">Shared Groups · Fair Splits · Smart Settlements</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-[var(--foreground)] leading-[1.1] mb-5 reveal-on-scroll">
@@ -359,7 +359,7 @@ export function HomePageClient() {
         {/* ── 2. FEATURES ── */}
         <section id="features" className="py-20 max-w-6xl mx-auto px-6">
           <div className="max-w-2xl mb-12 reveal-on-scroll">
-            <p className="text-[11px] font-semibold tracking-widest text-[var(--foreground-subtle)] uppercase mb-3">Features</p>
+            <p className="text-xs font-semibold tracking-widest text-[var(--foreground-subtle)] uppercase mb-3">Features</p>
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--foreground)] mb-3">
               Everything you need to master your finances.
             </h2>
@@ -422,7 +422,7 @@ export function HomePageClient() {
         {/* ── 3. VALUE PROPS ── */}
         <section id="why-spendclan" className="py-20 max-w-6xl mx-auto px-6">
           <div className="max-w-2xl mb-12 reveal-on-scroll">
-            <p className="text-[11px] font-semibold tracking-widest text-[var(--foreground-subtle)] uppercase mb-3">Why SpendClan</p>
+            <p className="text-xs font-semibold tracking-widest text-[var(--foreground-subtle)] uppercase mb-3">Why SpendClan</p>
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--foreground)]">
               Built on uncompromising standards.
             </h2>

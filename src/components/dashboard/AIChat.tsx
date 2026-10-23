@@ -149,7 +149,7 @@ export function AIChat() {
               <button
                 key={q}
                 onClick={() => sendMessage(q)}
-                className="rounded-lg border border-[var(--border)] px-2.5 py-1 text-[11px] text-[var(--foreground-muted)] transition-colors hover:border-[var(--border-hover)] hover:text-[var(--foreground)]"
+                className="rounded-lg border border-[var(--border)] px-2.5 py-1 text-xs text-[var(--foreground-muted)] transition-colors hover:border-[var(--border-hover)] hover:text-[var(--foreground)]"
               >
                 {q}
               </button>

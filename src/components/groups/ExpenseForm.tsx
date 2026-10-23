@@ -4,8 +4,8 @@ import { useId, useState, type FormEvent } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { CURRENCY_SYMBOLS, formatCurrency } from "@/lib/constants";
+import { PaidByRadioGroup, type PayerOption } from "./PaidByRadioGroup";
 
 export type SplitMethod = "EQUAL" | "CUSTOM" | "PERCENTAGE";
 
@@ -57,9 +57,14 @@ const METHODS: { value: SplitMethod; label: string; name: string }[] = [
   { value: "PERCENTAGE", label: "Percent", name: "Percentages" },
 ];
 
-const toCents = (v: string | number | undefined) => Math.round(Number(v || 0) * 100);
+/** Reads an amount as typed ("1,200.50", "₹1,200", " 99 "); anything else counts as 0. */
+export function readAmount(v: string | number | undefined): number {
+  const n = Number(String(v ?? "").replace(/[\s,₹$€£]/g, "") || 0);
+  return Number.isFinite(n) ? n : 0;
+}
+const toCents = (v: string | number | undefined) => Math.round(readAmount(v) * 100);
 // Percentages are tracked in basis points (1% = 100) to avoid float drift
-const toBasisPoints = (v: string | undefined) => Math.round(Number(v || 0) * 100);
+const toBasisPoints = (v: string | undefined) => Math.round(readAmount(v?.replace("%", "")) * 100);
 
 /**
  * Splits `total` (cents or basis points) evenly. Leftover units go to the payer when they share
@@ -215,7 +220,11 @@ export function ExpenseForm({
     }
   }
 
-  const memberOptions = members.map((m) => ({ value: m.id, label: m.name }));
+  // Only current members can be chosen; a payer who has left stays visible (checked, disabled) when editing
+  const payerOptions: PayerOption[] = activeMembers.map((m) => ({ id: m.id, name: m.name }));
+  if (initial && !activeMembers.some((m) => m.id === initial.paidBy.id)) {
+    payerOptions.push({ id: initial.paidBy.id, name: initial.paidBy.name, removed: true });
+  }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
@@ -223,10 +232,10 @@ export function ExpenseForm({
         <Input
           id={`${uid}-amount`}
           label="Amount"
-          type="number"
+          type="text"
           inputMode="decimal"
-          step="0.01"
-          min="0"
+          autoComplete="off"
+          placeholder="0.00"
           enterKeyHint="next"
           autoFocus={autoFocus}
           value={amount}
@@ -242,15 +251,9 @@ export function ExpenseForm({
           onChange={(e) => setDescription(e.target.value)}
         />
         <Input id={`${uid}-date`} label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        <Select
-          id={`${uid}-paid-by`}
-          label="Paid By"
-          placeholder="Select who paid"
-          value={payer}
-          onChange={(e) => setPaidById(e.target.value)}
-          options={memberOptions}
-        />
       </div>
+
+      <PaidByRadioGroup members={payerOptions} value={payer} onChange={setPaidById} currentUserId={currentUserId} />
 
       <fieldset className="space-y-3 border-t border-[var(--border)] pt-4">
         <legend className="sr-only">How to split</legend>
@@ -318,10 +321,9 @@ export function ExpenseForm({
                     <input
                       id={inputId}
                       aria-label={`${m.name}'s ${method === "PERCENTAGE" ? "percentage" : "share"}`}
-                      type="number"
+                      type="text"
                       inputMode="decimal"
-                      step="0.01"
-                      min="0"
+                      autoComplete="off"
                       placeholder="0.00"
                       value={values[m.id] ?? ""}
                       onChange={(e) => setValues({ ...values, [m.id]: e.target.value })}

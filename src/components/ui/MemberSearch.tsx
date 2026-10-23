@@ -129,7 +129,7 @@ export function MemberSearch({
                   className="w-5 h-5 rounded-full object-cover"
                 />
               ) : (
-                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--accent-dim)] text-[var(--accent)] font-bold text-[10px] border border-[var(--accent)]/10">
+                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--accent-dim)] text-[var(--accent)] font-bold text-xs border border-[var(--accent)]/10">
                   {member.name ? getInitials(member.name) : "?"}
                 </div>
               )}
@@ -137,7 +137,7 @@ export function MemberSearch({
                 {member.name || member.email}
               </div>
               {member.isInvite && (
-                <span className="text-[9px] px-1 bg-[var(--accent-dim)] text-[var(--accent)] rounded border border-[var(--accent)]/20">
+                <span className="text-xs px-1 bg-[var(--accent-dim)] text-[var(--accent)] rounded border border-[var(--accent)]/20">
                   Invite
                 </span>
               )}
@@ -164,12 +164,14 @@ export function MemberSearch({
             }}
             onFocus={() => setIsOpen(true)}
             placeholder={placeholder}
+            aria-label="Search people to add"
+            autoComplete="off"
             className="pr-10"
           />
           {loading && (
             <div className="absolute right-3 top-3.5">
               <svg
-                className="animate-spin h-5 w-5 text-emerald-500"
+                className="animate-spin h-5 w-5 text-[var(--income)]"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"

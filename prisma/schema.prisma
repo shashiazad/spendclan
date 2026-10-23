@@ -228,6 +228,12 @@ model GroupExpense {
   @@index([groupId])
   @@index([groupId, deletedAt])
   @@index([paidById])
+  // Expense search: newest-first listing with keyset pagination, payer and amount filters,
+  // and typo-tolerant description search (pg_trgm, created by the migration)
+  @@index([groupId, date(sort: Desc), id(sort: Desc)])
+  @@index([groupId, paidById])
+  @@index([groupId, amount])
+  @@index([description(ops: raw("gin_trgm_ops"))], type: Gin)
 }
 
 /// Snapshot of an expense taken before each edit, so edits never lose the previous version
@@ -253,6 +259,7 @@ model GroupSplit {
 
   @@index([groupExpenseId])
   @@index([userId])
+  @@index([userId, groupExpenseId])
 }
 
 model Settlement {

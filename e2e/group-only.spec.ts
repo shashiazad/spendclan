@@ -65,7 +65,7 @@ test("navigation only offers group features and says Group, never Pocket", async
   await expect(page.getByText(/pocket/i)).toHaveCount(0);
 
   const isPhone = (page.viewportSize()?.width ?? 0) < 1024;
-  const nav = isPhone ? page.locator("div.fixed.bottom-0") : page.locator("aside").last();
+  const nav = page.getByRole("navigation", { name: isPhone ? "Primary" : "Main" });
   await expect(nav.getByRole("link", { name: "Groups" })).toBeVisible();
 });
 
@@ -124,7 +124,8 @@ test("group balances are unchanged by retiring personal finance", async ({ page 
 test("the groups Home shows your balance in each group", async ({ page }) => {
   await loginAs(page, USERS.alice.email);
   await page.goto("/groups");
-  await expect(page.getByText("You owe ₹400.00")).toBeVisible();
+  const goa = page.getByRole("region", { name: "Your groups" }).getByRole("link", { name: /^Goa Trip/ });
+  await expect(goa).toContainText("You owe ₹400.00");
 
   // A settlement and a deleted expense are both reflected
   await query(`INSERT INTO "Settlement"(id, amount, "fromId", "toId", "groupId") VALUES (gen_random_uuid(), 150, $1, $2, $3)`, [
@@ -133,15 +134,15 @@ test("the groups Home shows your balance in each group", async ({ page }) => {
     GROUP_ID,
   ]);
   await page.reload();
-  await expect(page.getByText("You owe ₹250.00")).toBeVisible();
+  await expect(goa).toContainText("You owe ₹250.00");
 
   await loginAs(page, USERS.bob.email);
   await page.goto("/groups");
-  await expect(page.getByText("You are owed ₹650.00")).toBeVisible();
+  await expect(goa).toContainText("You are owed ₹650.00");
 
   await query(`UPDATE "GroupExpense" SET "deletedAt" = now()`);
   await page.reload();
-  await expect(page.getByText("You owe ₹150.00")).toBeVisible(); // only Alice's ₹150 payment remains
+  await expect(goa).toContainText("You owe ₹150.00"); // only Alice's ₹150 payment remains
 });
 
 test("the all-groups monthly report moved from the dashboard to the Groups page", async ({ page }) => {

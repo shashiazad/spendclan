@@ -24,6 +24,8 @@
 *   **Month-wise expense list**: Monthly totals, your share, and what each expense means for you (you lent / you borrowed).
 *   **Simplified debts**: A greedy matching algorithm settles the group in the fewest payments.
 *   **Settlements**: Record who paid whom; balances update immediately.
+*   **Search and filters**: One search box across a group or all groups — text (typo-tolerant), amount (`>500`, `≈500`, ranges), who paid, who's in the split, dates, split type and status, with tokens such as `paid:me date:last30`, URL-shareable filters and saved searches.
+*   **Home, Balances and Activity**: A bento Home with your net balance and who to settle with, a Balances page netting each person across groups, and an activity feed.
 *   **Nothing is lost**: Groups, expenses, settlements and memberships are soft-deleted; every edit keeps a revision. Only the person who added an expense can edit or delete it.
 
 ### ✨ 3. AI Group Advisor
@@ -40,7 +42,7 @@
 
 ## 🛠️ Tech Stack & Architecture
 
-- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS 4
+- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS 4 — bento layout, light/dark themes that follow the system
 - **Database & ORM**: PostgreSQL 16, Prisma 7 (optimized with `@prisma/adapter-pg` driver)
 - **Authentication**: NextAuth.js 4 (JWT Sessions)
 - **Utilities**: Nodemailer (SMTP), Zod (Validation), date-fns, UUID v4
@@ -74,11 +76,11 @@
     ```
     Open `.env` and set your `DATABASE_URL` (e.g. `postgresql://user:password@localhost:5432/spendclan`).
 
-4.  **Sync database schema**:
-    Push the database schema directly to your local instance using Prisma:
+4.  **Apply database migrations**:
     ```bash
-    npm run db:push
+    npm run db:deploy
     ```
+    A database created earlier with `db push` is moved to migrations once, without data changes.
 
 5.  **Seed the demo data**:
     Seed your local database with default categories and a demo user account:
@@ -136,12 +138,15 @@ The application reads the following configuration variables. Ensure they are con
 | Command | Action |
 | --- | --- |
 | `npm run dev` | Starts the Next.js development server |
-| `npm run build` | Builds the application for production |
+| `npm run build` | Applies migrations (`scripts/db-migrate.mjs`) and builds for production |
 | `npm run start` | Starts the production built server |
-| `npm run db:push` | Pushes Prisma schema modifications directly to the database |
-| `npm run db:migrate` | Runs database migrations (for production track) |
+| `npm run db:deploy` | Applies pending migrations (moves a `db push` database to migrations once) |
+| `npm run db:migrate` | Creates a new migration during development (`prisma migrate dev`) |
 | `npm run db:seed` | Seeds database with initial tables and demo users |
 | `npm run lint` | Runs ESLint checker |
+| `npm test` | Unit tests (Vitest): splits, balances, money formatting, search filters and tokens |
+| `npm run test:e2e` | End-to-end tests (Playwright, Chromium + WebKit) incl. accessibility (axe) and the main journey at 375/768/1440 in both themes. Needs `E2E_DATABASE_URL` pointing at a disposable local database |
+| `VISUAL=1 npx playwright test e2e/visual.spec.ts` | Screenshot comparisons of the bento tiles (baselines are per OS) |
 
 ---
 

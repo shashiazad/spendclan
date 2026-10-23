@@ -4,6 +4,8 @@ interface CardProps {
   children: ReactNode;
   className?: string;
   padding?: "none" | "sm" | "md" | "lg";
+  /** Lifts slightly on hover and presses in on tap (for cards that are links or buttons). */
+  interactive?: boolean;
 }
 
 interface CardHeaderProps {
@@ -21,18 +23,19 @@ interface CardBodyProps {
 const paddingClasses = {
   none: "",
   sm: "p-4",
-  md: "p-5",
-  lg: "p-6",
+  md: "p-4 sm:p-5",
+  lg: "p-4 sm:p-6",
 };
 
 export function Card({
   children,
   className = "",
   padding = "md",
+  interactive = false,
 }: CardProps) {
   return (
     <div
-      className={`rounded-2xl border bg-[var(--card)] border-[var(--border)] shadow-[var(--shadow-sm)] transition-colors duration-200 ${paddingClasses[padding]} ${className}`}
+      className={`card ${interactive ? "tile-interactive" : ""} ${paddingClasses[padding]} ${className}`}
     >
       {children}
     </div>
@@ -48,11 +51,11 @@ export function CardHeader({
   return (
     <div className={`mb-4 flex items-start justify-between gap-4 ${className}`}>
       <div>
-        <h3 className="text-sm font-semibold tracking-tight text-[var(--foreground)]">
+        <h3 className="text-base font-semibold tracking-tight text-[var(--foreground)]">
           {title}
         </h3>
         {description && (
-          <p className="mt-0.5 text-xs text-[var(--foreground-muted)]">
+          <p className="mt-0.5 text-sm text-[var(--foreground-muted)]">
             {description}
           </p>
         )}
