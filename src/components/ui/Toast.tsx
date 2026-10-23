@@ -70,7 +70,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-center gap-3 rounded-lg border px-4 py-3 bg-[var(--surface-solid)] shadow-[var(--shadow-lg)] ${variantStyles[toast.variant]}`}
+            className={`glass pointer-events-auto flex items-center gap-3 rounded-2xl px-4 py-3 shadow-[var(--shadow-lg)] ${variantStyles[toast.variant]}`}
             style={{ animation: "toast-in 0.3s ease-out" }}
           >
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-current/10 text-xs font-bold shrink-0">
