@@ -56,7 +56,7 @@ describe("parseSearch", () => {
   it("split type, status and group", () => {
     expect(parse("type:exact type:percent").filters).toEqual({ splitType: ["CUSTOM", "PERCENTAGE"] });
     expect(parse("is:edited group:goa").filters).toEqual({ status: "edited", groupId: ["g1"] });
-    expect(parse("type:shares").text).toBe("type:shares");
+    expect(parse("type:itemized").text).toBe("type:itemized");
   });
 
   it("quoted phrases are always text, even if they look like tokens", () => {
@@ -93,4 +93,12 @@ describe("date presets", () => {
 describe("looksLikeTokenStart", () => {
   it.each(["paid:", "paid:am", ">", ">=5", "~", "date:20"])("%s is a token in progress", (w) => expect(looksLikeTokenStart(w)).toBe(true));
   it.each(["hotel", "12", ""])("%s is not", (w) => expect(looksLikeTokenStart(w)).toBe(false));
+});
+
+describe("ratio split tokens", () => {
+  it("type:ratio, type:shares and type:parts all mean RATIO", () => {
+    for (const t of ["type:ratio", "type:shares", "type:parts"]) {
+      expect(parseSearch(t, { people: [] }).filters).toEqual({ splitType: ["RATIO"] });
+    }
+  });
 });

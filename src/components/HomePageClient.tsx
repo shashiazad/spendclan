@@ -1,25 +1,10 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
-function useScrollReveal() {
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) entry.target.classList.add("revealed");
-        });
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
-    );
-    const elements = document.querySelectorAll(".reveal-on-scroll");
-    elements.forEach((el) => observer.observe(el));
-    return () => elements.forEach((el) => observer.unobserve(el));
-  }, []);
-}
 
 /* ─────────────── ICONS ─────────────── */
 function WalletIcon() {
@@ -264,7 +249,7 @@ function AIInsightsMini() {
         </div>
         <div>
           <p className="text-xs text-[var(--foreground)] leading-relaxed mb-2">
-            Your spending in <span className="font-semibold text-[var(--warning)]">Dining Out</span> rose 32% this month. Setting a ₹5,000 cap could save ₹2,400.
+            <span className="font-semibold text-[var(--warning)]">Goa Trip</span> spend rose 32% this month. Two payments would settle everyone: Ravi → you ₹1,200, Aisha → Priya ₹800.
           </p>
           <div className="flex gap-1.5">
             <span className="rounded-md bg-[var(--accent-dim)] px-2 py-0.5 text-xs font-semibold text-[var(--accent)] uppercase tracking-wider border border-[var(--accent)]/15">Insight</span>
@@ -308,8 +293,6 @@ function SectionDivider() {
 
 /* ─────────────── MAIN EXPORT ─────────────── */
 export function HomePageClient() {
-  useScrollReveal();
-
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <Navbar />
@@ -321,12 +304,12 @@ export function HomePageClient() {
           <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-gradient-to-b from-[var(--accent-dim)] to-transparent opacity-60" aria-hidden />
 
           <div className="relative text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 mb-6 reveal-on-scroll">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 mb-6">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--income)]" />
               <span className="text-xs font-medium text-[var(--foreground-muted)]">Shared Groups · Fair Splits · Smart Settlements</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-[var(--foreground)] leading-[1.1] mb-5 reveal-on-scroll">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-[var(--foreground)] leading-[1.1] mb-5">
               Split bills with{" "}
               <span
                 className="bg-gradient-to-r bg-clip-text text-transparent"
@@ -335,10 +318,10 @@ export function HomePageClient() {
                 friends.
               </span>
             </h1>
-            <p className="text-base sm:text-lg text-[var(--foreground-muted)] font-normal max-w-2xl mx-auto leading-relaxed mb-8 reveal-on-scroll">
+            <p className="text-base sm:text-lg text-[var(--foreground-muted)] font-normal max-w-2xl mx-auto leading-relaxed mb-8">
               Track shared expenses with flatmates, trips and teams. Split any way you like, see who owes whom, and settle up in the fewest payments.
             </p>
-            <div className="flex justify-center items-center gap-3 reveal-on-scroll">
+            <div className="flex justify-center items-center gap-3">
               <Link href="/register" className="btn-primary">
                 Get Started Free
               </Link>
@@ -349,7 +332,7 @@ export function HomePageClient() {
           </div>
 
           {/* Mock Dashboard */}
-          <div className="mt-16 sm:mt-20 reveal-on-scroll">
+          <div className="mt-16 sm:mt-20">
             <MockDashboard />
           </div>
         </section>
@@ -358,13 +341,13 @@ export function HomePageClient() {
 
         {/* ── 2. FEATURES ── */}
         <section id="features" className="py-20 max-w-6xl mx-auto px-6">
-          <div className="max-w-2xl mb-12 reveal-on-scroll">
+          <div className="max-w-2xl mb-12">
             <p className="text-xs font-semibold tracking-widest text-[var(--foreground-subtle)] uppercase mb-3">Features</p>
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--foreground)] mb-3">
-              Everything you need to master your finances.
+              Everything your group needs to split fairly.
             </h2>
             <p className="text-sm text-[var(--foreground-muted)] leading-relaxed">
-              Built for people who want control over their money without the complexity.
+              For flatmates, trips and teams who want shared costs sorted without the spreadsheets.
             </p>
           </div>
 
@@ -372,8 +355,8 @@ export function HomePageClient() {
             <FeatureCard
               icon={<UsersIcon />}
               title="Smart Bill Splitting"
-              description="Split shared expenses with roommates, trips, or family. Equal, custom, or percentage distributions."
-              className="sm:col-span-2 reveal-on-scroll"
+              description="Split with flatmates, trips or family: equally, by exact amounts, percentages or ratios — choosing exactly who is in."
+              className="sm:col-span-2"
             >
               <GroupSplitMini />
             </FeatureCard>
@@ -382,7 +365,7 @@ export function HomePageClient() {
               icon={<BoltIcon />}
               title="Algorithmic Settlement"
               description="Our greedy matching algorithm reduces complex IOUs into the absolute minimum number of payments."
-              className="reveal-on-scroll"
+              
             >
               <DebtSimplificationMini />
             </FeatureCard>
@@ -391,7 +374,7 @@ export function HomePageClient() {
               icon={<WalletIcon />}
               title="Every Group at a Glance"
               description="See what each group spent this month, your share of it, and who you need to settle with — month by month."
-              className="reveal-on-scroll"
+              
             >
               <GroupSpendMini />
             </FeatureCard>
@@ -400,8 +383,7 @@ export function HomePageClient() {
               icon={<SparklesIcon />}
               title="AI Insights"
               description="Ask about your groups: who owes whom, where the money went, and how to settle up in the fewest payments."
-              badge="Coming Soon"
-              className="reveal-on-scroll"
+              
             >
               <AIInsightsMini />
             </FeatureCard>
@@ -410,7 +392,7 @@ export function HomePageClient() {
               icon={<ShieldIcon />}
               title="Privacy First"
               description="Complete privacy, bank-grade data isolation, and secure password protection. Your data belongs to you."
-              className="reveal-on-scroll"
+              
             >
               <SecurityMini />
             </FeatureCard>
@@ -421,7 +403,7 @@ export function HomePageClient() {
 
         {/* ── 3. VALUE PROPS ── */}
         <section id="why-spendclan" className="py-20 max-w-6xl mx-auto px-6">
-          <div className="max-w-2xl mb-12 reveal-on-scroll">
+          <div className="max-w-2xl mb-12">
             <p className="text-xs font-semibold tracking-widest text-[var(--foreground-subtle)] uppercase mb-3">Why SpendClan</p>
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--foreground)]">
               Built on uncompromising standards.
@@ -433,9 +415,9 @@ export function HomePageClient() {
               { icon: "⚡", title: "Sub-Second Load",   desc: "Engineered for lightning-fast page loads and instant navigation." },
               { icon: "🔒", title: "Isolated Data",      desc: "No tracker libraries. Group data is visible only to its members." },
               { icon: "🎨", title: "Adaptive UI",        desc: "Clean light and dark modes that adapt to your preference." },
-              { icon: "📊", title: "Clear Analytics",    desc: "See group spending month by month at a glance." },
+              { icon: "🔎", title: "Find Anything",      desc: "Search every expense by text, amount, person or date." },
             ].map((prop) => (
-              <div key={prop.title} className="reveal-on-scroll">
+              <div key={prop.title} >
                 <span className="text-2xl inline-block mb-3">{prop.icon}</span>
                 <h4 className="text-sm font-semibold text-[var(--foreground)] mb-1.5">{prop.title}</h4>
                 <p className="text-sm text-[var(--foreground-muted)] leading-relaxed">{prop.desc}</p>
@@ -449,7 +431,7 @@ export function HomePageClient() {
         {/* ── 4. SECURITY ── */}
         <section id="security" className="py-20 max-w-6xl mx-auto px-6">
           <div className="grid gap-12 lg:grid-cols-2 items-center">
-            <div className="space-y-5 reveal-on-scroll">
+            <div className="space-y-5">
               <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--income-dim)] text-[var(--income)] border border-[var(--income)]/20">
                 <ShieldIcon />
               </div>
@@ -464,7 +446,7 @@ export function HomePageClient() {
               </Link>
             </div>
 
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 space-y-4 reveal-on-scroll">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 space-y-4">
               {[
                 { title: "Zero Data Sharing",          desc: "No telemetry, third-party analytics, or cookie trackers." },
                 { title: "One-Time Password Recovery",  desc: "Hashed tokens with strict single-use expiry limits." },
@@ -490,7 +472,7 @@ export function HomePageClient() {
 
         {/* ── 5. CTA ── */}
         <section className="py-24 text-center max-w-3xl mx-auto px-6">
-          <div className="space-y-5 reveal-on-scroll">
+          <div className="space-y-5">
             <h2 className="text-3xl sm:text-5xl font-semibold tracking-tight text-[var(--foreground)]">
               Ready to take control?
             </h2>

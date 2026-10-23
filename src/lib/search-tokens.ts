@@ -120,6 +120,9 @@ const SPLIT_ALIASES: Record<string, string> = {
   percent: "PERCENTAGE",
   percentage: "PERCENTAGE",
   "%": "PERCENTAGE",
+  ratio: "RATIO",
+  shares: "RATIO",
+  parts: "RATIO",
 };
 
 /** Finds people by name: "me"/"you", exact name, exact first name, then a unique prefix. */

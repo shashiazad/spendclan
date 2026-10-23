@@ -52,6 +52,7 @@ enum SplitType {
   EQUAL
   PERCENTAGE
   CUSTOM
+  RATIO
 }
 
 model User {
@@ -252,6 +253,8 @@ model GroupExpenseRevision {
 model GroupSplit {
   id             String       @id @default(uuid())
   amount         Float
+  // RATIO splits: this person's parts (e.g. 2 in 2:1:1), kept so an edit shows the original ratio
+  ratio          Float?
   groupExpenseId String
   userId         String
   groupExpense   GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Restrict)

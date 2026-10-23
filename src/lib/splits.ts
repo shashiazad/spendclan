@@ -11,11 +11,11 @@ export function computeSplits(
   amount: number,
   memberIds: string[],
   paidById: string,
-  splits?: { userId: string; amount: number; percentage?: number }[],
+  splits?: { userId: string; amount: number; percentage?: number; ratio?: number }[],
   participantIds?: string[],
   // People who have left the group but are already on the expense being edited
   formerIds: string[] = [],
-): { splits: { userId: string; amount: number }[] } | { error: string } {
+): { splits: { userId: string; amount: number; ratio?: number }[] } | { error: string } {
   const totalCents = Math.round(amount * 100);
   const allowedIds = [...memberIds, ...formerIds];
 
@@ -45,7 +45,7 @@ export function computeSplits(
   }
 
   if (!splits?.length) {
-    return { error: "Splits are required for PERCENTAGE and CUSTOM split types" };
+    return { error: "Splits are required for PERCENTAGE, CUSTOM and RATIO split types" };
   }
 
   for (const split of splits) {
@@ -128,6 +128,20 @@ export function computeSplits(
 
       return { splits: computed.map(({ userId, amount }) => ({ userId, amount })) };
     }
+  }
+
+  if (splitType === "RATIO") {
+    // Parts per person (e.g. 2:1:1). Hundredths keep the maths in integers.
+    const units = splits.map((s) => Math.round((s.ratio ?? 0) * 100));
+    if (units.some((u) => u <= 0)) return { error: "Each person in a ratio split needs a part greater than 0" };
+    const totalUnits = units.reduce((sum, u) => sum + u, 0);
+    const cents = units.map((u) => Math.floor((totalCents * u) / totalUnits));
+    const leftover = totalCents - cents.reduce((sum, c) => sum + c, 0);
+    const payerIndex = splits.findIndex((s) => s.userId === paidById);
+    cents[payerIndex >= 0 ? payerIndex : 0] += leftover;
+    return {
+      splits: splits.map((s, i) => ({ userId: s.userId, amount: cents[i] / 100, ratio: units[i] / 100 })),
+    };
   }
 
   if (splitType === "CUSTOM") {

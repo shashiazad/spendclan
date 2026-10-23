@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { HomePageClient } from "@/components/HomePageClient";
+import { getSession } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "SpendClan — Split Group Expenses & Settle Up",
@@ -14,6 +16,8 @@ export const metadata: Metadata = {
   ],
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Signed in: the app is the home page
+  if ((await getSession())?.user?.id) redirect("/groups");
   return <HomePageClient />;
 }

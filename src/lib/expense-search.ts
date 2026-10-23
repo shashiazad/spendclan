@@ -9,7 +9,7 @@ import type { Prisma } from "@prisma/client";
 export const SORTS = ["newest", "oldest", "amount_desc", "amount_asc", "description", "edited"] as const;
 export const MATCH_MODES = ["contains", "starts", "fuzzy"] as const;
 export const STATUSES = ["active", "deleted", "edited"] as const;
-export const SEARCH_SPLIT_TYPES = ["EQUAL", "CUSTOM", "PERCENTAGE"] as const;
+export const SEARCH_SPLIT_TYPES = ["EQUAL", "CUSTOM", "PERCENTAGE", "RATIO"] as const;
 export const DATE_FIELDS = ["date", "added"] as const;
 export const MAX_LIST = 20;
 export const MAX_LIMIT = 50;

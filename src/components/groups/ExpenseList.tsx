@@ -15,7 +15,7 @@ export interface ListExpense {
   splitType: string;
   canEdit?: boolean;
   paidBy: { id: string; name: string };
-  splits: { amount: number; user: { id: string; name: string } }[];
+  splits: { amount: number; ratio?: number | null; user: { id: string; name: string } }[];
   /** Present in search results. */
   group?: { id: string; name: string };
   deletedAt?: string | null;
@@ -66,6 +66,7 @@ const SPLIT_LABELS: Record<string, string> = {
   EQUAL: "Split equally",
   CUSTOM: "Exact amounts",
   PERCENTAGE: "By percentage",
+  RATIO: "By ratio",
 };
 
 type Effect = { tone: "lent" | "borrowed" | "none"; text: string };
@@ -258,6 +259,11 @@ export function ExpenseList({
                             <span className="text-[var(--foreground-muted)]">
                               {s.user.id === currentUserId ? "You" : s.user.name}
                               {s.user.id === exp.paidBy.id && <span className="text-[var(--foreground-subtle)]"> (paid)</span>}
+                              {exp.splitType === "RATIO" && s.ratio != null && (
+                                <span className="text-[var(--foreground-subtle)]">
+                                  {" "}· {Math.round(s.ratio * 100) / 100} {s.ratio === 1 ? "part" : "parts"}
+                                </span>
+                              )}
                             </span>
                             <span className="font-medium tabular-nums text-[var(--foreground)]">{fmt(s.amount)}</span>
                           </li>
