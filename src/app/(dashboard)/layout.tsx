@@ -21,10 +21,12 @@ export default async function DashboardLayout({
   return (
     <ToastProvider>
       <AddExpenseProvider>
-      <div className="bg-background min-h-screen text-foreground transition-colors duration-300">
+      <div className="relative min-h-dvh bg-background text-foreground">
+        <div className="ambient-mesh" aria-hidden="true" />
         <Sidebar />
-        <div className="flex min-h-screen flex-col lg:pl-64">
-          <main className="flex-1 px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-20 lg:px-8 lg:py-8">
+        <div className="flex min-h-dvh flex-col md:pl-20 lg:pl-64">
+          {/* Phones: room for the top bar and the floating bottom bar; wide screens get side space, not stretched tiles */}
+          <main className="mx-auto w-full max-w-screen-xl flex-1 px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[calc(4.5rem+env(safe-area-inset-top))] md:px-6 md:pb-10 md:pt-8 lg:px-8">
             {children}
           </main>
           <Footer />
