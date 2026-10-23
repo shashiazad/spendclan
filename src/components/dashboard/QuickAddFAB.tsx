@@ -38,7 +38,7 @@ export function QuickAddFAB() {
       onClick={() => openAddExpense(currentGroupId)}
       data-fab
       data-tucked={tucked || undefined}
-      className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-[var(--z-fab)] data-[tucked]:pointer-events-none data-[tucked]:translate-y-24 data-[tucked]:opacity-0 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent)] text-white shadow-[var(--shadow-lg)] transition-all duration-150 hover:bg-[var(--accent-hover)] active:scale-95 lg:bottom-8 lg:right-8"
+      className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-4 z-[var(--z-fab)] data-[tucked]:pointer-events-none data-[tucked]:translate-y-24 data-[tucked]:opacity-0 flex h-14 w-14 items-center justify-center rounded-full bg-accent-gradient text-white ring-1 ring-white/20 shadow-[0_10px_28px_-8px_var(--accent-ring)] transition-[transform,opacity,filter] duration-300 hover:brightness-110 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent-ring)] md:bottom-8 md:right-8"
       aria-label="Add group expense"
     >
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
