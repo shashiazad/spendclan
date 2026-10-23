@@ -20,7 +20,7 @@ export function SpendingScore({
   const getColor = (s: number) => {
     if (s >= 70) return { stroke: "#0d9488", bg: "rgba(13, 148, 136, 0.1)", label: "Great", text: "text-teal-400" };
     if (s >= 40) return { stroke: "#f59e0b", bg: "rgba(245, 158, 11, 0.1)", label: "Fair", text: "text-amber-400" };
-    return { stroke: "#ef4444", bg: "rgba(239, 68, 68, 0.1)", label: "Needs Work", text: "text-red-400" };
+    return { stroke: "#ef4444", bg: "rgba(239, 68, 68, 0.1)", label: "Needs Work", text: "text-[var(--expense)]" };
   };
 
   const colors = getColor(score);
@@ -53,7 +53,7 @@ export function SpendingScore({
       </svg>
       <div className="absolute flex flex-col items-center">
         <span className={`text-2xl font-bold ${colors.text}`}>{score}</span>
-        <span className="text-xs text-slate-500">{colors.label}</span>
+        <span className="text-xs text-[var(--foreground-subtle)]">{colors.label}</span>
       </div>
     </div>
   );
