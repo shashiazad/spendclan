@@ -30,7 +30,7 @@ test("expenses are grouped by month, newest first, with month totals", async ({ 
   await loginAs(page, USERS.alice.email);
   await openGroup(page);
 
-  const months = page.locator("section[aria-labelledby^='month-'] h3");
+  const months = page.locator("section[aria-labelledby^='month-'] :is(h2, h3)");
   await expect(months).toHaveText([thisMonth, lastMonth]);
 
   const current = page.getByRole("region", { name: thisMonth });

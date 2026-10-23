@@ -12,6 +12,8 @@ export async function loginAs(page: Page, email: string) {
 export async function openGroup(page: Page, tab?: "Balances" | "Settlements") {
   await page.goto(`/groups/${GROUP_ID}`);
   await expect(page.getByRole("heading", { name: "Goa Trip" })).toBeVisible();
+  // The page is server-rendered; wait until it is interactive (hydrated and done loading)
+  await page.waitForLoadState("networkidle");
   if (tab) await page.getByRole("button", { name: tab, exact: true }).click();
 }
 
