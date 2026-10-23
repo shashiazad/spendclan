@@ -106,7 +106,7 @@ The suite refuses to run if `E2E_DATABASE_URL` is missing, not on localhost, or 
 |---|---|---|---|---|---|
 | NEW-1 | P0 | CONFIRMED | G-1 and G-8 combined: a payment "recorded" without changing Pay To was silently dropped | See G-1, G-8 | **FIXED and tested** |
 | NEW-2 | P1 | CONFIRMED | Both engines: the form behind showed through the dialog's text | `--card` is 40% opaque in dark mode (`globals.css`); Modal, MemberSearch dropdown, Select options and Toast used it | **FIXED and tested**: new `--surface-solid` token (both themes) for layers over content |
-| NEW-3 | P2 | CODE | `colorScheme: "dark"` is forced even in the light theme | `layout.tsx:14` | OPEN (P2) |
+| NEW-3 | P2 | CODE | `colorScheme: "dark"` is forced even in the light theme | `layout.tsx:14` | **FIXED** (Phase 3): follows the system, `color-scheme` per theme |
 | NEW-4 | P2 | CODE | Trend months bucket by the server's timezone (UTC on Vercel); IST entries before 05:30 on the 1st land in the previous month | `dashboard.ts:108` | OPEN (P2) |
 | NEW-5 | P2 | CODE | Digit grouping follows the browser locale (₹1,02,815 vs ₹102,815). WebKit's `Intl` `en-IN` output is correct (`-₹1,02,815.50`), so a shared formatter is safe | `constants.ts:78` | OPEN (P2, with G-9) |
 | NEW-6 | P3 | CODE | A zero balance renders green, as if money were owed | `page.tsx:750` (`>= 0`) | OPEN (P3) |
@@ -114,7 +114,7 @@ The suite refuses to run if `E2E_DATABASE_URL` is missing, not on localhost, or 
 | NEW-8 | P2 | CODE | Toasts were not announced to screen readers | `Toast.tsx` | **FIXED**: container is `role="status"` `aria-live="polite"` |
 | NEW-9 | P1 | CONFIRMED | The groups list said "All settled up" for every group: `GET /api/groups` never returned `userBalance` | `api/groups/route.ts` | **FIXED** (group-only Phase 1): the API returns the caller's balance per group (paid − own shares + settlements sent − received, active rows only). Tested |
 | NEW-10 | P1 | CODE | `db-security` treated a `groupId` filter like `{ in: [...] }` as one id: membership in any one listed group passed the check, and an empty list threw "Access Denied" | `db-security.ts` | **FIXED**: only a plain string id gets the direct membership check; other shapes fall back to the per-row "active member" filter. Tested (no-groups case) |
-| NEW-11 | P2 | CONFIRMED | With the light theme saved, Next's dev overlay reports 1 issue on every page (likely the theme class hydration mismatch, related to NEW-3) | `layout.tsx` theme init | OPEN (Phase 3 theming) |
+| NEW-11 | P2 | CONFIRMED | With the light theme saved, Next's dev overlay reports 1 issue on every page (likely the theme class hydration mismatch, related to NEW-3) | `layout.tsx` theme init | **FIXED** (Phase 3) |
 
 ## Safari / WebKit (Part D)
 
@@ -129,6 +129,13 @@ The suite refuses to run if `E2E_DATABASE_URL` is missing, not on localhost, or 
 
 ## Changelog
 
+- **Group-only Phase 3 (2026-10-23): Bento + minimal + micro-glass redesign.**
+  - *Tokens:* canvas `#F8FAFC` / `#0B0F19`, minimal solid cards, glass only on interactive layers (nav bars, More menu, toasts, segmented control, chips, quick actions) with a solid fallback where `backdrop-filter` is unsupported, an accent gradient for primary actions, money colours always paired with a sign, ambient mesh that drifts only without reduced motion. All hard-coded slate/zinc/red/emerald classes replaced with tokens (fixes unreadable light-mode text on Profile and auth pages).
+  - *Theme:* follows the system until a choice is saved; no longer forced dark (**NEW-3 fixed**); no hydration warning from the theme class (**NEW-11 fixed**).
+  - *Navigation:* floating glass bottom bar on phones (Groups, Expenses, Balances, Activity, More), icon rail on tablets, sidebar on desktop; content centred with a max width; 44px targets and 16px inputs on phones.
+  - *Screens:* bento Home (net balance hero, quick actions, your groups, who owes whom, recent activity, spend by group this month); new Balances and Activity pages; bento group page with a Members tab and group activity under Balances; `?settle=` / `?invite=` deep links. New read-only `GET /api/home` and `GET /api/activity` (from existing timestamps).
+  - *Deliberate deviations:* dialogs and dropdowns stay opaque (readability; covered by a test). "Remind" and "Pending confirmations" are hidden until those features exist.
+  - *Verified:* 141 e2e (3 browsers), 62 unit; screenshots at 375/768/1440 in light and dark.
 - **Group-only Phase 2 (2026-10-23):**
   - *2a Paid by:* the payer select is now `PaidByRadioGroup` (native radios as avatar cards, "You" first and default, arrow keys, 44px targets, 2 columns from 4 members on phones). Editing an expense whose payer left shows them checked and disabled as "(removed)"; the API now lets an edit keep a former payer or split member (new expenses still need current members).
   - *2b Search:* one search bar for a group's Expenses tab and a new all-groups **Expenses** page (`/expenses`, in the nav). Free text over description and people (contains / starts with / typo-tolerant via `pg_trgm`), amount (exact, ≈±5%, min/max, `₹1,200.50` accepted), paid by, split with, added by, date presets/custom range (expense date or added on), split type, status (active / edited / deleted — deleted only for the owner or a group admin), group (all-groups page), and six sorts. Tokens in the box (`paid:`, `with:`, `by:`, `group:`, `>500`, `<=1200`, `=`, `~`, `amount:a-b`, `date:2026-10|last30|a..b`, `type:`, `is:`) become removable chips. Filters live in the URL, `/` focuses search, result count and total are announced, skeleton loading, "Clear filters", infinite scroll with a Load more fallback, recent and saved searches on the device. Phones get a bottom sheet with Apply/Reset; desktop an inline panel.
