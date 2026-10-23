@@ -79,6 +79,7 @@ describe("searchSchema", () => {
     expect(parse("from=yesterday").success).toBe(false);
     expect(parse("sort=random").success).toBe(false);
     expect(parse("splitType=SHARES").success).toBe(false);
+    expect(parse("splitType=RATIO").success).toBe(true);
   });
 
   it("rejects inverted ranges", () => {

@@ -92,7 +92,7 @@ export function readUrlFilters(params: URLSearchParams): UrlFilters {
     involving: list("involving"),
     addedBy: list("addedBy"),
     groupId: list("groupId"),
-    splitType: list("splitType").filter((t) => ["EQUAL", "CUSTOM", "PERCENTAGE"].includes(t)),
+    splitType: list("splitType").filter((t) => ["EQUAL", "CUSTOM", "PERCENTAGE", "RATIO"].includes(t)),
     from: /^\d{4}-\d{2}-\d{2}$/.test(text("from")) ? text("from") : "",
     to: /^\d{4}-\d{2}-\d{2}$/.test(text("to")) ? text("to") : "",
     dateField: oneOf(params.get("dateField"), ["date", "added"] as const, "date"),
