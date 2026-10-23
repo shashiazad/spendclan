@@ -63,6 +63,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
       }
 
       // Force a full page load to propagate session cookies and avoid Next.js router caching issues
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a full load is intended (see above)
       window.location.href = "/groups";
     } catch {
       setError("Something went wrong. Please try again.");
