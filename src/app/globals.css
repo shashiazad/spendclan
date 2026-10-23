@@ -23,19 +23,21 @@
   /* Borders */
   --border:        #1E293B;                 /* slate-800 */
   --border-hover:  #334155;
-  --border-focus:  #8B5CF6;
+  --border-focus:  #A78BFA;
 
   /* Text (all pairs ≥ 4.5:1 on the canvas and cards) */
   --foreground:        #F8FAFC;
   --foreground-muted:  #A1AEC2;
   --foreground-subtle: #8191A8;
 
-  /* Accent: the violet brand colour, and one gradient for primary actions */
-  --accent:          #8B5CF6;
-  --accent-hover:    #7C3AED;
-  --accent-dim:      rgba(139, 92, 246, 0.14);
-  --accent-ring:     rgba(139, 92, 246, 0.35);
-  --accent-gradient: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+  /* Accent: the violet brand colour. --accent is for text, links and icons (≥ 4.5:1 on the canvas);
+     --accent-solid and the gradient are fills behind white text (≥ 4.5:1 with white). */
+  --accent:          #A78BFA;
+  --accent-hover:    #C4B5FD;
+  --accent-solid:    #7C3AED;
+  --accent-dim:      rgba(139, 92, 246, 0.16);
+  --accent-ring:     rgba(139, 92, 246, 0.4);
+  --accent-gradient: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
   --accent-contrast: #FFFFFF;
 
   /* Navigation */
@@ -108,6 +110,7 @@
 
   --accent:          #6D28D9;
   --accent-hover:    #5B21B6;
+  --accent-solid:    #6D28D9;
   --accent-dim:      rgba(109, 40, 217, 0.08);
   --accent-ring:     rgba(109, 40, 217, 0.28);
   --accent-gradient: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);

@@ -7,12 +7,25 @@ import { FormEvent, useState, Suspense } from "react";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+
+/** "Registration successful" / "Password reset" banners: the only part that reads the URL. */
+function LoginNotice() {
+  const searchParams = useSearchParams();
+  const message =
+    searchParams.get("registered") === "1"
+      ? "Registration successful! Please sign in."
+      : searchParams.get("reset") === "1"
+        ? "Password reset successful! Please sign in."
+        : null;
+  if (!message) return null;
+  return (
+    <div role="status" className="rounded-lg border border-[var(--income)]/30 bg-[var(--income-dim)] px-4 py-3 text-sm text-[var(--income)]">
+      {message}
+    </div>
+  );
+}
 
 function LoginForm() {
-  const searchParams = useSearchParams();
-  const registered = searchParams.get("registered");
-  const reset = searchParams.get("reset");
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -51,17 +64,10 @@ function LoginForm() {
       subtitle="Sign in to manage your finances"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {registered === "1" && (
-          <div className="rounded-lg border border-[var(--income)]/30 bg-[var(--income-dim)] px-4 py-3 text-sm text-[var(--income)]">
-            Registration successful! Please sign in.
-          </div>
-        )}
-
-        {reset === "1" && (
-          <div className="rounded-lg border border-[var(--income)]/30 bg-[var(--income-dim)] px-4 py-3 text-sm text-[var(--income)]">
-            Password reset successful! Please sign in.
-          </div>
-        )}
+        {/* Only the notice waits for the URL; the form itself is rendered on the server */}
+        <Suspense fallback={null}>
+          <LoginNotice />
+        </Suspense>
 
         {error && (
           <div className="rounded-lg border border-[var(--expense)]/30 bg-[var(--expense-dim)] px-4 py-3 text-sm text-[var(--expense)]">
@@ -102,11 +108,10 @@ function LoginForm() {
           Sign in
         </Button>
 
-        <div className="relative my-4 flex items-center justify-center">
-          <div className="absolute w-full border-t border-[var(--border)]"></div>
-          <span className="relative bg-[#0b0f19] px-3 text-xs uppercase text-[var(--foreground-subtle)]">
-            Or continue with
-          </span>
+        <div className="my-4 flex items-center gap-3" role="presentation">
+          <span className="h-px flex-1 bg-[var(--border)]" />
+          <span className="text-xs uppercase text-[var(--foreground-subtle)]">Or continue with</span>
+          <span className="h-px flex-1 bg-[var(--border)]" />
         </div>
 
         <Button
@@ -151,15 +156,5 @@ function LoginForm() {
 }
 
 export default function LoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-[200px] items-center justify-center">
-          <LoadingSpinner />
-        </div>
-      }
-    >
-      <LoginForm />
-    </Suspense>
-  );
+  return <LoginForm />;
 }

@@ -89,6 +89,8 @@ export default function RegisterPage() {
           placeholder="+919876543210"
           required
           hint="Used for secondary verification and security checks"
+          autoComplete="tel"
+          inputMode="tel"
         />
 
         <Input
@@ -136,17 +138,17 @@ export default function RegisterPage() {
           placeholder="Your answer"
           required
           hint="Used for password recovery"
+          autoComplete="off"
         />
 
         <Button type="submit" className="w-full" loading={loading}>
           Create account
         </Button>
 
-        <div className="relative my-4 flex items-center justify-center">
-          <div className="absolute w-full border-t border-[var(--border)]"></div>
-          <span className="relative bg-[#0b0f19] px-3 text-xs uppercase text-[var(--foreground-subtle)]">
-            Or continue with
-          </span>
+        <div className="my-4 flex items-center gap-3" role="presentation">
+          <span className="h-px flex-1 bg-[var(--border)]" />
+          <span className="text-xs uppercase text-[var(--foreground-subtle)]">Or continue with</span>
+          <span className="h-px flex-1 bg-[var(--border)]" />
         </div>
 
         <Button
