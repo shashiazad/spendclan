@@ -60,5 +60,10 @@
     "esbuild@0.28.1": true,
     "prisma@7.10.1": true,
     "@prisma/engines@7.10.1": true
+  },
+  "overrides": {
+    "next-auth": {
+      "nodemailer": "$nodemailer"
+    }
   }
 }
