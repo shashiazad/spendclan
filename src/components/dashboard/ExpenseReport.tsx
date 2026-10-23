@@ -180,7 +180,7 @@ export function ExpenseReport() {
         <body>
           <div class="letterhead-header">
             <div class="brand-section">
-              <img src="/logo.png" alt="SpendClan" class="brand-logo" />
+              <img src="/logo-192.png" alt="SpendClan" class="brand-logo" />
               <div>
                 <h1 class="brand-name">SpendClan</h1>
                 <p class="brand-tagline">Group Expense Advisor</p>

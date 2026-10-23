@@ -26,11 +26,12 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/logo.png", type: "image/png" },
-      { url: "/logo.png", sizes: "512x512", type: "image/png" }
+      { url: "/logo-64.png", sizes: "64x64", type: "image/png" },
+      { url: "/logo-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/logo-512.png", sizes: "512x512", type: "image/png" }
     ],
     apple: [
-      { url: "/logo.png", type: "image/png" }
+      { url: "/logo-192.png", sizes: "192x192", type: "image/png" }
     ]
   },
   appleWebApp: {
