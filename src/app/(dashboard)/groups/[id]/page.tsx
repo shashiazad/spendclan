@@ -511,7 +511,7 @@ export default function GroupDetailPage() {
     <div className="mx-auto max-w-screen-xl space-y-6 animate-fade-in">
       <BentoGrid>
         {/* Header: one overflow menu instead of a row of buttons (destructive actions live in Group settings) */}
-        <BentoTile span={2} lgSpan={2}>
+        <BentoTile span={3} lgSpan={2}>
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-widest text-[var(--foreground-subtle)]">Group</p>
@@ -539,7 +539,7 @@ export default function GroupDetailPage() {
         </BentoTile>
 
         {/* Your balance (hero) */}
-        <BentoTile title="Your balance" tone="hero">
+        <BentoTile title="Your balance" tone="hero" span={2} lgSpan={1}>
           <p className={`flex items-baseline gap-1.5 text-2xl font-bold tracking-tight money sm:text-3xl ${myBalanceTone}`}>
             <span aria-hidden="true" className="text-xl">{balanceSign}</span>
             {myBalanceText}
@@ -557,7 +557,7 @@ export default function GroupDetailPage() {
 
         {/* Spend */}
         <BentoTile title="Spending">
-          <dl className="grid grid-cols-2 gap-3 md:grid-cols-1 lg:grid-cols-1">
+          <dl className="grid grid-cols-2 gap-3 md:grid-cols-1">
             <div>
               <dt className="text-xs text-[var(--foreground-muted)]">Group spend</dt>
               <dd className="text-xl font-bold text-[var(--foreground)] money">{formatCurrency(totalSpend, currency)}</dd>
