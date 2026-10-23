@@ -66,7 +66,7 @@ export default function RegisterPage() {
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          <div className="rounded-lg border border-[var(--expense)]/30 bg-[var(--expense-dim)] px-4 py-3 text-sm text-[var(--expense)]">
             {error}
           </div>
         )}
@@ -143,8 +143,8 @@ export default function RegisterPage() {
         </Button>
 
         <div className="relative my-4 flex items-center justify-center">
-          <div className="absolute w-full border-t border-slate-800"></div>
-          <span className="relative bg-[#0b0f19] px-3 text-xs uppercase text-slate-500">
+          <div className="absolute w-full border-t border-[var(--border)]"></div>
+          <span className="relative bg-[#0b0f19] px-3 text-xs uppercase text-[var(--foreground-subtle)]">
             Or continue with
           </span>
         </div>
@@ -152,7 +152,7 @@ export default function RegisterPage() {
         <Button
           type="button"
           variant="secondary"
-          className="w-full flex items-center justify-center gap-2 border border-slate-800 bg-slate-900/50 hover:bg-slate-900 transition-colors text-slate-200"
+          className="w-full flex items-center justify-center gap-2 border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-solid)] transition-colors text-[var(--foreground)]"
           onClick={() => signIn("google", { callbackUrl: "/groups" })}
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -176,11 +176,11 @@ export default function RegisterPage() {
           Google
         </Button>
 
-        <p className="text-center text-sm text-slate-400">
+        <p className="text-center text-sm text-[var(--foreground-muted)]">
           Already have an account?{" "}
           <Link
             href="/login"
-            className="font-medium text-emerald-400 transition-colors hover:text-emerald-300"
+            className="font-medium text-[var(--income)] transition-colors hover:text-[var(--income)]"
           >
             Sign in
           </Link>

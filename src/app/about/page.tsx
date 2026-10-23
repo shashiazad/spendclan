@@ -33,7 +33,7 @@ export default async function AboutPage() {
           </div>
 
           {/* Premium Apple-Style Frosted Card */}
-          <div className="rounded-[2rem] border border-white/[0.06] dark:border-white/[0.06] light:border-zinc-200 bg-white/[0.01] dark:bg-white/[0.01] light:bg-white p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.02)] max-w-3xl mx-auto space-y-8">
+          <div className="rounded-[2rem] border border-[var(--border)] dark:border-[var(--border)] light:border-[var(--border)] bg-[var(--surface)] dark:bg-[var(--surface)] light:bg-white p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.02)] max-w-3xl mx-auto space-y-8">
             <div className="flex items-center gap-4.5">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#30d158]/10 border border-[#30d158]/20">
                 <svg
@@ -61,7 +61,7 @@ export default async function AboutPage() {
               When you join shared groups, your balances use advanced algorithmic optimization to simplify debt paths down to the absolute fewest payments, preventing unnecessary financial friction.
             </p>
 
-            <div className="pt-4 border-t border-white/[0.04] dark:border-white/[0.04] light:border-zinc-200/50 flex flex-col sm:flex-row items-center gap-4 justify-start">
+            <div className="pt-4 border-t border-[var(--border)] dark:border-[var(--border)] light:border-[var(--border)] flex flex-col sm:flex-row items-center gap-4 justify-start">
               {isLoggedIn ? (
                 <Link
                   href="/groups"

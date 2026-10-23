@@ -68,7 +68,7 @@ function ResetPasswordForm() {
         subtitle="This password reset link is invalid or has expired"
       >
         <div className="space-y-5 text-center">
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-[var(--foreground-muted)]">
             Request a new reset link to continue.
           </p>
           <Link href="/forgot-password">
@@ -86,7 +86,7 @@ function ResetPasswordForm() {
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          <div className="rounded-lg border border-[var(--expense)]/30 bg-[var(--expense-dim)] px-4 py-3 text-sm text-[var(--expense)]">
             {error}
           </div>
         )}
@@ -117,10 +117,10 @@ function ResetPasswordForm() {
           Reset password
         </Button>
 
-        <p className="text-center text-sm text-slate-400">
+        <p className="text-center text-sm text-[var(--foreground-muted)]">
           <Link
             href="/login"
-            className="font-medium text-emerald-400 transition-colors hover:text-emerald-300"
+            className="font-medium text-[var(--income)] transition-colors hover:text-[var(--income)]"
           >
             Back to sign in
           </Link>

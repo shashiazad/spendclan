@@ -98,7 +98,7 @@ export default function ResetPasswordQaPage() {
       {step === 1 ? (
         <form onSubmit={handleStep1} className="space-y-5">
           {error && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            <div className="rounded-lg border border-[var(--expense)]/30 bg-[var(--expense-dim)] px-4 py-3 text-sm text-[var(--expense)]">
               {error}
             </div>
           )}
@@ -120,13 +120,13 @@ export default function ResetPasswordQaPage() {
           <div className="flex flex-col items-center gap-2 text-sm">
             <Link
               href="/forgot-password"
-              className="text-emerald-400 transition-colors hover:text-emerald-300"
+              className="text-[var(--income)] transition-colors hover:text-[var(--income)]"
             >
               Reset via email instead
             </Link>
             <Link
               href="/login"
-              className="text-slate-400 transition-colors hover:text-slate-300"
+              className="text-[var(--foreground-muted)] transition-colors hover:text-[var(--foreground-muted)]"
             >
               Back to sign in
             </Link>
@@ -135,16 +135,16 @@ export default function ResetPasswordQaPage() {
       ) : (
         <form onSubmit={handleStep2} className="space-y-5">
           {error && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            <div className="rounded-lg border border-[var(--expense)]/30 bg-[var(--expense-dim)] px-4 py-3 text-sm text-[var(--expense)]">
               {error}
             </div>
           )}
 
-          <div className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--foreground-subtle)]">
               Security question
             </p>
-            <p className="mt-1 text-sm text-slate-200">{question}</p>
+            <p className="mt-1 text-sm text-[var(--foreground)]">{question}</p>
           </div>
 
           <Input

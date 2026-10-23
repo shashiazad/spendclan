@@ -224,8 +224,8 @@ export default function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100">Profile Settings</h1>
-        <p className="mt-1 text-slate-400">Manage your SpendClan details and account credentials</p>
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Profile Settings</h1>
+        <p className="mt-1 text-[var(--foreground-muted)]">Manage your SpendClan details and account credentials</p>
       </div>
 
       <Card>
@@ -233,23 +233,23 @@ export default function ProfilePage() {
         <CardBody>
           <form onSubmit={handleSave} className="space-y-6">
             {/* Avatar Section */}
-            <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-slate-800">
+            <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-[var(--border)]">
               <div className="relative">
                 {previewPhoto ? (
                   <img
                     src={previewPhoto}
                     alt={name}
-                    className="w-24 h-24 rounded-full object-cover border-2 border-emerald-500 shadow-lg shadow-emerald-500/10"
+                    className="w-24 h-24 rounded-full object-cover border-2 border-[var(--income)]/30 shadow-lg shadow-emerald-500/10"
                   />
                 ) : (
-                  <div className="flex items-center justify-center w-24 h-24 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-3xl border border-emerald-500/30">
+                  <div className="flex items-center justify-center w-24 h-24 rounded-full bg-[var(--income-dim)] text-[var(--income)] font-bold text-3xl border border-[var(--income)]/30">
                     {getInitials(name || profile.name)}
                   </div>
                 )}
               </div>
 
               <div className="flex flex-col gap-2">
-                <p className="text-sm font-medium text-slate-300 text-center sm:text-left">
+                <p className="text-sm font-medium text-[var(--foreground-muted)] text-center sm:text-left">
                   Profile Photo
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
@@ -272,7 +272,7 @@ export default function ProfilePage() {
                     </Button>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 text-center sm:text-left">
+                <p className="text-xs text-[var(--foreground-subtle)] text-center sm:text-left">
                   Supports JPEG, PNG. Resized to 128x128. Max 200KB.
                 </p>
                 <input
@@ -297,10 +297,10 @@ export default function ProfilePage() {
               />
 
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1.5">
+                <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1.5">
                   Email Address
                 </label>
-                <div className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-slate-500 select-none cursor-not-allowed">
+                <div className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface-solid)] px-3 py-2.5 text-sm text-[var(--foreground-subtle)] select-none cursor-not-allowed">
                   {profile.email} (Linked)
                 </div>
               </div>
@@ -322,15 +322,15 @@ export default function ProfilePage() {
             </div>
 
             {/* Security Section */}
-            <div className="pt-6 border-t border-slate-800 space-y-4">
+            <div className="pt-6 border-t border-[var(--border)] space-y-4">
               <div>
-                <h3 className="text-sm font-medium text-slate-200">Security & Credentials</h3>
+                <h3 className="text-sm font-medium text-[var(--foreground)]">Security & Credentials</h3>
                 {!profile.hasPassword ? (
                   <p className="mt-1 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-lg">
                     💡 You logged in using a Google Account. Set a password and security question below to also enable standard mobile/email credentials-based sign-in.
                   </p>
                 ) : (
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-[var(--foreground-muted)]">
                     Set a new password or change your security questions for credentials-based recovery.
                   </p>
                 )}
@@ -370,12 +370,12 @@ export default function ProfilePage() {
 
             {/* Status alerts */}
             {saveSuccess && (
-              <div className="p-3 text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+              <div className="p-3 text-sm text-[var(--income)] bg-[var(--income-dim)] border border-[var(--income)]/30 rounded-lg">
                 Profile updated successfully!
               </div>
             )}
             {saveError && (
-              <div className="p-3 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <div className="p-3 text-sm text-[var(--expense)] bg-[var(--expense-dim)] border border-[var(--expense)]/30 rounded-lg">
                 {saveError}
               </div>
             )}
