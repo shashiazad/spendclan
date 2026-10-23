@@ -269,7 +269,7 @@ export function ExpenseSearchBar({ filters, onChange, people, groups, meId, curr
           aria-describedby={`${uid}-hint`}
           className="w-full min-h-[44px] rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-10 text-base text-[var(--foreground)] placeholder:text-[var(--foreground-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)] sm:text-sm"
         />
-        <kbd aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-[var(--border)] px-1.5 text-[10px] text-[var(--foreground-subtle)] md:block">
+        <kbd aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-[var(--border)] px-1.5 text-xs text-[var(--foreground-subtle)] md:block">
           /
         </kbd>
         <p id={`${uid}-hint`} className="sr-only">
@@ -290,7 +290,7 @@ export function ExpenseSearchBar({ filters, onChange, people, groups, meId, curr
           </svg>
           Filters
           {count > 0 && (
-            <span className="rounded-full bg-[var(--accent)] px-1.5 text-[11px] font-semibold text-white">
+            <span className="rounded-full bg-[var(--accent-solid)] px-1.5 text-xs font-semibold text-white">
               {count}
               <span className="sr-only"> active</span>
             </span>
@@ -349,7 +349,7 @@ export function ExpenseSearchBar({ filters, onChange, people, groups, meId, curr
                 type="button"
                 onClick={() => apply(c.remove())}
                 aria-label={`Remove filter: ${c.label}`}
-                className="inline-flex min-h-[32px] max-w-[16rem] items-center gap-1.5 rounded-full bg-[var(--accent-dim)] px-3 text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
+                className="inline-flex min-h-[32px] max-w-[16rem] items-center gap-1.5 rounded-full bg-[var(--accent-dim)] px-3 text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent-solid)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
               >
                 <span className="truncate">{c.label}</span>
                 <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true">

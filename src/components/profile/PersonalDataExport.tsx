@@ -17,7 +17,7 @@ type Counts = Record<(typeof DATASETS)[number]["id"], number>;
 
 const baseLink =
   "inline-flex min-h-[44px] items-center justify-center rounded-xl px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]";
-const primaryLink = `${baseLink} w-full bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] sm:w-auto`;
+const primaryLink = `${baseLink} w-full bg-[var(--accent-solid)] text-white hover:brightness-110 sm:w-auto`;
 const linkClass = `${baseLink} border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:border-[var(--accent)] hover:text-[var(--accent)]`;
 
 /** Download of the retired personal-finance records (expenses, income, savings, recurring). */
