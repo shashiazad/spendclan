@@ -129,6 +129,12 @@ The suite refuses to run if `E2E_DATABASE_URL` is missing, not on localhost, or 
 
 ## Changelog
 
+- **Ratio splits, public pages and Google sign-in (2026-10-23):**
+  - *Ratio split type:* split by parts (e.g. 2 : 1 : 1). Empty parts count as 1, shares update live ("4 parts · ₹300.00 per part"), leftover paise go to the payer (else the first person), and each person's parts are stored (`GroupSplit.ratio`) so editing shows the original ratio. Searchable (`type:ratio`, Split type filter). Additive migration `20261023000200_ratio_splits` (new enum value, nullable column).
+  - *Signed in = no sign-in/sign-up offers:* the public navbar knows the session ("Open SpendClan" + avatar instead of Sign in / Get started); `/`, `/login` and `/register` send signed-in people to their groups. Nobody was being signed out: only the public navbar ignored the session.
+  - *Google sign-in:* it failed because `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` aren't set. Google is now offered only when both are configured, sign-in callbacks use explicit ids, failed attempts return to the login page with a plain message, and the README documents the Google Cloud setup (redirect URI `NEXTAUTH_URL/api/auth/callback/google`).
+  - *Design:* About rebuilt with the bento tokens (it also printed literal `**` markdown); sign-in/up pages are a centred two-column layout instead of a mostly empty half-screen; the landing page no longer hides every section until scrolled, uses the new buttons, and its copy is about groups.
+  - *Tests:* 83 unit, 189 e2e runs (new: ratio splits end to end incl. editing, API validation and search; public pages signed in/out; Google only when configured).
 - **Group-only Phase 4 (2026-10-23): carry-over fixes, tests and quality gates.**
   - *Fixes:* money formatting (G-9/NEW-5), decimal amount inputs (G-13), currency-neutral split errors, autocomplete/inputmode (N-6), one page header (N-9), no text under 12px (N-5), no page fade-ins (U-3), resized logo (U-4: pages went from 1.2–1.4 MB to ~260–450 KB), 90-day sliding sessions (U-5), heading order on Expenses/Activity, dark-mode accent split into a text colour (≥4.5:1) and a solid fill for white text, server-rendered first paint for Home, Balances and the group page (no full-page spinner).
   - *Unit tests (Vitest, 78):* split math and rounding, balances and debt simplification, money formatting, search filter builder, token parser, URL filters.
