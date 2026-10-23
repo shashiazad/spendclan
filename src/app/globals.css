@@ -358,17 +358,6 @@ body {
   border-radius: 6px;
 }
 
-/* Scroll reveal */
-.reveal-on-scroll {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-.reveal-on-scroll.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 /* Hover lift — subtle */
 .hover-lift {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -413,18 +402,20 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 18px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  min-height: 44px;
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: #fff;
-  background: var(--accent);
+  background-image: var(--accent-gradient);
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px -6px var(--accent-ring);
   cursor: pointer;
   transition: background 0.2s ease, opacity 0.2s ease;
   white-space: nowrap;
 }
-.btn-primary:hover  { background: var(--accent-hover); }
+.btn-primary:hover  { filter: brightness(1.1); }
 .btn-primary:active { opacity: 0.9; }
 
 .btn-secondary {
@@ -432,13 +423,14 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 18px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  min-height: 44px;
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: var(--foreground);
-  background: transparent;
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
   white-space: nowrap;
@@ -451,13 +443,15 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 18px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  min-height: 44px;
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: #fff;
-  background: var(--accent);
+  background-image: var(--accent-gradient);
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px -6px var(--accent-ring);
   cursor: pointer;
   transition: background 0.2s ease, opacity 0.2s ease;
   white-space: nowrap;
@@ -470,13 +464,14 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 18px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  min-height: 44px;
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: var(--foreground);
-  background: transparent;
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
   white-space: nowrap;
