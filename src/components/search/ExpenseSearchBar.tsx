@@ -57,7 +57,7 @@ const SORT_OPTIONS: { value: UrlFilters["sort"]; label: string }[] = [
   { value: "edited", label: "Recently edited" },
 ];
 
-const SPLIT_LABELS: Record<string, string> = { EQUAL: "Equal", CUSTOM: "Exact", PERCENTAGE: "Percentage" };
+const SPLIT_LABELS: Record<string, string> = { EQUAL: "Equal", CUSTOM: "Exact", PERCENTAGE: "Percentage", RATIO: "Ratio" };
 
 /** Search box (with `paid:`, `>500`, `date:` tokens), filters, sort, saved searches and active-filter chips. */
 export function ExpenseSearchBar({ filters, onChange, people, groups, meId, currency, storageKey }: ExpenseSearchBarProps) {

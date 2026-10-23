@@ -11,7 +11,7 @@ export const SECURITY_QUESTIONS = [
   "What was your first car?",
 ] as const;
 
-export const SPLIT_TYPES = ["EQUAL", "PERCENTAGE", "CUSTOM"] as const;
+export const SPLIT_TYPES = ["EQUAL", "PERCENTAGE", "CUSTOM", "RATIO"] as const;
 
 export type Currency = (typeof CURRENCIES)[number];
 

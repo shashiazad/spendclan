@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { CURRENCY_SYMBOLS, formatCurrency } from "@/lib/constants";
 import { PaidByRadioGroup, type PayerOption } from "./PaidByRadioGroup";
 
-export type SplitMethod = "EQUAL" | "CUSTOM" | "PERCENTAGE";
+export type SplitMethod = "EQUAL" | "CUSTOM" | "PERCENTAGE" | "RATIO";
 
 export interface FormMember {
   id: string;
@@ -21,7 +21,7 @@ export interface ExpensePayload {
   splitType: SplitMethod;
   paidById: string;
   participantIds?: string[];
-  splits?: { userId: string; amount: number; percentage?: number }[];
+  splits?: { userId: string; amount: number; percentage?: number; ratio?: number }[];
 }
 
 /** An existing expense, for editing. */
@@ -31,7 +31,7 @@ export interface ExpenseFormInitial {
   date: string;
   splitType: string;
   paidBy: { id: string; name: string };
-  splits: { amount: number; user: { id: string; name: string } }[];
+  splits: { amount: number; ratio?: number | null; user: { id: string; name: string } }[];
 }
 
 interface ExpenseFormProps {
@@ -55,6 +55,7 @@ const METHODS: { value: SplitMethod; label: string; name: string }[] = [
   { value: "EQUAL", label: "Equal", name: "Split equally" },
   { value: "CUSTOM", label: "Exact", name: "Exact amounts" },
   { value: "PERCENTAGE", label: "Percent", name: "Percentages" },
+  { value: "RATIO", label: "Ratio", name: "By ratio" },
 ];
 
 /** Reads an amount as typed ("1,200.50", "₹1,200", " 99 "); anything else counts as 0. */
@@ -79,8 +80,35 @@ function evenShares(total: number, ids: string[], paidById: string): Map<string,
   return shares;
 }
 
+/** Parts typed for a ratio split; an empty field counts as 1 part. */
+const toParts = (v: string | undefined) => (v === undefined || v.trim() === "" ? 1 : readAmount(v));
+
+/** Ratio shares in cents, exactly as the server computes them (leftover paise to the payer, else the first person). */
+function ratioShares(totalCents: number, parts: { id: string; parts: number }[], payerId: string): Map<string, number> {
+  const units = parts.map((p) => Math.round(p.parts * 100));
+  const totalUnits = units.reduce((s, u) => s + u, 0);
+  const shares = new Map<string, number>();
+  if (totalUnits <= 0 || units.some((u) => u <= 0)) return shares;
+  const cents = units.map((u) => Math.floor((totalCents * u) / totalUnits));
+  const leftover = totalCents - cents.reduce((s, c) => s + c, 0);
+  const payerIndex = parts.findIndex((p) => p.id === payerId);
+  cents[payerIndex >= 0 ? payerIndex : 0] += leftover;
+  parts.forEach((p, i) => shares.set(p.id, cents[i]));
+  return shares;
+}
+
+const trimNumber = (n: number) => String(Math.round(n * 100) / 100);
+
 function initialValues(initial: ExpenseFormInitial | undefined): Record<string, string> {
   if (!initial) return {};
+  if (initial.splitType === "RATIO") {
+    const involved = initial.splits.filter((s) => s.amount > 0);
+    // Older rows without stored parts: derive them from the amounts (smallest share = 1 part)
+    const smallest = Math.min(...involved.map((s) => s.amount));
+    return Object.fromEntries(
+      involved.map((s) => [s.user.id, trimNumber(s.ratio ?? (smallest > 0 ? s.amount / smallest : 1))]),
+    );
+  }
   const involved = initial.splits.filter((s) => s.amount > 0);
   if (initial.splitType === "CUSTOM") {
     return Object.fromEntries(involved.map((s) => [s.user.id, s.amount.toFixed(2)]));
@@ -147,6 +175,10 @@ export function ExpenseForm({
   const allocatedBp = people.reduce((sum, p) => sum + toBasisPoints(values[p.id]), 0);
   const remainingBp = 10000 - allocatedBp;
   const emptyPeople = people.filter((p) => !values[p.id]);
+  const parts = people.map((p) => ({ id: p.id, parts: toParts(values[p.id]) }));
+  const totalParts = parts.reduce((sum, p) => sum + p.parts, 0);
+  const badParts = parts.some((p) => !(p.parts > 0));
+  const ratioCents = ratioShares(totalCents, parts, payer);
 
   let summary = "";
   if (method === "EQUAL" && people.length) {
@@ -155,6 +187,8 @@ export function ExpenseForm({
     summary = `Allocated ${fmt(allocatedCents)} of ${fmt(totalCents)} · ${
       remainingCents >= 0 ? `Remaining ${fmt(remainingCents)}` : `Over by ${fmt(-remainingCents)}`
     }`;
+  } else if (method === "RATIO" && people.length && !badParts) {
+    summary = `${trimNumber(totalParts)} ${totalParts === 1 ? "part" : "parts"} · ${fmt(Math.floor(totalCents / totalParts))} per part`;
   } else if (method === "PERCENTAGE") {
     summary = `Allocated ${(allocatedBp / 100).toFixed(2)}% of 100% · ${
       remainingBp >= 0 ? `Remaining ${(remainingBp / 100).toFixed(2)}%` : `Over by ${(-remainingBp / 100).toFixed(2)}%`
@@ -171,6 +205,7 @@ export function ExpenseForm({
   else if (method === "CUSTOM" && remainingCents < 0) blockReason = `Shares are ${fmt(-remainingCents)} over the total.`;
   else if (method === "PERCENTAGE" && remainingBp !== 0)
     blockReason = `Percentages must add up to 100% (now ${(allocatedBp / 100).toFixed(2)}%).`;
+  else if (method === "RATIO" && badParts) blockReason = "Give everyone in the split a part greater than 0.";
 
   function toggle(id: string, on: boolean) {
     setIncluded(on ? [...includedIds, id] : includedIds.filter((x) => x !== id));
@@ -178,6 +213,10 @@ export function ExpenseForm({
 
   function splitEvenly() {
     const ids = people.map((p) => p.id);
+    if (method === "RATIO") {
+      setValues(Object.fromEntries(ids.map((id) => [id, "1"])));
+      return;
+    }
     const shares = evenShares(method === "PERCENTAGE" ? 10000 : totalCents, ids, payer);
     setValues(Object.fromEntries(ids.map((id) => [id, ((shares.get(id) ?? 0) / 100).toFixed(2)])));
   }
@@ -194,6 +233,13 @@ export function ExpenseForm({
     if (method === "EQUAL") return { ...base, participantIds: people.map((p) => p.id) };
     if (method === "CUSTOM") {
       return { ...base, splits: people.map((p) => ({ userId: p.id, amount: toCents(values[p.id]) / 100 })) };
+    }
+    if (method === "RATIO") {
+      // The server recomputes the amounts from the parts; these are what the form showed
+      return {
+        ...base,
+        splits: parts.map((p) => ({ userId: p.id, amount: (ratioCents.get(p.id) ?? 0) / 100, ratio: p.parts })),
+      };
     }
     // Percentages: convert to cents; rounding leftovers go to the payer if involved, else the first person
     const cents = people.map((p) => ({ id: p.id, bp: toBasisPoints(values[p.id]), cents: 0 }));
@@ -320,15 +366,21 @@ export function ExpenseForm({
                     {method === "CUSTOM" && <span className="text-xs text-[var(--foreground-muted)]" aria-hidden="true">{CURRENCY_SYMBOLS[currency] ?? currency}</span>}
                     <input
                       id={inputId}
-                      aria-label={`${m.name}'s ${method === "PERCENTAGE" ? "percentage" : "share"}`}
+                      aria-label={`${m.name}'s ${method === "PERCENTAGE" ? "percentage" : method === "RATIO" ? "parts" : "share"}`}
                       type="text"
                       inputMode="decimal"
                       autoComplete="off"
-                      placeholder="0.00"
+                      placeholder={method === "RATIO" ? "1" : "0.00"}
                       value={values[m.id] ?? ""}
                       onChange={(e) => setValues({ ...values, [m.id]: e.target.value })}
-                      className="w-28 min-h-[40px] rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 text-right text-base tabular-nums text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)] sm:text-sm"
+                      className={`${method === "RATIO" ? "w-16" : "w-28"} min-h-[40px] rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 text-right text-base tabular-nums text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)] sm:text-sm`}
                     />
+                    {method === "RATIO" && (
+                      <span className="w-24 text-right text-xs tabular-nums text-[var(--foreground-muted)]">
+                        <span aria-hidden="true">parts · </span>
+                        {fmt(ratioCents.get(m.id) ?? 0)}
+                      </span>
+                    )}
                     {method === "PERCENTAGE" && <span className="text-xs text-[var(--foreground-muted)]" aria-hidden="true">%</span>}
                   </div>
                 )}
@@ -341,7 +393,7 @@ export function ExpenseForm({
           {summary && totalCents > 0 && (
             <p className="text-xs font-medium tabular-nums text-[var(--foreground-muted)]">{summary}</p>
           )}
-          {method !== "EQUAL" && emptyPeople.length === 1 && (method === "PERCENTAGE" ? remainingBp > 0 : remainingCents > 0) && (
+          {(method === "CUSTOM" || method === "PERCENTAGE") && emptyPeople.length === 1 && (method === "PERCENTAGE" ? remainingBp > 0 : remainingCents > 0) && (
             <button type="button" onClick={fillRemaining} className="min-h-[32px] text-xs font-semibold text-[var(--accent)]">
               Give the remaining{" "}
               {method === "PERCENTAGE" ? `${(remainingBp / 100).toFixed(2)}%` : fmt(remainingCents)} to {emptyPeople[0].name}

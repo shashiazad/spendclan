@@ -53,13 +53,15 @@ export const groupExpenseSchema = z.object({
   paidById: z.string().uuid(),
   // EQUAL only: who shares the expense. Defaults to every active member.
   participantIds: z.array(z.string().uuid()).min(1).max(100).optional(),
-  // PERCENTAGE / CUSTOM: one entry per person involved (a subset of members is allowed)
+  // PERCENTAGE / CUSTOM / RATIO: one entry per person involved (a subset of members is allowed).
+  // For RATIO the server works out the amounts from `ratio`; any amount sent is ignored.
   splits: z
     .array(
       z.object({
         userId: z.string().uuid(),
-        amount: z.coerce.number().min(0),
+        amount: z.coerce.number().min(0).default(0),
         percentage: z.coerce.number().min(0).optional(),
+        ratio: z.coerce.number().positive().max(10000).optional(),
       }),
     )
     .max(100)

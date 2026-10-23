@@ -99,3 +99,37 @@ describe("balances and settling up", () => {
     expect(simplifyDebts([{ userId: A, name: "A", balance: 0.004 }])).toEqual([]);
   });
 });
+
+describe("computeSplits: ratio", () => {
+  const ratio = (parts: [string, number][]) => parts.map(([userId, r]) => ({ userId, amount: 0, ratio: r }));
+
+  it("splits 2:1:1 and keeps the parts", () => {
+    const r = computeSplits("RATIO", 1200, members, A, ratio([[A, 2], [B, 1], [C, 1]]));
+    expect(r).toEqual({
+      splits: [
+        { userId: A, amount: 600, ratio: 2 },
+        { userId: B, amount: 300, ratio: 1 },
+        { userId: C, amount: 300, ratio: 1 },
+      ],
+    });
+  });
+
+  it("gives leftover paise to the payer, or the first person if the payer isn't in it", () => {
+    expect(ok(computeSplits("RATIO", 100, members, B, ratio([[A, 1], [B, 1], [C, 1]])))).toEqual({ a: 33.33, b: 33.34, c: 33.33 });
+    expect(ok(computeSplits("RATIO", 100, members, C, ratio([[A, 1], [B, 2]])))).toEqual({ a: 33.34, b: 66.66 });
+  });
+
+  it("accepts fractional parts and always adds up to the total", () => {
+    for (const total of [0.01, 99.99, 1234.57]) {
+      const shares = Object.values(ok(computeSplits("RATIO", total, members, A, ratio([[A, 1.5], [B, 0.5], [C, 3]]))));
+      expect(Math.round(shares.reduce((s, x) => s + x, 0) * 100)).toBe(Math.round(total * 100));
+    }
+  });
+
+  it("rejects missing or zero parts, duplicates and outsiders", () => {
+    expect(err(computeSplits("RATIO", 10, members, A, [{ userId: A, amount: 0 }]))).toMatch(/greater than 0/);
+    expect(err(computeSplits("RATIO", 10, members, A, ratio([[A, 0], [B, 1]])))).toMatch(/greater than 0/);
+    expect(err(computeSplits("RATIO", 10, members, A, ratio([[A, 1], [A, 1]])))).toMatch(/only appear once/);
+    expect(err(computeSplits("RATIO", 10, members, A, ratio([[A, 1], [D, 1]])))).toMatch(/group members/);
+  });
+});

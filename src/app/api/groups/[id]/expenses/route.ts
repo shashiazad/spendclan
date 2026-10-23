@@ -69,7 +69,8 @@ async function prepareExpense(
     data,
     splits: splitResult.splits
       .filter((s) => s.amount > 0)
-      .map((s) => ({ userId: s.userId, amount: s.amount })),
+      // Ratio splits keep each person's parts so an edit shows the original ratio
+      .map((s) => ({ userId: s.userId, amount: s.amount, ...(s.ratio !== undefined && { ratio: s.ratio }) })),
   } as const;
 }
 
@@ -149,7 +150,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   const existing = await prisma.groupExpense.findFirst({
     where: { id: expenseId, groupId, deletedAt: null },
-    include: { splits: { select: { userId: true, amount: true } } },
+    include: { splits: { select: { userId: true, amount: true, ratio: true } } },
   });
   if (!existing) {
     return NextResponse.json({ error: "Expense not found" }, { status: 404 });

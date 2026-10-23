@@ -2,7 +2,14 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
-import { prisma } from "./prisma";
+// Sign-in runs before there is a session, with explicit ids: use the raw client so a
+// session-scoped isolation rule can never apply to the wrong user.
+import { basePrisma as prisma } from "./prisma";
+
+/** Google sign-in is offered only when both credentials are set. */
+export function isGoogleConfigured() {
+  return !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+}
 
 export const authOptions: NextAuthOptions = {
   // Stay signed in: a 90-day session that slides forward (re-issued at most once a day) while in use.
@@ -14,12 +21,18 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/login",
+    // Failed Google sign-ins come back to the login page with ?error=… (shown as a message)
+    error: "/login",
   },
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-    }),
+    ...(isGoogleConfigured()
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+          }),
+        ]
+      : []),
     CredentialsProvider({
       name: "Credentials",
       credentials: {

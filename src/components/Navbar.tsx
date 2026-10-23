@@ -1,7 +1,11 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- the logo is a tiny static PNG */
+
 import React from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { Avatar } from "@/components/ui/Avatar";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export function BrandIcon({ className = "h-7 w-7" }: { className?: string }) {
@@ -10,8 +14,15 @@ export function BrandIcon({ className = "h-7 w-7" }: { className?: string }) {
   );
 }
 
-export function Navbar() {
+/**
+ * Public-page navigation. Signed-in people see a way back into the app instead of Sign in / Sign up.
+ * `signedIn` comes from the server when known, so the right buttons show on the first paint.
+ */
+export function Navbar({ signedIn }: { signedIn?: boolean }) {
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isSignedIn = status === "loading" ? !!signedIn : status === "authenticated";
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -40,8 +51,8 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* Center Links */}
-        <div className="hidden md:flex items-center gap-7">
+        {/* Section links on the landing page (signed-in people go to the app instead) */}
+        <div className={`${isSignedIn ? "hidden" : "hidden md:flex"} items-center gap-7`}>
           {[
             { label: "Features", href: "/#features" },
             { label: "Why Us", href: "/#why-spendclan" },
@@ -50,7 +61,7 @@ export function Navbar() {
             <a
               key={item.label}
               href={item.href}
-              className="text-xs text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors duration-150"
+              className="text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors duration-150"
             >
               {item.label}
             </a>
@@ -60,18 +71,36 @@ export function Navbar() {
         {/* Auth + Theme */}
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Link
-            href="/login"
-            className="text-xs text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors duration-150"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/register"
-            className="btn-primary !text-xs !py-1.5 !px-3.5"
-          >
-            Get Started
-          </Link>
+          {isSignedIn ? (
+            <>
+              <Link
+                href="/groups"
+                className="inline-flex min-h-[40px] items-center rounded-xl bg-accent-gradient px-4 text-sm font-medium text-white hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
+              >
+                Open SpendClan
+              </Link>
+              {user && (
+                <Link href="/profile" aria-label="Your profile" className="hidden rounded-full sm:block">
+                  <Avatar person={{ id: user.id ?? "me", name: user.name ?? "?", profilePhoto: user.profilePhoto }} size="sm" />
+                </Link>
+              )}
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="inline-flex min-h-[40px] items-center px-2 text-sm text-[var(--foreground-muted)] transition-colors hover:text-[var(--foreground)]"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex min-h-[40px] items-center rounded-xl bg-accent-gradient px-4 text-sm font-medium text-white hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
+              >
+                Get started
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>
