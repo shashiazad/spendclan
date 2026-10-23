@@ -57,9 +57,14 @@ const METHODS: { value: SplitMethod; label: string; name: string }[] = [
   { value: "PERCENTAGE", label: "Percent", name: "Percentages" },
 ];
 
-const toCents = (v: string | number | undefined) => Math.round(Number(v || 0) * 100);
+/** Reads an amount as typed ("1,200.50", "₹1,200", " 99 "); anything else counts as 0. */
+export function readAmount(v: string | number | undefined): number {
+  const n = Number(String(v ?? "").replace(/[\s,₹$€£]/g, "") || 0);
+  return Number.isFinite(n) ? n : 0;
+}
+const toCents = (v: string | number | undefined) => Math.round(readAmount(v) * 100);
 // Percentages are tracked in basis points (1% = 100) to avoid float drift
-const toBasisPoints = (v: string | undefined) => Math.round(Number(v || 0) * 100);
+const toBasisPoints = (v: string | undefined) => Math.round(readAmount(v?.replace("%", "")) * 100);
 
 /**
  * Splits `total` (cents or basis points) evenly. Leftover units go to the payer when they share
@@ -227,10 +232,10 @@ export function ExpenseForm({
         <Input
           id={`${uid}-amount`}
           label="Amount"
-          type="number"
+          type="text"
           inputMode="decimal"
-          step="0.01"
-          min="0"
+          autoComplete="off"
+          placeholder="0.00"
           enterKeyHint="next"
           autoFocus={autoFocus}
           value={amount}
@@ -316,10 +321,9 @@ export function ExpenseForm({
                     <input
                       id={inputId}
                       aria-label={`${m.name}'s ${method === "PERCENTAGE" ? "percentage" : "share"}`}
-                      type="number"
+                      type="text"
                       inputMode="decimal"
-                      step="0.01"
-                      min="0"
+                      autoComplete="off"
                       placeholder="0.00"
                       value={values[m.id] ?? ""}
                       onChange={(e) => setValues({ ...values, [m.id]: e.target.value })}
