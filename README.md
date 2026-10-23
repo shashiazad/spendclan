@@ -127,6 +127,18 @@ The application reads the following configuration variables. Ensure they are con
 | `SMTP_USER` | SMTP authentication user | `apikey` (Resend) or your email |
 | `SMTP_PASS` | SMTP authentication password | Your SMTP password or app-specific password |
 | `SMTP_FROM` | Sender address shown on transactional emails | `SpendClan <noreply@yourdomain.com>` |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID (optional — the Google button only appears when both Google values are set) | `1234-abc.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | From Google Cloud Console |
+
+### Sign in with Google
+
+1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials) create an **OAuth client ID** of type **Web application**.
+2. **Authorised JavaScript origins:** your `NEXTAUTH_URL` (e.g. `http://localhost:3000` and `https://yourdomain.com`).
+3. **Authorised redirect URIs:** `NEXTAUTH_URL` + `/api/auth/callback/google` (e.g. `http://localhost:3000/api/auth/callback/google`).
+4. Put the client ID and secret in `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` (in Vercel: Project → Settings → Environment Variables) and restart or redeploy.
+5. `NEXTAUTH_URL` must be exactly the address you open the app on, or Google returns a `redirect_uri_mismatch` error.
+
+A first Google sign-in creates the account (email already verified) and joins any groups the email was invited to. If something fails, the sign-in page explains what went wrong.
 
 
 ---
