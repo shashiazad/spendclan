@@ -26,10 +26,11 @@ function balanceText(balance: number, currency: string) {
   return { text: "All settled up", tone: "text-[var(--foreground-muted)]", sign: "✓" };
 }
 
-function BalanceChip({ balance, currency }: { balance: number; currency: string }) {
+function BalancePill({ balance, currency }: { balance: number; currency: string }) {
   const b = balanceText(balance, currency);
+  const bg = balance > 0.004 ? "bg-[var(--income-dim)]" : balance < -0.004 ? "bg-[var(--expense-dim)]" : "bg-[var(--sidebar-hover)]";
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-semibold money ${b.tone}`}>
+    <span className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold money ${bg} ${b.tone}`}>
       <span aria-hidden="true">{b.sign}</span>
       {b.text}
     </span>
@@ -38,7 +39,7 @@ function BalanceChip({ balance, currency }: { balance: number; currency: string 
 
 function QuickAction({ label, onClick, href, icon }: { label: string; onClick?: () => void; href?: string; icon: ReactNode }) {
   const className =
-    "glass flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl px-2 text-xs font-medium text-[var(--foreground)] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]";
+    "flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 text-xs font-medium text-[var(--foreground)] transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-[var(--shadow-lift)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]";
   const inner = (
     <>
       <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--accent-dim)] text-[var(--accent)]" aria-hidden="true">
@@ -181,44 +182,34 @@ export function HomeClient({ initialHome, viewer }: { initialHome: HomeData | nu
         </BentoGrid>
       ) : (
         <BentoGrid>
-          {/* Net balance (hero) */}
-          <BentoTile title="Net balance" span={2} rows={2} tone="hero">
+          {/* Net balance */}
+          <BentoTile title="Net balance" span={2} tone="hero">
             {hasGroups ? (
-              <div className="flex flex-1 flex-col gap-5">
-                <p className={`flex items-baseline gap-2 text-3xl font-bold tracking-tight money sm:text-4xl lg:text-5xl ${net.tone}`}>
-                  <span aria-hidden="true" className="text-2xl sm:text-3xl">{net.sign}</span>
+              <div className="flex flex-1 flex-col gap-4">
+                <p className={`flex items-baseline gap-1.5 text-2xl font-bold tracking-tight money sm:text-3xl ${net.tone}`}>
+                  <span aria-hidden="true">{net.sign}</span>
                   {totals.net === 0 && totals.owedToYou === 0 ? "You're all settled up" : net.text}
                 </p>
-
                 <div>
-                  <div className="flex h-2.5 overflow-hidden rounded-full bg-[var(--surface)]" aria-hidden="true">
+                  <div className="flex h-2 overflow-hidden rounded-full bg-[var(--surface)]" aria-hidden="true">
                     <div className="h-full bg-[var(--owed)]" style={{ width: `${owedShare}%` }} />
                     <div className="h-full bg-[var(--owe)]" style={{ width: `${100 - owedShare}%` }} />
                   </div>
-                  <p className="mt-2 flex flex-wrap justify-between gap-2 text-sm money">
-                    <span className="text-[var(--owed)]">+ Owed to you {formatCurrency(totals.owedToYou, currency)}</span>
-                    <span className="text-[var(--owe)]">− You owe {formatCurrency(totals.youOwe, currency)}</span>
-                  </p>
+                  <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <dt className="text-xs text-[var(--foreground-muted)]">Owed to you</dt>
+                      <dd className="font-semibold text-[var(--owed)] money">+ {formatCurrency(totals.owedToYou, currency)}</dd>
+                    </div>
+                    <div className="text-right">
+                      <dt className="text-xs text-[var(--foreground-muted)]">You owe</dt>
+                      <dd className="font-semibold text-[var(--owe)] money">− {formatCurrency(totals.youOwe, currency)}</dd>
+                    </div>
+                  </dl>
                 </div>
-
-                {people.length > 0 && (
-                  <ul className="space-y-2" aria-label="People to settle with">
-                    {people.slice(0, 3).map((p) => (
-                      <li key={p.id} className="flex items-center gap-3">
-                        <Avatar person={p} size="sm" />
-                        <span className="min-w-0 flex-1 truncate text-sm text-[var(--foreground)]">{p.name}</span>
-                        <span className={`text-sm font-semibold money ${p.net > 0 ? "text-[var(--owed)]" : "text-[var(--owe)]"}`}>
-                          {p.net > 0 ? `owes you ${formatCurrency(p.net, currency)}` : `you owe ${formatCurrency(-p.net, currency)}`}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
                 <div className="mt-auto flex flex-wrap gap-2">
                   <Link
                     href="/balances"
-                    className="inline-flex min-h-[44px] items-center rounded-xl bg-accent-gradient px-4 text-sm font-medium text-white shadow-[0_6px_16px_-6px_var(--accent-ring)] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
+                    className="inline-flex min-h-[44px] items-center rounded-xl bg-accent-gradient px-4 text-sm font-medium text-white shadow-[0_6px_16px_-6px_var(--accent-ring)] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] sm:min-h-[40px]"
                   >
                     Settle up
                   </Link>
@@ -226,11 +217,44 @@ export function HomeClient({ initialHome, viewer }: { initialHome: HomeData | nu
                 </div>
               </div>
             ) : (
-              <div className="flex flex-1 flex-col items-start justify-center gap-4">
-                <p className="text-2xl font-bold text-[var(--foreground)] sm:text-3xl">Split costs with the people you share them with</p>
+              <div className="flex flex-1 flex-col items-start justify-center gap-3">
+                <p className="text-xl font-bold text-[var(--foreground)] sm:text-2xl">Split costs with the people you share them with</p>
                 <p className="text-sm text-[var(--foreground-muted)]">Create a group for your flat, a trip or a team, add expenses, and SpendClan works out who owes whom.</p>
-                <Button size="lg" onClick={openCreate}>Create your first group</Button>
+                <Button onClick={openCreate}>Create your first group</Button>
               </div>
+            )}
+          </BentoTile>
+
+          {/* People */}
+          <BentoTile
+            title="Who owes whom"
+            action={people.length > 0 && <Link href="/balances" className="text-xs font-semibold text-[var(--accent)] hover:underline">All balances</Link>}
+          >
+            {people.length === 0 ? (
+              <p className="text-sm text-[var(--foreground-muted)]">{hasGroups ? "Nobody owes anybody. 🎉" : "Balances appear once you add expenses."}</p>
+            ) : (
+              <ul className="space-y-3">
+                {people.slice(0, 4).map((p) => (
+                  <li key={p.id} className="flex items-center gap-3">
+                    <Avatar person={p} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-[var(--foreground)]">{p.name}</p>
+                      <p className={`text-xs money ${p.net > 0 ? "text-[var(--owed)]" : "text-[var(--owe)]"}`}>
+                        {p.net > 0 ? `+ owes you ${formatCurrency(p.net, currency)}` : `− you owe ${formatCurrency(-p.net, currency)}`}
+                      </p>
+                    </div>
+                    {p.net < 0 && (
+                      <Link
+                        href={`/groups/${p.groups.find((g) => g.amount < 0)?.id ?? p.groups[0].id}?settle=${p.id}`}
+                        className="inline-flex min-h-[36px] items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-semibold text-[var(--accent)] hover:border-[var(--accent)]"
+                        aria-label={`Pay ${p.name}`}
+                      >
+                        Pay
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
             )}
           </BentoTile>
 
@@ -257,35 +281,47 @@ export function HomeClient({ initialHome, viewer }: { initialHome: HomeData | nu
             </div>
           </BentoTile>
 
-          {/* Active groups */}
+          {/* Your groups: one clear card per group */}
           <BentoTile
             title="Your groups"
-            rows={2}
+            span={2}
             action={
               <button type="button" onClick={openCreate} className="min-h-[32px] text-xs font-semibold text-[var(--accent)] hover:underline">
-                + New
+                + New group
               </button>
             }
           >
             {hasGroups ? (
               <>
-                <ul className="-mx-2 space-y-1">
+                <ul className="grid gap-3 sm:grid-cols-2">
                   {(showAllGroups ? groups : groups.slice(0, GROUPS_SHOWN)).map((g) => (
                     <li key={g.id}>
                       <Link
                         href={`/groups/${g.id}`}
-                        className="flex min-h-[56px] items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-[var(--sidebar-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
+                        className="flex h-full flex-col gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-[var(--shadow-lift)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
                       >
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-[var(--foreground)]" title={g.name}>{g.name}</p>
-                          <BalanceChip balance={g.myBalance} currency={currency} />
-                          {g.lastActivityAt && (
-                            <p className="text-xs text-[var(--foreground-subtle)]">
-                              Active {formatDistanceToNowStrict(new Date(g.lastActivityAt), { addSuffix: true })}
-                            </p>
-                          )}
-                        </div>
-                        <AvatarStack people={g.members} max={3} />
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="truncate text-base font-semibold text-[var(--foreground)]" title={g.name}>{g.name}</span>
+                          <svg className="h-4 w-4 shrink-0 text-[var(--foreground-subtle)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                          </svg>
+                        </span>
+                        <BalancePill balance={g.myBalance} currency={currency} />
+                        <span className="mt-auto flex items-center justify-between gap-2 pt-1">
+                          <span className="truncate text-xs text-[var(--foreground-subtle)]">
+                            {g.memberCount} {g.memberCount === 1 ? "member" : "members"}
+                            {g.lastActivityAt && (
+                              <>
+                                {" · "}
+                                {/* Relative time ticks between the server render and the browser */}
+                                <time dateTime={g.lastActivityAt} suppressHydrationWarning>
+                                  {formatDistanceToNowStrict(new Date(g.lastActivityAt), { addSuffix: true })}
+                                </time>
+                              </>
+                            )}
+                          </span>
+                          <AvatarStack people={g.members} max={3} />
+                        </span>
                       </Link>
                     </li>
                   ))}
@@ -294,7 +330,7 @@ export function HomeClient({ initialHome, viewer }: { initialHome: HomeData | nu
                   <button
                     type="button"
                     onClick={() => setShowAllGroups((v) => !v)}
-                    className="mt-2 min-h-[36px] text-xs font-semibold text-[var(--accent)] hover:underline"
+                    className="mt-3 min-h-[36px] self-start text-xs font-semibold text-[var(--accent)] hover:underline"
                   >
                     {showAllGroups ? "Show fewer" : `Show all ${groups.length} groups`}
                   </button>
@@ -305,53 +341,13 @@ export function HomeClient({ initialHome, viewer }: { initialHome: HomeData | nu
             )}
           </BentoTile>
 
-          {/* People */}
-          <BentoTile title="Who owes whom" action={people.length > 0 && <Link href="/balances" className="text-xs font-semibold text-[var(--accent)] hover:underline">All balances</Link>}>
-            {people.length === 0 ? (
-              <p className="text-sm text-[var(--foreground-muted)]">{hasGroups ? "Nobody owes anybody. 🎉" : "Balances appear once you add expenses."}</p>
-            ) : (
-              <ul className="space-y-3">
-                {people.slice(0, 4).map((p) => (
-                  <li key={p.id} className="flex items-center gap-3">
-                    <Avatar person={p} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-[var(--foreground)]">{p.name}</p>
-                      <p className={`text-xs money ${p.net > 0 ? "text-[var(--owed)]" : "text-[var(--owe)]"}`}>
-                        {p.net > 0 ? `+ owes you ${formatCurrency(p.net, currency)}` : `− you owe ${formatCurrency(-p.net, currency)}`}
-                      </p>
-                    </div>
-                    {p.net < 0 && (
-                      <Link
-                        href={`/groups/${p.groups.find((g) => g.amount < 0)?.id ?? p.groups[0].id}?settle=${p.id}`}
-                        className="glass inline-flex min-h-[36px] items-center rounded-full px-3 text-xs font-semibold text-[var(--accent)]"
-                        aria-label={`Pay ${p.name}`}
-                      >
-                        Pay
-                      </Link>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </BentoTile>
-
-          {/* Recent activity */}
-          <BentoTile
-            title="Recent activity"
-            span={2}
-            rows={2}
-            action={<Link href="/activity" className="text-xs font-semibold text-[var(--accent)] hover:underline">View all</Link>}
-          >
-            <ActivityPanel activity={{ ...activity, nextCursor: null }} currentUserId={userId} currency={currency} />
-          </BentoTile>
-
           {/* Spending by group, this month */}
-          <BentoTile title="This month by group">
+          <BentoTile title="This month by group" span={1} lgSpan={2}>
             {maxSpend === 0 ? (
               <p className="text-sm text-[var(--foreground-muted)]">No spending recorded this month yet.</p>
             ) : (
               <>
-                <p className="mb-3 text-2xl font-bold text-[var(--foreground)] money">{formatCurrency(home.spendThisMonth, currency)}</p>
+                <p className="mb-4 text-2xl font-bold text-[var(--foreground)] money sm:text-3xl">{formatCurrency(home.spendThisMonth, currency)}</p>
                 <ul className="space-y-3">
                   {groups
                     .filter((g) => g.spendThisMonth > 0)
@@ -359,11 +355,11 @@ export function HomeClient({ initialHome, viewer }: { initialHome: HomeData | nu
                     .slice(0, 5)
                     .map((g) => (
                       <li key={g.id}>
-                        <div className="flex justify-between gap-2 text-xs">
+                        <div className="flex justify-between gap-2 text-sm">
                           <span className="truncate text-[var(--foreground)]">{g.name}</span>
                           <span className="money text-[var(--foreground-muted)]">{formatCurrency(g.spendThisMonth, currency)}</span>
                         </div>
-                        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[var(--surface)]" aria-hidden="true">
+                        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[var(--surface)]" aria-hidden="true">
                           <div className="h-full rounded-full bg-accent-gradient" style={{ width: `${(g.spendThisMonth / maxSpend) * 100}%` }} />
                         </div>
                       </li>
@@ -371,6 +367,16 @@ export function HomeClient({ initialHome, viewer }: { initialHome: HomeData | nu
                 </ul>
               </>
             )}
+          </BentoTile>
+
+          {/* Recent activity */}
+          <BentoTile
+            title="Recent activity"
+            span={3}
+            lgSpan={4}
+            action={<Link href="/activity" className="text-xs font-semibold text-[var(--accent)] hover:underline">View all</Link>}
+          >
+            <ActivityPanel activity={{ ...activity, nextCursor: null }} currentUserId={userId} currency={currency} />
           </BentoTile>
         </BentoGrid>
       )}
