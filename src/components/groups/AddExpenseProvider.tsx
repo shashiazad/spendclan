@@ -167,7 +167,7 @@ export function AddExpenseProvider({ children }: { children: ReactNode }) {
         <Link
           href="/groups"
           onClick={() => setOpen(false)}
-          className="inline-flex min-h-[44px] items-center rounded-xl bg-[var(--accent)] px-4 text-sm font-medium text-white"
+          className="inline-flex min-h-[44px] items-center rounded-xl bg-[var(--accent-solid)] px-4 text-sm font-medium text-white"
         >
           Go to groups
         </Link>

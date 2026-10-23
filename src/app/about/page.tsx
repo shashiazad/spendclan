@@ -18,10 +18,10 @@ export default async function AboutPage() {
       <Navbar />
       
       <main className="flex-1 pt-36 pb-24 px-6 max-w-4xl mx-auto flex flex-col justify-center w-full">
-        <div className="space-y-12 animate-slide-up">
+        <div className="space-y-12">
           {/* Header Section */}
           <div className="text-center space-y-4">
-            <p className="text-[11px] font-semibold tracking-[0.2em] text-accent uppercase">
+            <p className="text-xs font-semibold tracking-[0.2em] text-accent uppercase">
               Our Philosophy
             </p>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-foreground leading-tight">
@@ -33,7 +33,7 @@ export default async function AboutPage() {
           </div>
 
           {/* Premium Apple-Style Frosted Card */}
-          <div className="rounded-[2rem] border border-white/[0.06] dark:border-white/[0.06] light:border-zinc-200 bg-white/[0.01] dark:bg-white/[0.01] light:bg-white p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.02)] max-w-3xl mx-auto space-y-8">
+          <div className="rounded-[2rem] border border-[var(--border)] dark:border-[var(--border)] light:border-[var(--border)] bg-[var(--surface)] dark:bg-[var(--surface)] light:bg-white p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.02)] max-w-3xl mx-auto space-y-8">
             <div className="flex items-center gap-4.5">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#30d158]/10 border border-[#30d158]/20">
                 <svg
@@ -52,7 +52,7 @@ export default async function AboutPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-foreground tracking-tight">Strict Financial Isolation</h2>
-                <p className="text-[11px] text-muted font-normal uppercase tracking-wider mt-0.5">The Core Principle</p>
+                <p className="text-xs text-muted font-normal uppercase tracking-wider mt-0.5">The Core Principle</p>
               </div>
             </div>
 
@@ -61,7 +61,7 @@ export default async function AboutPage() {
               When you join shared groups, your balances use advanced algorithmic optimization to simplify debt paths down to the absolute fewest payments, preventing unnecessary financial friction.
             </p>
 
-            <div className="pt-4 border-t border-white/[0.04] dark:border-white/[0.04] light:border-zinc-200/50 flex flex-col sm:flex-row items-center gap-4 justify-start">
+            <div className="pt-4 border-t border-[var(--border)] dark:border-[var(--border)] light:border-[var(--border)] flex flex-col sm:flex-row items-center gap-4 justify-start">
               {isLoggedIn ? (
                 <Link
                   href="/groups"

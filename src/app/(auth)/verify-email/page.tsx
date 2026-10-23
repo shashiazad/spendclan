@@ -99,13 +99,13 @@ function VerifyEmailForm() {
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         {displayError && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 animate-slide-up">
+          <div className="rounded-lg border border-[var(--expense)]/30 bg-[var(--expense-dim)] px-4 py-3 text-sm text-[var(--expense)]">
             {displayError}
           </div>
         )}
 
         {success && (
-          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400 animate-slide-up">
+          <div className="rounded-lg border border-[var(--income)]/30 bg-[var(--income-dim)] px-4 py-3 text-sm text-[var(--income)]">
             {success}
           </div>
         )}
@@ -121,6 +121,8 @@ function VerifyEmailForm() {
           pattern="[0-9]{6}"
           className="text-center text-xl font-bold tracking-widest"
           hint="Check your email inbox or spam folder for the 6-digit code"
+          autoComplete="one-time-code"
+          inputMode="numeric"
         />
 
         <Button type="submit" className="w-full" loading={loading} disabled={!email || token.length !== 6}>
@@ -135,8 +137,8 @@ function VerifyEmailForm() {
               disabled={resending || cooldown > 0 || attemptsRemaining === 0}
               className={`font-medium transition-colors ${
                 cooldown > 0 || attemptsRemaining === 0
-                  ? "text-slate-500 cursor-not-allowed"
-                  : "text-emerald-400 hover:text-emerald-300"
+                  ? "text-[var(--foreground-subtle)] cursor-not-allowed"
+                  : "text-[var(--income)] hover:text-[var(--income)]"
               }`}
             >
               {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}
@@ -144,7 +146,7 @@ function VerifyEmailForm() {
           </div>
 
           {attemptsRemaining !== null && (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[var(--foreground-muted)]">
               {attemptsRemaining > 0
                 ? `${attemptsRemaining} resend attempt${attemptsRemaining > 1 ? "s" : ""} remaining today`
                 : "No resend attempts remaining today (Max 3). Please wait 24 hours."}

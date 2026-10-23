@@ -23,15 +23,15 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* Center Graphic: Shared Bill Settlement Bento Card */}
-        <div className="relative z-10 my-auto max-w-lg mx-auto w-full animate-slide-up">
+        <div className="relative z-10 my-auto max-w-lg mx-auto w-full">
           <div className="card p-6 rounded-xl border border-[var(--border)] shadow-[var(--shadow-lg)] bg-[var(--card)] relative overflow-hidden">
             {/* Header of Bento Mock */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">Active Group</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">Active Group</span>
                 <h3 className="text-base font-semibold text-[var(--foreground)] mt-0.5">🏕️ Weekend Trip split</h3>
               </div>
-              <span className="bg-[var(--accent-dim)] text-[var(--accent)] text-[10px] px-2.5 py-1 rounded-md font-medium border border-[var(--accent)]/20">
+              <span className="bg-[var(--accent-dim)] text-[var(--accent)] text-xs px-2.5 py-1 rounded-md font-medium border border-[var(--accent)]/20">
                 Active Ledger
               </span>
             </div>
@@ -39,18 +39,18 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             {/* Split statistics */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="p-3.5 bg-[var(--surface)] rounded-lg border border-[var(--border)]">
-                <span className="text-[10px] text-[var(--foreground-muted)] block">Total Spent</span>
+                <span className="text-xs text-[var(--foreground-muted)] block">Total Spent</span>
                 <span className="text-lg font-bold text-[var(--foreground)] tabular-nums">₹14,850.00</span>
               </div>
               <div className="p-3.5 bg-[var(--surface)] rounded-lg border border-[var(--border)]">
-                <span className="text-[10px] text-[var(--foreground-muted)] block">Your Share</span>
+                <span className="text-xs text-[var(--foreground-muted)] block">Your Share</span>
                 <span className="text-lg font-bold text-[var(--accent)] tabular-nums">₹4,950.00</span>
               </div>
             </div>
 
             {/* Visual branching nodes of split */}
             <div className="space-y-4 pt-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">Penny-Perfect Settlements</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">Penny-Perfect Settlements</span>
               
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between text-xs p-2.5 bg-[var(--surface)]/50 rounded-lg border border-[var(--border)]/50">
@@ -58,7 +58,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                     <span className="h-2 w-2 rounded-full bg-[var(--accent)]" />
                     <span className="text-[var(--foreground)]">Amit Verma</span>
                   </div>
-                  <span className="text-[var(--foreground-subtle)] text-[10px]">owes Priya</span>
+                  <span className="text-[var(--foreground-subtle)] text-xs">owes Priya</span>
                   <span className="font-semibold text-[var(--expense)] tabular-nums">₹2,450.00</span>
                 </div>
 
@@ -67,7 +67,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                     <span className="h-2 w-2 rounded-full bg-[var(--income)]" />
                     <span className="text-[var(--foreground)]">Priya Sharma</span>
                   </div>
-                  <span className="text-[var(--foreground-subtle)] text-[10px]">owes You</span>
+                  <span className="text-[var(--foreground-subtle)] text-xs">owes You</span>
                   <span className="font-semibold text-[var(--income)] tabular-nums">₹1,200.00</span>
                 </div>
               </div>
@@ -93,7 +93,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <p className="text-sm font-semibold text-[var(--foreground)] mb-4">
             Fair group splits &amp; smart settlements.
           </p>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] text-[var(--foreground-muted)] font-medium">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-[var(--foreground-muted)] font-medium">
             <span className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
               Isolated Data Security

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { differenceInDays, format } from "date-fns";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 type AdminUser = {
   id: string;
@@ -69,16 +70,13 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-100">Admin</h1>
-        <p className="mt-1 text-slate-400">User management</p>
-      </div>
+      <PageHeader title="Admin" description="User management" />
 
       <Card padding="none">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-800 text-left text-slate-400">
+              <tr className="border-b border-[var(--border)] text-left text-[var(--foreground-muted)]">
                 <th className="px-6 py-3">User</th>
                 <th className="px-6 py-3">Role</th>
                 <th className="px-6 py-3">Last Active</th>
@@ -97,26 +95,26 @@ export default function AdminPage() {
                 return (
                   <tr
                     key={user.id}
-                    className={`border-b border-slate-800/50 ${inactive ? "bg-amber-500/5" : ""}`}
+                    className={`border-b border-[var(--border)] ${inactive ? "bg-amber-500/5" : ""}`}
                   >
                     <td className="px-6 py-3">
-                      <p className="font-medium text-slate-200">{user.name}</p>
-                      <p className="text-slate-500">{user.email}</p>
+                      <p className="font-medium text-[var(--foreground)]">{user.name}</p>
+                      <p className="text-[var(--foreground-subtle)]">{user.email}</p>
                     </td>
                     <td className="px-6 py-3">
                       <Badge variant={isAdmin ? "warning" : "default"}>{user.role}</Badge>
                     </td>
                     <td className="px-6 py-3">
                       {user.lastActive ? (
-                        <span className={inactive ? "text-amber-400" : "text-slate-400"}>
+                        <span className={inactive ? "text-amber-400" : "text-[var(--foreground-muted)]"}>
                           {format(new Date(user.lastActive), "MMM d, yyyy")}
                           {inactive && " (inactive)"}
                         </span>
                       ) : (
-                        <span className="text-slate-500">Never</span>
+                        <span className="text-[var(--foreground-subtle)]">Never</span>
                       )}
                     </td>
-                    <td className="px-6 py-3 text-slate-400">
+                    <td className="px-6 py-3 text-[var(--foreground-muted)]">
                       {user.stats.groups} {user.stats.groups === 1 ? "group" : "groups"} · {user.stats.paidExpenses} paid
                     </td>
                     <td className="px-6 py-3">

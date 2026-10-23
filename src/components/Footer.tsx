@@ -5,7 +5,7 @@ import Link from "next/link";
 
 function BrandIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
-    <img src="/logo.png" alt="SpendClan Logo" className={`${className} object-contain`} />
+    <img src="/logo-64.png" width={32} height={32} alt="SpendClan Logo" className={`${className} object-contain`} />
   );
 }
 
@@ -71,13 +71,13 @@ export function Footer() {
               Split shared expenses, see who owes whom, and settle group bills with bank-grade data isolation.
             </p>
             <div className="pt-3 border-t border-[var(--border)]">
-              <p className="text-[11px] text-[var(--foreground-subtle)]">
+              <p className="text-xs text-[var(--foreground-subtle)]">
                 Crafted by{" "}
                 <span className="text-[var(--foreground-muted)] hover:text-[var(--accent)] transition-colors cursor-default">
                   Shashi Shekhar Azad
                 </span>
               </p>
-              <p className="text-[11px] text-[var(--foreground-subtle)] mt-0.5">
+              <p className="text-xs text-[var(--foreground-subtle)] mt-0.5">
                 © {currentYear} SpendClan. All rights reserved.
               </p>
             </div>
@@ -85,7 +85,7 @@ export function Footer() {
 
           {/* Links */}
           <div className="flex flex-col gap-3">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--foreground-subtle)]">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--foreground-subtle)]">
               Developer
             </p>
             <div className="flex flex-wrap gap-4">

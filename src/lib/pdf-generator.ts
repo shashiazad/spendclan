@@ -108,7 +108,7 @@ async function addHeaderFooter(doc: jsPDF, titleText: string) {
   let logoImg: HTMLImageElement | null = null;
 
   try {
-    logoImg = await loadImage("/logo.png");
+    logoImg = await loadImage("/logo-192.png");
   } catch (e) {
     console.error("Failed to load logo in PDF generator:", e);
   }

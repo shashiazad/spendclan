@@ -1,14 +1,77 @@
 @import "tailwindcss";
 
-/* ─────────────────────── DARK MODE (DEFAULT) ─────────────────────── */
+/* ─────────────────────── DESIGN TOKENS ───────────────────────
+   Minimal solid cards on a calm canvas; glass only on interactive layers (nav, sheets,
+   dialogs, menus, toasts, chips, FAB). Dark is the default; `.light` on <html> switches. */
 :root {
-  /* Surfaces */
-  --background:   #040407;
-  --surface:      rgba(15, 15, 24, 0.45);
-  --card:         rgba(20, 20, 32, 0.4);
-  --card-hover:   rgba(30, 30, 48, 0.55);
-  /* Opaque surface for layers over content (dialogs, dropdowns, toasts) */
-  --surface-solid: #12121C;
+  color-scheme: dark;
+
+  /* Canvas and surfaces */
+  --background:    #0B0F19;
+  --card:          rgba(15, 23, 42, 0.6);   /* slate-900/60 */
+  --card-hover:    rgba(15, 23, 42, 0.8);
+  --surface:       rgba(30, 41, 59, 0.45);  /* inputs, chips, inset wells */
+  --surface-solid: #0F172A;                 /* opaque layers over content */
+  --overlay:       #0B0F19;
+
+  /* Glass (interactive layers only) */
+  --glass-bg:      rgba(15, 23, 42, 0.7);
+  --glass-border:  rgba(30, 41, 59, 0.5);
+  --glass-blur:    12px;
+  --glass-highlight: rgba(148, 163, 184, 0.18);
+
+  /* Borders */
+  --border:        #1E293B;                 /* slate-800 */
+  --border-hover:  #334155;
+  --border-focus:  #A78BFA;
+
+  /* Text (all pairs ≥ 4.5:1 on the canvas and cards) */
+  --foreground:        #F8FAFC;
+  --foreground-muted:  #A1AEC2;
+  --foreground-subtle: #8191A8;
+
+  /* Accent: the violet brand colour. --accent is for text, links and icons (≥ 4.5:1 on the canvas);
+     --accent-solid and the gradient are fills behind white text (≥ 4.5:1 with white). */
+  --accent:          #A78BFA;
+  --accent-hover:    #C4B5FD;
+  --accent-solid:    #7C3AED;
+  --accent-dim:      rgba(139, 92, 246, 0.16);
+  --accent-ring:     rgba(139, 92, 246, 0.4);
+  --accent-gradient: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+  --accent-contrast: #FFFFFF;
+
+  /* Navigation */
+  --sidebar-bg:     rgba(11, 15, 25, 0.85);
+  --sidebar-hover:  rgba(148, 163, 184, 0.08);
+  --sidebar-active: rgba(139, 92, 246, 0.14);
+
+  /* Money: always shown with a sign or icon too, never colour alone */
+  --income:      #34D399;
+  --income-dim:  rgba(52, 211, 153, 0.12);
+  --expense:     #FB7185;
+  --expense-dim: rgba(251, 113, 133, 0.12);
+  --owed:        var(--income);
+  --owe:         var(--expense);
+  --savings:     #8B5CF6;
+  --savings-dim: rgba(139, 92, 246, 0.12);
+  --warning:     #FBBF24;
+  --warning-dim: rgba(251, 191, 36, 0.12);
+
+  /* Shape, depth and motion */
+  --radius-card: 1rem;
+  --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md:   0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg:   0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-xl:   0 24px 64px rgba(0, 0, 0, 0.55);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 1px rgba(0, 0, 0, 0.2);
+  --shadow-lift: 0 14px 32px -8px rgba(0, 0, 0, 0.55);
+  --duration:    300ms;
+  --ease:        cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Ambient mesh behind the grid */
+  --mesh-a: rgba(139, 92, 246, 0.5);
+  --mesh-b: rgba(56, 189, 248, 0.4);
+  --mesh-c: rgba(52, 211, 153, 0.3);
 
   /* Layering scale: nav < FAB < dropdown < overlay < modal < toast */
   --z-nav: 40;
@@ -17,98 +80,65 @@
   --z-overlay: 60;
   --z-modal: 70;
   --z-toast: 80;
-  --overlay:      #040407;
-
-  /* Borders */
-  --border:       rgba(255, 255, 255, 0.055);
-  --border-hover: rgba(255, 255, 255, 0.12);
-  --border-focus: #8B5CF6;
-
-  /* Text */
-  --foreground:        #F8FAFC;
-  --foreground-muted:  #94A3B8;
-  --foreground-subtle: #64748B;
-
-  /* Accent — Purple/Violet Gradient ready */
-  --accent:       #8B5CF6;
-  --accent-hover: #7C3AED;
-  --accent-dim:   rgba(139, 92, 246, 0.10);
-  --accent-ring:  rgba(139, 92, 246, 0.22);
-
-  /* Sidebar */
-  --sidebar-bg:     rgba(10, 10, 15, 0.6);
-  --sidebar-hover:  rgba(255, 255, 255, 0.04);
-  --sidebar-active: rgba(139, 92, 246, 0.10);
-
-  /* Financial Semantic */
-  --income:        #10B981;
-  --income-dim:    rgba(16, 185, 129, 0.10);
-  --expense:       #F43F5E;
-  --expense-dim:   rgba(244, 63, 94, 0.10);
-  --savings:       #8B5CF6;
-  --savings-dim:   rgba(139, 92, 246, 0.10);
-  --warning:       #F59E0B;
-  --warning-dim:   rgba(245, 158, 11, 0.10);
-
-  /* Shadows */
-  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.5);
-  --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.6);
-  --shadow-xl:  0 24px 64px rgba(0, 0, 0, 0.7);
 
   /* Scrollbar */
-  --scrollbar-thumb: #1E1E28;
-  --scrollbar-thumb-hover: #2E2E3E;
+  --scrollbar-thumb: #1E293B;
+  --scrollbar-thumb-hover: #334155;
 }
 
-/* ─────────────────────── LIGHT MODE ─────────────────────── */
 .light {
-  /* Surfaces */
-  --background:   #F8FAFC;
-  --surface:      rgba(255, 255, 255, 0.65);
-  --card:         rgba(255, 255, 255, 0.7);
-  --card-hover:   rgba(255, 255, 255, 0.85);
+  color-scheme: light;
+
+  --background:    #F8FAFC;
+  --card:          #FFFFFF;
+  --card-hover:    #FFFFFF;
+  --surface:       #F1F5F9;
   --surface-solid: #FFFFFF;
-  --overlay:      #FFFFFF;
+  --overlay:       #FFFFFF;
 
-  /* Borders */
-  --border:       rgba(15, 23, 42, 0.06);
-  --border-hover: rgba(15, 23, 42, 0.12);
-  --border-focus: #4F46E5;
+  --glass-bg:      rgba(255, 255, 255, 0.7);
+  --glass-border:  rgba(255, 255, 255, 0.2);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
 
-  /* Text */
+  --border:        rgba(226, 232, 240, 0.7); /* slate-200/70 */
+  --border-hover:  #CBD5E1;
+  --border-focus:  #6D28D9;
+
   --foreground:        #0F172A;
   --foreground-muted:  #475569;
-  --foreground-subtle: #94A3B8;
+  --foreground-subtle: #5B6B82;
 
-  /* Accent — Indigo */
-  --accent:       #4F46E5;
-  --accent-hover: #4338CA;
-  --accent-dim:   rgba(79, 70, 229, 0.06);
-  --accent-ring:  rgba(79, 70, 229, 0.18);
+  --accent:          #6D28D9;
+  --accent-hover:    #5B21B6;
+  --accent-solid:    #6D28D9;
+  --accent-dim:      rgba(109, 40, 217, 0.08);
+  --accent-ring:     rgba(109, 40, 217, 0.28);
+  --accent-gradient: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
 
-  /* Sidebar */
-  --sidebar-bg:     rgba(255, 255, 255, 0.65);
+  --sidebar-bg:     rgba(255, 255, 255, 0.85);
   --sidebar-hover:  rgba(15, 23, 42, 0.04);
-  --sidebar-active: rgba(79, 70, 229, 0.06);
+  --sidebar-active: rgba(109, 40, 217, 0.08);
 
-  /* Financial Semantic */
-  --income:        #059669;
-  --income-dim:    rgba(5, 150, 105, 0.06);
-  --expense:       #E11D48;
-  --expense-dim:   rgba(225, 29, 72, 0.06);
-  --savings:       #4F46E5;
-  --savings-dim:   rgba(79, 70, 229, 0.06);
-  --warning:       #D97706;
-  --warning-dim:   rgba(217, 119, 6, 0.06);
+  --income:      #047857;
+  --income-dim:  rgba(4, 120, 87, 0.08);
+  --expense:     #BE123C;
+  --expense-dim: rgba(190, 18, 60, 0.07);
+  --savings:     #6D28D9;
+  --savings-dim: rgba(109, 40, 217, 0.08);
+  --warning:     #B45309;
+  --warning-dim: rgba(180, 83, 9, 0.08);
 
-  /* Shadows */
-  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.05);
-  --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.07);
-  --shadow-xl:  0 24px 64px rgba(0, 0, 0, 0.08);
+  --shadow-sm:   0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md:   0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-lg:   0 12px 32px rgba(15, 23, 42, 0.08);
+  --shadow-xl:   0 24px 64px rgba(15, 23, 42, 0.1);
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-lift: 0 14px 32px -10px rgba(15, 23, 42, 0.18);
 
-  /* Scrollbar */
+  --mesh-a: rgba(139, 92, 246, 0.6);
+  --mesh-b: rgba(56, 189, 248, 0.5);
+  --mesh-c: rgba(52, 211, 153, 0.4);
+
   --scrollbar-thumb: #E2E8F0;
   --scrollbar-thumb-hover: #CBD5E1;
 }
@@ -163,38 +193,85 @@ body {
 
 /* ─────────────────────── UTILITY CLASSES ─────────────────────── */
 
-/* Cards & Panels */
+/* Cards: minimal solid surfaces (no blur) */
 .card {
   background: var(--card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 }
-.card:hover {
+
+/* Interactive tiles: subtle lift on hover, press-in on tap. Only transform/opacity/shadow animate. */
+.tile-interactive {
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+.tile-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
   border-color: var(--border-hover);
-  background: var(--card-hover);
+}
+.tile-interactive:active {
+  transform: scale(0.99);
 }
 
-.glass-panel {
-  background: var(--surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-md);
-}
-
+/* Micro-glass: only for floating/interactive layers. Max 2–3 per viewport; never inside lists. */
+.glass,
+.glass-panel,
 .glass-nav {
-  background: rgba(10, 10, 15, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  border: 1px solid var(--glass-border);
+}
+.glass-nav {
+  box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.45), inset 0 1px 0 var(--glass-highlight);
 }
 .light .glass-nav {
-  background: rgba(255, 255, 255, 0.8);
-  border-top: 1px solid var(--border);
+  box-shadow: 0 8px 32px -12px rgba(15, 23, 42, 0.18), inset 0 1px 0 var(--glass-highlight);
+  border-color: rgba(226, 232, 240, 0.8);
+}
+.glass-panel {
+  box-shadow: var(--shadow-md);
+}
+/* Browsers without backdrop-filter get a solid surface instead of see-through glass */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-panel,
+  .glass-nav {
+    background: var(--surface-solid);
+  }
+}
+
+/* Primary actions share one gradient */
+.bg-accent-gradient {
+  background-image: var(--accent-gradient);
+}
+
+/* Ambient mesh: fixed behind everything, very faint, drifts only when motion is welcome */
+.ambient-mesh {
+  position: fixed;
+  inset: -10%;
+  z-index: -10;
+  pointer-events: none;
+  opacity: 0.08;
+  background:
+    radial-gradient(40% 35% at 15% 10%, var(--mesh-a), transparent 70%),
+    radial-gradient(35% 30% at 85% 15%, var(--mesh-b), transparent 70%),
+    radial-gradient(45% 40% at 60% 95%, var(--mesh-c), transparent 70%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ambient-mesh {
+    animation: mesh-drift 40s ease-in-out infinite alternate;
+  }
+}
+@keyframes mesh-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(2%, -2%, 0); }
+}
+
+/* Money always lines up */
+.money {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Page gradient for landing only */
@@ -462,4 +539,15 @@ body:has([aria-modal="true"]) [data-fab] {
     scroll-padding-top: 4.5rem;
     scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
   }
+}
+
+/* ─────────────────────── REDUCED MOTION ─────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .tile-interactive:hover { transform: none; }
 }

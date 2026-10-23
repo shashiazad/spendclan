@@ -23,6 +23,9 @@ SpendClan is a secure group expense app built on Next.js 16 (App Router), React 
 *   **Debt Simplification**: A greedy matching algorithm resolves balances in the fewest possible payments.
 *   **Settlements**: Record who paid whom with real-time balances.
 *   **Floating + button**: Add a group expense from anywhere; on a group page it targets that group.
+*   **Search and filters**: Text (contains, starts with, typo-tolerant), amount, who paid, who's involved, who added it, dates, split type and status, across one group or all groups; `paid:me >500 date:last30`-style tokens; filters live in the URL; saved and recent searches.
+*   **Home, Balances, Activity**: Bento Home (net balance, who to settle with, groups, activity, spend by group), a Balances page netting each person across groups, and an activity feed.
+*   **Design**: Minimal cards with glass only on floating layers; light and dark themes following the system; floating bottom bar on phones, icon rail on tablets, sidebar on desktop; WCAG 2.2 AA checked with axe.
 
 ### 🛡️ 3. Data Safety
 *   **No hard deletes in groups**: Groups, expenses, settlements and memberships are soft-deleted; foreign keys are `RESTRICT`.
@@ -49,6 +52,7 @@ SpendClan is a secure group expense app built on Next.js 16 (App Router), React 
 *   **Authentication**: NextAuth.js 4 (JWT Sessions)
 *   **AI**: Groq (Llama 3.3)
 *   **Utilities**: Nodemailer (SMTP), Zod, date-fns, jsPDF
+*   **Testing**: Vitest (unit), Playwright (e2e on Chromium and WebKit, axe-core accessibility, visual baselines)
 *   **Deployment**: Vercel
 
 ---

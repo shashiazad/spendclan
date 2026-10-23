@@ -7,12 +7,25 @@ import { FormEvent, useState, Suspense } from "react";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+
+/** "Registration successful" / "Password reset" banners: the only part that reads the URL. */
+function LoginNotice() {
+  const searchParams = useSearchParams();
+  const message =
+    searchParams.get("registered") === "1"
+      ? "Registration successful! Please sign in."
+      : searchParams.get("reset") === "1"
+        ? "Password reset successful! Please sign in."
+        : null;
+  if (!message) return null;
+  return (
+    <div role="status" className="rounded-lg border border-[var(--income)]/30 bg-[var(--income-dim)] px-4 py-3 text-sm text-[var(--income)]">
+      {message}
+    </div>
+  );
+}
 
 function LoginForm() {
-  const searchParams = useSearchParams();
-  const registered = searchParams.get("registered");
-  const reset = searchParams.get("reset");
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -51,20 +64,13 @@ function LoginForm() {
       subtitle="Sign in to manage your finances"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {registered === "1" && (
-          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
-            Registration successful! Please sign in.
-          </div>
-        )}
-
-        {reset === "1" && (
-          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
-            Password reset successful! Please sign in.
-          </div>
-        )}
+        {/* Only the notice waits for the URL; the form itself is rendered on the server */}
+        <Suspense fallback={null}>
+          <LoginNotice />
+        </Suspense>
 
         {error && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          <div className="rounded-lg border border-[var(--expense)]/30 bg-[var(--expense-dim)] px-4 py-3 text-sm text-[var(--expense)]">
             {error}
           </div>
         )}
@@ -92,7 +98,7 @@ function LoginForm() {
         <div className="flex items-center justify-end">
           <Link
             href="/forgot-password"
-            className="text-sm text-emerald-400 transition-colors hover:text-emerald-300"
+            className="text-sm text-[var(--income)] transition-colors hover:text-[var(--income)]"
           >
             Forgot password?
           </Link>
@@ -102,17 +108,16 @@ function LoginForm() {
           Sign in
         </Button>
 
-        <div className="relative my-4 flex items-center justify-center">
-          <div className="absolute w-full border-t border-slate-800"></div>
-          <span className="relative bg-[#0b0f19] px-3 text-xs uppercase text-slate-500">
-            Or continue with
-          </span>
+        <div className="my-4 flex items-center gap-3" role="presentation">
+          <span className="h-px flex-1 bg-[var(--border)]" />
+          <span className="text-xs uppercase text-[var(--foreground-subtle)]">Or continue with</span>
+          <span className="h-px flex-1 bg-[var(--border)]" />
         </div>
 
         <Button
           type="button"
           variant="secondary"
-          className="w-full flex items-center justify-center gap-2 border border-slate-800 bg-slate-900/50 hover:bg-slate-900 transition-colors text-slate-200"
+          className="w-full flex items-center justify-center gap-2 border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-solid)] transition-colors text-[var(--foreground)]"
           onClick={() => signIn("google", { callbackUrl: "/groups" })}
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -136,11 +141,11 @@ function LoginForm() {
           Google
         </Button>
 
-        <p className="text-center text-sm text-slate-400">
+        <p className="text-center text-sm text-[var(--foreground-muted)]">
           Don&apos;t have an account?{" "}
           <Link
             href="/register"
-            className="font-medium text-emerald-400 transition-colors hover:text-emerald-300"
+            className="font-medium text-[var(--income)] transition-colors hover:text-[var(--income)]"
           >
             Create one
           </Link>
@@ -151,15 +156,5 @@ function LoginForm() {
 }
 
 export default function LoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-[200px] items-center justify-center">
-          <LoadingSpinner />
-        </div>
-      }
-    >
-      <LoginForm />
-    </Suspense>
-  );
+  return <LoginForm />;
 }

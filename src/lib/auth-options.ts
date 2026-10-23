@@ -5,8 +5,12 @@ import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
 export const authOptions: NextAuthOptions = {
+  // Stay signed in: a 90-day session that slides forward (re-issued at most once a day) while in use.
+  // The JWT is never re-checked against the database, so a database or network error can't sign anyone out.
   session: {
     strategy: "jwt",
+    maxAge: 90 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
   },
   pages: {
     signIn: "/login",
