@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- the profile photo preview is a data URL that next/image cannot optimise */
+
 import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
@@ -148,7 +150,15 @@ export default function ProfilePage() {
     }
 
     try {
-      const payload: any = {
+      const payload: {
+        profilePhoto: string | null;
+        name: string;
+        mobileNumber: string | null;
+        currency: string;
+        password?: string;
+        securityQuestion?: string;
+        securityAnswer?: string;
+      } = {
         profilePhoto: previewPhoto,
         name: name.trim(),
         mobileNumber: mobileNumber.trim() || null,
