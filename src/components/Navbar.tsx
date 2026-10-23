@@ -6,7 +6,7 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export function BrandIcon({ className = "h-7 w-7" }: { className?: string }) {
   return (
-    <img src="/logo.png" alt="SpendClan Logo" className={`${className} object-contain`} />
+    <img src="/logo-64.png" width={32} height={32} alt="SpendClan Logo" className={`${className} object-contain`} />
   );
 }
 

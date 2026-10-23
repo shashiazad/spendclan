@@ -91,7 +91,7 @@ export function Sidebar() {
 
   const brand = (
     <Link href="/groups" className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]">
-      <img src="/logo.png" alt="" className="h-8 w-8 object-contain" />
+      <img src="/logo-64.png" width={32} height={32} alt="" className="h-8 w-8 object-contain" />
       <span className="text-sm font-semibold tracking-tight text-[var(--foreground)]">SpendClan</span>
     </Link>
   );
@@ -123,7 +123,7 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className={`my-1.5 flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] ${
+              className={`my-1.5 flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] ${
                 active ? "bg-[var(--accent-dim)] font-semibold text-[var(--accent)]" : "text-[var(--foreground-muted)]"
               }`}
             >
@@ -138,7 +138,7 @@ export function Sidebar() {
           onClick={() => setMoreOpen((o) => !o)}
           aria-expanded={moreOpen}
           aria-controls="more-menu"
-          className={`my-1.5 flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] ${
+          className={`my-1.5 flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] ${
             moreOpen || moreActive ? "bg-[var(--accent-dim)] font-semibold text-[var(--accent)]" : "text-[var(--foreground-muted)]"
           }`}
         >
@@ -179,7 +179,7 @@ export function Sidebar() {
       {/* ── Tablets: icon rail ── */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-20 flex-col items-center gap-2 overflow-y-auto border-r border-[var(--border)] bg-[var(--sidebar-bg)] py-4 md:flex lg:hidden">
         <Link href="/groups" aria-label="SpendClan home" className="mb-2 rounded-lg">
-          <img src="/logo.png" alt="" className="h-8 w-8 object-contain" />
+          <img src="/logo-64.png" width={32} height={32} alt="" className="h-8 w-8 object-contain" />
         </Link>
         <nav aria-label="Main" className="flex flex-1 flex-col items-center gap-1">
           {[...PRIMARY, ...secondary].map((item) => {
@@ -190,7 +190,7 @@ export function Sidebar() {
                 href={item.href}
                 title={item.label}
                 aria-current={active ? "page" : undefined}
-                className={`flex h-14 w-16 flex-col items-center justify-center gap-0.5 rounded-xl text-[10px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] ${
+                className={`flex h-14 w-16 flex-col items-center justify-center gap-0.5 rounded-xl text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] ${
                   active ? "bg-[var(--sidebar-active)] font-semibold text-[var(--accent)]" : "text-[var(--foreground-muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
                 }`}
               >
@@ -225,7 +225,7 @@ export function Sidebar() {
             ))}
           </div>
           <div className="space-y-1">
-            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--foreground-subtle)]">More</p>
+            <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-widest text-[var(--foreground-subtle)]">More</p>
             {secondary.map((item) => (
               <Link key={item.href} href={item.href} aria-current={isActive(pathname, item.href) ? "page" : undefined} className={linkClass(isActive(pathname, item.href))}>
                 {item.icon}
@@ -241,7 +241,7 @@ export function Sidebar() {
                 <Avatar person={person} size="sm" />
                 <span className="min-w-0">
                   <span className="block truncate text-xs font-medium text-[var(--foreground)]">{user?.name}</span>
-                  <span className="block truncate text-[11px] text-[var(--foreground-subtle)]">{user?.email}</span>
+                  <span className="block truncate text-xs text-[var(--foreground-subtle)]">{user?.email}</span>
                 </span>
               </Link>
             )}
