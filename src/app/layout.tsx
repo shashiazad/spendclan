@@ -13,12 +13,15 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0b1120",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F8FAFC" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0F19" },
+  ],
+  colorScheme: "dark light",
 };
 
 export const metadata: Metadata = {
-  title: "SpendClan — Premium Expense Tracker & Smart Group Splits",
+  title: "SpendClan — Split Group Expenses & Settle Up",
   description: "Split group expenses with flatmates, trips and friends, and settle up effortlessly with SpendClan.",
   manifest: "/manifest.json",
   icons: {
@@ -43,19 +46,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    // The inline script below sets the theme class before React hydrates, so the class may differ
+    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              try {
-                const theme = localStorage.getItem('theme');
-                if (theme === 'light') {
-                  document.documentElement.classList.add('light');
-                } else {
-                  document.documentElement.classList.remove('light');
-                }
-              } catch (e) {}
+              (function () {
+                var saved = null;
+                try { saved = localStorage.getItem('theme'); } catch (e) {}
+                var light = saved ? saved === 'light' : window.matchMedia('(prefers-color-scheme: light)').matches;
+                document.documentElement.classList.toggle('light', light);
+              })();
             `,
           }}
         />
