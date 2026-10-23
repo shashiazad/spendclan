@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
-import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -19,6 +18,10 @@ import { useAddExpense } from "@/components/groups/AddExpenseProvider";
 import { NETWORK_ERROR, readError } from "@/lib/api-errors";
 import { ExpenseList } from "@/components/groups/ExpenseList";
 import { GroupExpenseSearch } from "@/components/groups/GroupExpenseSearch";
+import { ActivityPanel, useActivity } from "@/components/activity/ActivityFeed";
+import { Avatar, AvatarStack } from "@/components/ui/Avatar";
+import { BentoGrid, BentoTile } from "@/components/ui/Bento";
+import { SegmentedControl } from "@/components/ui/Tabs";
 
 const monthsList = Array.from({ length: 12 }, (_, i) => ({
   value: String(i + 1),
@@ -61,14 +64,9 @@ type Settlement = {
   to: { id: string; name: string };
 };
 
-type Tab = "expenses" | "balances" | "settlements";
+type Tab = "expenses" | "balances" | "settlements" | "members";
 
 type MutationResult = { ok: true } | { ok: false; error: string };
-
-function initials(name: string) {
-  if (!name) return "?";
-  return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
-}
 
 const memberId = (m: Member) => m.userId ?? m.user?.id ?? "";
 const memberName = (m: Member) => m.name ?? m.user?.name ?? "";
@@ -143,6 +141,8 @@ export default function GroupDetailPage() {
   const [editError, setEditError] = useState<string | null>(null);
   const [settleError, setSettleError] = useState<string | null>(null);
   const settlePrefilled = useRef(false);
+  // Group activity reloads with the rest of the group's data (every refresh sets a new expenses array)
+  const groupActivity = useActivity({ groupId: id, limit: 10, refreshKey: expenses });
   const settleAmountRef = useRef<HTMLInputElement>(null);
 
   const loadGroup = useCallback(async () => {
@@ -338,6 +338,33 @@ export default function GroupDetailPage() {
     requestAnimationFrame(() => settleAmountRef.current?.focus());
   }
 
+  // Links from Home and Balances: ?settle=<person> opens a prefilled payment, ?invite=1 opens Add member
+  const deepLinkHandled = useRef(false);
+  useEffect(() => {
+    if (loading || deepLinkHandled.current || !userId) return;
+    deepLinkHandled.current = true;
+    const params = new URLSearchParams(window.location.search);
+    const settleTo = params.get("settle");
+    const invite = params.get("invite") === "1";
+    if (!settleTo && !invite) return;
+    params.delete("settle");
+    params.delete("invite");
+    const qs = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
+    Promise.resolve().then(() => {
+      if (invite) setShowAddMember(true);
+      if (settleTo) {
+        const debt = debts.find((d) => d.fromId === userId && d.toId === settleTo);
+        if (debt) startSettleUp(debt);
+        else {
+          settlePrefilled.current = true;
+          setSettleForm({ toId: settleTo, amount: "" });
+          setTab("settlements");
+        }
+      }
+    });
+  }, [loading, debts, userId]);
+
   async function recordSettlement(e: React.FormEvent) {
     e.preventDefault();
     setSettleError(null);
@@ -425,6 +452,7 @@ export default function GroupDetailPage() {
     { key: "expenses", label: "Expenses" },
     { key: "balances", label: "Balances" },
     { key: "settlements", label: "Settlements" },
+    { key: "members", label: "Members" },
   ];
 
   if (loading) {
@@ -475,64 +503,78 @@ export default function GroupDetailPage() {
     ...(isAdmin ? [{ label: "Group settings", onSelect: () => setShowSettings(true) }] : []),
   ];
 
-  return (
-    <div className="space-y-8 max-w-5xl mx-auto animate-fade-in">
-      {/* Header: one overflow menu instead of a row of buttons (destructive actions live in Group settings) */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <span className="text-[10px] font-semibold text-muted uppercase tracking-widest">Group</span>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground mt-1 break-words">{group?.name ?? "Group"}</h1>
-          <p className="text-xs text-muted mt-1 font-normal">{group?.description ?? "Manage shared expenses and settlements"}</p>
-        </div>
-        <DropdownMenu
-          label="Group actions"
-          items={menuItems}
-          trigger={
-            <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="5" cy="12" r="2" />
-              <circle cx="12" cy="12" r="2" />
-              <circle cx="19" cy="12" r="2" />
-            </svg>
-          }
-        />
-      </div>
+  const myDebts = debts.filter((d) => d.fromId === userId).sort((a, b) => b.amount - a.amount);
+  const balanceSign = myBalance > 0.004 ? "+" : myBalance < -0.004 ? "−" : "✓";
+  const memberPeople = memberList.map((m) => ({ id: memberId(m), name: memberName(m), profilePhoto: m.user?.profilePhoto ?? null }));
 
-      {/* macOS segmented control tab bar */}
-      <div className="flex bg-[#F5F5F7] dark:bg-[#1C1C1E] p-0.5 rounded-lg inline-flex select-none border border-[#E8E8ED]/30 dark:border-[#2C2C2E]/20">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 ${
-              tab === t.key
-                ? "bg-white dark:bg-zinc-800 text-foreground shadow-sm"
-                : "text-muted hover:text-foreground"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+  return (
+    <div className="mx-auto max-w-screen-xl space-y-6 animate-fade-in">
+      <BentoGrid>
+        {/* Header: one overflow menu instead of a row of buttons (destructive actions live in Group settings) */}
+        <BentoTile span={2} lgSpan={2}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--foreground-subtle)]">Group</p>
+              <h1 className="mt-1 break-words text-2xl font-bold tracking-tight text-[var(--foreground)] sm:text-3xl">{group?.name ?? "Group"}</h1>
+              {group?.description && <p className="mt-1 text-sm text-[var(--foreground-muted)]">{group.description}</p>}
+            </div>
+            <DropdownMenu
+              label="Group actions"
+              items={menuItems}
+              trigger={
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="5" cy="12" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <circle cx="19" cy="12" r="2" />
+                </svg>
+              }
+            />
+          </div>
+          <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
+            <AvatarStack people={memberPeople} max={5} size="md" />
+            <span className="text-sm text-[var(--foreground-muted)]">
+              {memberList.length} {memberList.length === 1 ? "member" : "members"}
+            </span>
+          </div>
+        </BentoTile>
+
+        {/* Your balance (hero) */}
+        <BentoTile title="Your balance" tone="hero">
+          <p className={`flex items-baseline gap-1.5 text-2xl font-bold tracking-tight money sm:text-3xl ${myBalanceTone}`}>
+            <span aria-hidden="true" className="text-xl">{balanceSign}</span>
+            {myBalanceText}
+          </p>
+          {myDebts.length > 0 && (
+            <button
+              type="button"
+              onClick={() => startSettleUp(myDebts[0])}
+              className="mt-auto inline-flex min-h-[44px] items-center self-start rounded-xl bg-accent-gradient px-4 text-sm font-medium text-white hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
+            >
+              Pay what you owe
+            </button>
+          )}
+        </BentoTile>
+
+        {/* Spend */}
+        <BentoTile title="Spending">
+          <dl className="grid grid-cols-2 gap-3 md:grid-cols-1 lg:grid-cols-1">
+            <div>
+              <dt className="text-xs text-[var(--foreground-muted)]">Group spend</dt>
+              <dd className="text-xl font-bold text-[var(--foreground)] money">{formatCurrency(totalSpend, currency)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-[var(--foreground-muted)]">This month</dt>
+              <dd className="text-xl font-bold text-[var(--foreground)] money">{formatCurrency(thisMonthSpend, currency)}</dd>
+            </div>
+          </dl>
+        </BentoTile>
+      </BentoGrid>
+
+      <SegmentedControl label="Group sections" items={tabs.map((t) => ({ id: t.key, label: t.label }))} value={tab} onChange={(t) => setTab(t as Tab)} />
 
       {/* Tab: Expenses */}
       {tab === "expenses" && (
-        <div className="space-y-6">
-          {/* At-a-glance summary */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3.5 sm:p-4">
-              <p className="text-xs font-medium text-[var(--foreground-muted)]">Group spend</p>
-              <p className="mt-1 text-lg font-bold tabular-nums sm:text-xl text-[var(--foreground)]">{formatCurrency(totalSpend, currency)}</p>
-            </div>
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3.5 sm:p-4">
-              <p className="text-xs font-medium text-[var(--foreground-muted)]">This month</p>
-              <p className="mt-1 text-lg font-bold tabular-nums sm:text-xl text-[var(--foreground)]">{formatCurrency(thisMonthSpend, currency)}</p>
-            </div>
-            <div className="col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3.5 sm:col-span-1 sm:p-4">
-              <p className="text-xs font-medium text-[var(--foreground-muted)]">Your balance</p>
-              <p className={`mt-1 text-lg font-bold tabular-nums sm:text-xl ${myBalanceTone}`}>{myBalanceText}</p>
-            </div>
-          </div>
-
+        <section aria-label="Expenses" className="card space-y-4 p-4 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold text-[var(--foreground)]">Expenses</h2>
             {expenses.length > 0 && (
@@ -580,181 +622,173 @@ export default function GroupDetailPage() {
               />
             </GroupExpenseSearch>
           )}
-        </div>
+        </section>
       )}
 
       {/* Tab: Balances */}
       {tab === "balances" && (
-        <div className="space-y-6">
-          <Card padding="md" className="hover-lift transition-all duration-300">
-            <p className="text-[9px] font-semibold text-muted uppercase tracking-widest">Total Group Spend</p>
-            <p className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-[#1D1D1F] dark:text-white leading-none">{formatCurrency(totalSpend, currency)}</p>
-          </Card>
-
-          <Card>
-            <CardHeader title="Member Balances" description="Positive = owed to them, Negative = they owe" />
-            <CardBody>
-              <div className="space-y-3.5 divide-y divide-[#E8E8ED]/60 dark:divide-[#2C2C2E]/40">
-                {balances.map((b) => (
-                  <div key={b.userId} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
-                    <span className="text-foreground font-medium text-sm">{b.name}</span>
-                    <span className={`font-semibold ${b.balance >= 0 ? "text-income" : "text-expense"}`}>
-                      {formatCurrency(b.balance, currency)}
-                    </span>
-                  </div>
+        <BentoGrid>
+          <BentoTile title="Suggested payments" span={2} lgSpan={2}>
+            {debts.length === 0 ? (
+              <p className="text-sm text-[var(--foreground-muted)]">All settled up!</p>
+            ) : (
+              <ul className="space-y-3">
+                {debts.map((d, i) => (
+                  <li key={i} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[var(--surface)] px-3 py-2.5">
+                    <p className="text-sm text-[var(--foreground)]">
+                      <span className="font-semibold">{d.fromId === userId ? "You" : d.fromName}</span> {d.fromId === userId ? "owe" : "owes"}{" "}
+                      <span className="font-semibold">{d.toId === userId ? "you" : d.toName}</span>{" "}
+                      <span className="ml-1 font-bold money">{formatCurrency(d.amount, currency)}</span>
+                    </p>
+                    {d.fromId === userId && (
+                      <Button size="sm" onClick={() => startSettleUp(d)}>
+                        Settle up
+                      </Button>
+                    )}
+                  </li>
                 ))}
-              </div>
-            </CardBody>
-          </Card>
+              </ul>
+            )}
+          </BentoTile>
 
-          <Card>
-            <CardHeader title="Simplified Debts" />
-            <CardBody>
-              {debts.length === 0 ? (
-                <p className="text-muted text-xs">All settled up!</p>
-              ) : (
-                <div className="space-y-3">
-                  {debts.map((d, i) => (
-                    <div key={i} className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="text-sm text-foreground">
-                        <span className="font-semibold text-expense">{d.fromName}</span> owes{" "}
-                        <span className="font-semibold text-income">{d.toName}</span>{" "}
-                        <span className="font-bold text-[#1D1D1F] dark:text-white ml-1">{formatCurrency(d.amount, currency)}</span>
-                      </p>
-                      {d.fromId === userId && (
-                        <Button size="sm" onClick={() => startSettleUp(d)}>
-                          Settle up
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardBody>
-          </Card>
-        </div>
+          <BentoTile title="Member balances" lgSpan={2} rows={2}>
+            <p className="mb-3 text-xs text-[var(--foreground-muted)]">+ is owed money, − owes money</p>
+            <ul className="divide-y divide-[var(--border)]">
+              {balances.map((b) => {
+                const person = memberPeople.find((p) => p.id === b.userId) ?? { id: b.userId, name: b.name };
+                return (
+                  <li key={b.userId} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <Avatar person={person} size="sm" />
+                      <span className="truncate text-sm font-medium text-[var(--foreground)]">{b.userId === userId ? "You" : b.name}</span>
+                    </span>
+                    <span
+                      className={`text-sm font-semibold money ${
+                        b.balance > 0.004 ? "text-[var(--owed)]" : b.balance < -0.004 ? "text-[var(--owe)]" : "text-[var(--foreground-muted)]"
+                      }`}
+                    >
+                      {b.balance > 0.004 ? "+" : b.balance < -0.004 ? "−" : ""}
+                      {formatCurrency(Math.abs(b.balance), currency)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </BentoTile>
+
+          <BentoTile title="Recent activity" span={2} lgSpan={2}>
+            <ActivityPanel activity={groupActivity} currentUserId={userId} currency={currency} hideGroup />
+          </BentoTile>
+        </BentoGrid>
       )}
 
       {/* Tab: Settlements */}
       {tab === "settlements" && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader title="Record Payment" />
-            <CardBody>
-              <form onSubmit={recordSettlement} noValidate className="grid gap-4 sm:grid-cols-3">
-                <Select
-                  label="Pay To"
-                  placeholder="Select a person"
-                  value={settleForm.toId}
-                  onChange={(e) => {
-                    const toId = e.target.value;
-                    const owed = debts.find((d) => d.fromId === userId && d.toId === toId)?.amount;
-                    // Fill in what is owed to the new person unless the user already typed an amount
-                    setSettleForm((f) => ({ toId, amount: f.amount || (owed ? owed.toFixed(2) : "") }));
-                  }}
-                  options={memberList.filter((m) => memberId(m) !== userId).map((m) => ({ value: memberId(m), label: memberName(m) }))}
+        <BentoGrid>
+          <BentoTile title="Record payment" span={3} lgSpan={2}>
+            <form onSubmit={recordSettlement} noValidate className="grid gap-4 sm:grid-cols-2">
+              <Select
+                label="Pay To"
+                placeholder="Select a person"
+                value={settleForm.toId}
+                onChange={(e) => {
+                  const toId = e.target.value;
+                  const owed = debts.find((d) => d.fromId === userId && d.toId === toId)?.amount;
+                  // Fill in what is owed to the new person unless the user already typed an amount
+                  setSettleForm((f) => ({ toId, amount: f.amount || (owed ? owed.toFixed(2) : "") }));
+                }}
+                options={memberList.filter((m) => memberId(m) !== userId).map((m) => ({ value: memberId(m), label: memberName(m) }))}
+              />
+              <div className="space-y-1.5">
+                <Input
+                  ref={settleAmountRef}
+                  label="Amount"
+                  type="number"
+                  inputMode="decimal"
+                  step="0.01"
+                  min="0"
+                  value={settleForm.amount}
+                  onChange={(e) => setSettleForm({ ...settleForm, amount: e.target.value })}
                 />
-                <div className="space-y-1.5">
-                  <Input
-                    ref={settleAmountRef}
-                    label="Amount"
-                    type="number"
-                    inputMode="decimal"
-                    step="0.01"
-                    min="0"
-                    value={settleForm.amount}
-                    onChange={(e) => setSettleForm({ ...settleForm, amount: e.target.value })}
-                  />
-                  {owedToPayee !== undefined && (
-                    <button
-                      type="button"
-                      onClick={() => setSettleForm({ ...settleForm, amount: owedToPayee.toFixed(2) })}
-                      className="min-h-[32px] text-xs font-semibold text-[var(--accent)]"
-                    >
-                      Full amount ({formatCurrency(owedToPayee, currency)})
-                    </button>
-                  )}
-                </div>
-                <div className="flex items-end">
-                  <Button type="submit" loading={pending === "settle"} disabled={pending !== null && pending !== "settle"}>
-                    Record
-                  </Button>
-                </div>
-                {settleHint && (
-                  <p className="sm:col-span-3 text-xs text-[var(--warning)]">{settleHint}</p>
+                {owedToPayee !== undefined && (
+                  <button
+                    type="button"
+                    onClick={() => setSettleForm({ ...settleForm, amount: owedToPayee.toFixed(2) })}
+                    className="min-h-[32px] text-xs font-semibold text-[var(--accent)]"
+                  >
+                    Full amount ({formatCurrency(owedToPayee, currency)})
+                  </button>
                 )}
-                {settleError && (
-                  <p role="alert" className="sm:col-span-3 text-xs font-medium text-[var(--expense)]">{settleError}</p>
-                )}
-              </form>
-            </CardBody>
-          </Card>
-
-          <Card>
-            <CardHeader title="Group Members" />
-            <CardBody>
-              <div className="space-y-3.5 divide-y divide-[#E8E8ED]/60 dark:divide-[#2C2C2E]/40">
-                {memberList.map((m) => {
-                  const uid = memberId(m);
-                  const photo = m.user?.profilePhoto;
-                  const initialsName = memberName(m);
-                  return (
-                    <div key={uid} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
-                      <div className="flex items-center gap-3">
-                        {photo ? (
-                          <img
-                            src={photo}
-                            alt={initialsName}
-                            className="h-8 w-8 rounded-full object-cover border border-[#E8E8ED] dark:border-[#2C2C2E]"
-                          />
-                        ) : (
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 text-accent text-[10px] font-bold border border-accent/20 ring-1 ring-accent/15 select-none">
-                            {initials(initialsName)}
-                          </div>
-                        )}
-                        <span className="text-foreground text-sm font-medium">{initialsName}</span>
-                      </div>
-                      {isAdmin && uid !== userId && (
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => setMemberToRemove(m)}
-                          loading={pending === `remove-member:${uid}`}
-                          disabled={pending !== null}
-                        >
-                          Remove
-                        </Button>
-                      )}
-                    </div>
-                  );
-                })}
               </div>
-            </CardBody>
-          </Card>
-
-          <Card>
-            <CardHeader title="Settlement History" />
-            <CardBody>
-              {settlements.length === 0 ? (
-                <p className="text-muted text-xs">No settlements recorded.</p>
-              ) : (
-                <div className="space-y-2">
-                  {settlements.map((s) => (
-                    <div key={s.id} className="flex items-center justify-between text-sm border-b border-[#E8E8ED]/60 dark:border-[#2C2C2E]/40 py-2.5 last:border-b-0 last:pb-0">
-                      <span className="text-foreground">
-                        {s.from.name} paid {s.to.name}
-                      </span>
-                      <div className="flex items-center gap-4">
-                        <span className="font-semibold text-income">{formatCurrency(s.amount, currency)}</span>
-                        <span className="text-xs text-muted">{format(new Date(s.createdAt), "MMM d, yyyy")}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              {settleHint && <p className="sm:col-span-2 text-xs text-[var(--warning)]">{settleHint}</p>}
+              {settleError && (
+                <p role="alert" className="sm:col-span-2 text-xs font-medium text-[var(--expense)]">{settleError}</p>
               )}
-            </CardBody>
-          </Card>
-        </div>
+              <div className="sm:col-span-2">
+                <Button type="submit" loading={pending === "settle"} disabled={pending !== null && pending !== "settle"}>
+                  Record
+                </Button>
+              </div>
+            </form>
+          </BentoTile>
+
+          <BentoTile title="Settlement history" span={3} lgSpan={2}>
+            {settlements.length === 0 ? (
+              <p className="text-sm text-[var(--foreground-muted)]">No settlements recorded.</p>
+            ) : (
+              <ul className="divide-y divide-[var(--border)]">
+                {settlements.map((s) => (
+                  <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm first:pt-0 last:pb-0">
+                    <span className="text-[var(--foreground)]">
+                      {s.from.name} paid {s.to.name}
+                    </span>
+                    <span className="flex items-center gap-3">
+                      <span className="font-semibold text-[var(--foreground)] money">{formatCurrency(s.amount, currency)}</span>
+                      <span className="text-xs text-[var(--foreground-subtle)]">{format(new Date(s.createdAt), "MMM d, yyyy")}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </BentoTile>
+        </BentoGrid>
+      )}
+
+      {/* Tab: Members */}
+      {tab === "members" && (
+        <section aria-label="Members" className="card p-4 sm:p-6">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-base font-semibold text-[var(--foreground)]">Group Members</h2>
+            <Button variant="secondary" size="sm" onClick={() => setShowAddMember(true)}>Add member</Button>
+          </div>
+          <ul className="divide-y divide-[var(--border)]">
+            {memberList.map((m) => {
+              const uid = memberId(m);
+              return (
+                <li key={uid} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+                  <span className="flex min-w-0 items-center gap-3">
+                    <Avatar person={{ id: uid, name: memberName(m), profilePhoto: m.user?.profilePhoto }} />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium text-[var(--foreground)]">{memberName(m)}{uid === userId ? " (you)" : ""}</span>
+                      {m.role === "ADMIN" && <span className="text-xs text-[var(--foreground-subtle)]">Admin</span>}
+                    </span>
+                  </span>
+                  {isAdmin && uid !== userId && (
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => setMemberToRemove(m)}
+                      loading={pending === `remove-member:${uid}`}
+                      disabled={pending !== null}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
 
       {/* Edit expense */}
@@ -906,7 +940,7 @@ export default function GroupDetailPage() {
       >
         <div className="space-y-4">
           {reportError && (
-            <div className="text-xs text-red-500 bg-red-50 dark:bg-red-950/20 p-2 rounded-lg border border-red-200 dark:border-red-800">
+            <div className="text-xs text-[var(--expense)] bg-[var(--expense-dim)] dark:bg-[var(--expense-dim)] p-2 rounded-lg border border-[var(--expense)]/30 dark:border-[var(--expense)]/30">
               {reportError}
             </div>
           )}
