@@ -12,11 +12,12 @@ type Message = {
 
 const SUGGESTED_QUESTIONS = [
   "Who owes me the most?",
+  "Who spent the most this month?",
   "How do I settle up with fewest payments?",
-  "What did my groups spend this month?",
-  "Compare group spending vs last month",
-  "Who has paid for most of the bills?",
+  "Compare this month with last month",
+  "Show my recent settlements",
   "Which group is costing me the most?",
+  "Mera share vs maine kitna pay kiya?",
   "Draft a reminder for whoever owes me",
 ];
 
