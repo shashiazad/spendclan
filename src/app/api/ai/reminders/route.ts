@@ -8,6 +8,8 @@ const TONES: Record<string, string> = {
   friendly: "warm and friendly",
   casual: "casual and playful, light emoji allowed",
   formal: "polite and professional",
+  funny: "funny and witty with light, harmless humour (a pun or playful exaggeration), never mean or sarcastic about the person",
+  hinglish: "casual and friendly, written in Hinglish (Hindi in Roman script mixed with English), the way friends text each other",
 };
 
 type Reminder = { name: string; amount: number; message: string };
