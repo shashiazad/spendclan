@@ -3,6 +3,7 @@
 import { Tabs } from "@/components/ui/Tabs";
 import { AIInsightsCard } from "@/components/dashboard/AIInsightsCard";
 import { AIChat } from "@/components/dashboard/AIChat";
+import { PaymentReminders } from "@/components/dashboard/PaymentReminders";
 import { ExpenseReport } from "@/components/dashboard/ExpenseReport";
 import { PageHeader } from "@/components/ui/PageHeader";
 
@@ -22,6 +23,15 @@ const tabs = [
     icon: (
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+      </svg>
+    ),
+  },
+  {
+    id: "reminders",
+    label: "Reminders",
+    icon: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
       </svg>
     ),
   },
@@ -52,6 +62,11 @@ export default function AdvisorPage() {
             {activeTab === "reports" && (
               <div className="animate-slide-up">
                 <ExpenseReport />
+              </div>
+            )}
+            {activeTab === "reminders" && (
+              <div className="animate-slide-up">
+                <PaymentReminders />
               </div>
             )}
             {activeTab === "chat" && (
