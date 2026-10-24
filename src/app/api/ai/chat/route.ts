@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { isAIConfigured, type ChatTurn, generateFinancialInsight, friendlyAIError, extractAdvisorNotes, consumeAIQuota, AI_QUOTA_MESSAGE } from "@/lib/ai";
+import { isAIConfigured, type ChatTurn, generateFinancialInsight, friendlyAIError, extractAdvisorNotes, isPromptAttack, consumeAIQuota, AI_QUOTA_MESSAGE } from "@/lib/ai";
 import { findRelevantGroupExpenses, getAIContext } from "@/lib/ai-data";
 import { buildAdvisorPrompt } from "@/lib/ai-prompts";
 import { prisma } from "@/lib/prisma";
@@ -32,6 +32,13 @@ export async function POST(request: NextRequest) {
 
     if (message.length > 500) {
       return NextResponse.json({ error: "Message too long (max 500 characters)" }, { status: 400 });
+    }
+
+    // Cheap classifier screen before spending tokens on the real model
+    if (await isPromptAttack(message)) {
+      return NextResponse.json({
+        response: "I can only help with your SpendClan groups — shared expenses, balances and settling up. 💸",
+      });
     }
 
     // Recent turns give the model conversational context; only the last few are sent
