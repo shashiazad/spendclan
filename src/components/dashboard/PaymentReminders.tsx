@@ -10,6 +10,8 @@ const TONES = [
   { id: "friendly", label: "Friendly" },
   { id: "casual", label: "Casual" },
   { id: "formal", label: "Formal" },
+  { id: "funny", label: "😄 Funny" },
+  { id: "hinglish", label: "Hinglish" },
 ];
 
 export function PaymentReminders() {
@@ -85,9 +87,19 @@ export function PaymentReminders() {
         <Card key={r.name} className="space-y-2 p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-[var(--foreground)]">{r.name}</span>
-            <button onClick={() => copy(r)} className="text-xs font-medium text-[var(--accent)] hover:underline">
-              {copied === r.name ? "Copied ✓" : "Copy"}
-            </button>
+            <div className="flex items-center gap-3">
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(r.message)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-medium text-[var(--income)] hover:underline"
+              >
+                Send on WhatsApp
+              </a>
+              <button onClick={() => copy(r)} className="text-xs font-medium text-[var(--accent)] hover:underline">
+                {copied === r.name ? "Copied ✓" : "Copy"}
+              </button>
+            </div>
           </div>
           <p className="whitespace-pre-wrap text-sm text-[var(--foreground-muted)]">{r.message}</p>
         </Card>
