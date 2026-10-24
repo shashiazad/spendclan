@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { isAIConfigured, generateFinancialInsight, friendlyAIError, transformQuery, extractAdvisorNotes } from "@/lib/ai";
+import { isAIConfigured, type ChatTurn, generateFinancialInsight, friendlyAIError, transformQuery, extractAdvisorNotes } from "@/lib/ai";
 import { findRelevantGroupExpenses, getAIContext } from "@/lib/ai-data";
 import { buildAdvisorPrompt } from "@/lib/ai-prompts";
 import { prisma } from "@/lib/prisma";
@@ -25,6 +25,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Message too long (max 500 characters)" }, { status: 400 });
     }
 
+    // Recent turns give the model conversational context; only the last few are sent
+    const history: ChatTurn[] = Array.isArray(body.history)
+      ? body.history
+          .filter((t: { role?: string; content?: unknown }) => (t?.role === "user" || t?.role === "assistant") && typeof t.content === "string")
+          .slice(-6)
+          .map((t: { role: "user" | "assistant"; content: string }) => ({ role: t.role, content: t.content.slice(0, 1500) }))
+      : [];
+
     const userId = auth.session.user.id;
 
     // 1. Parse the question into a description search term and date/amount filters
@@ -43,8 +51,8 @@ export async function POST(request: NextRequest) {
     ]);
 
     // 4. Generate final response using Augmented Generation (passing user name and memory notes)
-    const prompt = buildAdvisorPrompt(ctx, message, relevantExpenses, user?.name, user?.advisorNotes);
-    const response = await generateFinancialInsight(prompt);
+    const prompt = buildAdvisorPrompt(ctx, message, relevantExpenses, user?.name, user?.advisorNotes, history.length > 0);
+    const response = await generateFinancialInsight([...history, { role: "user", content: prompt }]);
 
     // 5. Asynchronously extract and update advisor notes/memory in the background
     extractAdvisorNotes(message, user?.advisorNotes ?? null)
