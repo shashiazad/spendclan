@@ -126,7 +126,10 @@ export async function isPromptAttack(message: string): Promise<boolean> {
     const res = await fetch(`${cfg.baseUrl}/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
-      body: JSON.stringify({ model, messages: [{ role: "user", content: message.slice(0, 500) }] }),
+      body: JSON.stringify({ model, messages: [{ role: "user", content: message.slice(0, 500) }],
+        // Groq defaults max_tokens to the context window, which this 512-token model rejects; the score is a few chars
+        max_tokens: 16,
+      }),
       signal: AbortSignal.timeout(5_000),
     });
     if (!res.ok) return false;
