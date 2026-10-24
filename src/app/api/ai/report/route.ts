@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { isAIConfigured, generateFinancialInsight, friendlyAIError } from "@/lib/ai";
+import { isAIConfigured, generateWithCache, friendlyAIError } from "@/lib/ai";
 import { getAIContext } from "@/lib/ai-data";
 import { buildReportPrompt } from "@/lib/ai-prompts";
 
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAIContext(auth.session.user.id);
     const prompt = buildReportPrompt(ctx, monthLabel);
-    const report = await generateFinancialInsight(prompt);
+    const report = await generateWithCache(`report:${auth.session.user.id}`, prompt, { maxTokens: 1000 });
 
     return NextResponse.json({ report, month: monthLabel });
   } catch (error: unknown) {
