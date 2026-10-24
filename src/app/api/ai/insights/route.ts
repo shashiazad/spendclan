@@ -29,7 +29,7 @@ export async function GET() {
     const prompt = buildInsightsPrompt(ctx);
     const cacheKey = `insights:${auth.session.user.id}`;
 
-    const raw = await generateWithCache(cacheKey, prompt, 3600000);
+    const raw = await generateWithCache(cacheKey, prompt, { maxTokens: 900, json: true });
 
     let parsed = parseJsonObject<{ insights: unknown[]; spendingScore: number; topSuggestion: string }>(raw);
     if (!parsed || !Array.isArray(parsed.insights)) {
