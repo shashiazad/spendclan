@@ -121,6 +121,7 @@ export function buildAdvisorPrompt(
   relevantExpenses?: RelevantGroupExpense[],
   userName?: string,
   advisorNotes?: string | null,
+  isFollowUp = false,
 ): string {
   let text = `${SYSTEM_PREAMBLE}
 
@@ -139,7 +140,7 @@ ${formatContext(ctx)}`;
     text += "\n";
   }
 
-  const greetingInstruction = userName ? `Warmly greet the user by name (e.g. "Hello, ${userName}!") in your first sentence.` : "Warmly greet the user.";
+  const greetingInstruction = isFollowUp ? "This is a follow-up in an ongoing conversation: do not greet again, answer directly." : userName ? `Warmly greet the user by name (e.g. "Hello, ${userName}!") in your first sentence.` : "Warmly greet the user.";
 
   text += `The user is asking about their groups. Answer from the data above: reference real groups, people and amounts, and suggest concrete next steps where useful.
 
@@ -150,4 +151,22 @@ ${greetingInstruction}
 Respond in markdown format. Keep the response focused and under 300 words.`;
 
   return text;
+}
+
+export function buildRemindersPrompt(ctx: AIGroupContext, tone: string): string {
+  const sym = CURRENCY_SYMBOLS[ctx.currency] ?? ctx.currency;
+  const debtors = ctx.people.filter((p) => p.net > 0.005);
+  const list = debtors.map((p) => `- ${p.name} owes the user ${money(sym, p.net)}`).join("\n");
+
+  return `${SYSTEM_PREAMBLE}
+
+${formatContext(ctx)}
+
+Draft a short payment reminder message the user can paste into WhatsApp or SMS, for each person below who owes the user money:
+${list}
+
+Tone: ${tone}. Each message is 1-3 sentences, mentions the exact amount, never blames or shames, and suggests paying via UPI/bank transfer or settling in SpendClan. Do not invent amounts or people.
+
+Respond ONLY with valid JSON (no markdown, no code fences):
+{ "reminders": [ { "name": "Person name exactly as above", "amount": 0, "message": "The message text" } ] }`;
 }

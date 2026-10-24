@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { isAIConfigured, generateWithCache, friendlyAIError } from "@/lib/ai";
+import { isAIConfigured, generateWithCache, friendlyAIError, parseJsonObject } from "@/lib/ai";
 import { getAIContext } from "@/lib/ai-data";
 import { buildInsightsPrompt } from "@/lib/ai-prompts";
 
@@ -15,12 +15,12 @@ export async function GET() {
         {
           type: "tip",
           title: "AI Features Available",
-          description: "Set the GROQ_API_KEY environment variable to unlock AI insights on your groups, balances and settle-ups.",
+          description: "Set the AI_API_KEY environment variable to unlock AI insights on your groups, balances and settle-ups.",
           savingsEstimate: null,
         },
       ],
       spendingScore: null,
-      topSuggestion: "Configure the Groq API key to get started with AI insights.",
+      topSuggestion: "Configure the AI API key to get started with AI insights.",
     });
   }
 
@@ -31,11 +31,8 @@ export async function GET() {
 
     const raw = await generateWithCache(cacheKey, prompt, 3600000);
 
-    let parsed;
-    try {
-      const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      parsed = JSON.parse(cleaned);
-    } catch {
+    let parsed = parseJsonObject<{ insights: unknown[]; spendingScore: number; topSuggestion: string }>(raw);
+    if (!parsed || !Array.isArray(parsed.insights)) {
       parsed = {
         insights: [{ type: "tip", title: "Analysis Complete", description: raw.slice(0, 300), savingsEstimate: null }],
         spendingScore: 50,
