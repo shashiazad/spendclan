@@ -6,12 +6,21 @@
 //   used before (it fails rather than lose data), then records every migration as applied.
 //
 // Never resets, drops or deletes anything.
+//
+// On Vercel, only production deployments migrate. Preview builds share the same database env, so
+// letting every branch deploy touch the schema could change production data before a merge.
+// Set FORCE_DB_MIGRATE=1 to migrate on a preview anyway.
 
 import { execFileSync } from "node:child_process";
 import { readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import pg from "pg";
 import "dotenv/config";
+
+if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production" && process.env.FORCE_DB_MIGRATE !== "1") {
+  console.log(`[db-migrate] Skipping migrations on a ${process.env.VERCEL_ENV} deployment.`);
+  process.exit(0);
+}
 
 // Same precedence as prisma.config.ts
 const url =

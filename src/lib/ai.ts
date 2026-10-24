@@ -11,7 +11,11 @@ function aiConfig() {
   return {
     apiKey,
     baseUrl: (process.env.AI_BASE_URL || GROQ_URL).replace(/\/+$/, ""),
-    model: process.env.AI_MODEL || DEFAULT_MODEL,
+    // Primary first, then fallbacks tried in order when a model's quota is exhausted or it is unavailable
+    models: [
+      process.env.AI_MODEL || DEFAULT_MODEL,
+      ...(process.env.AI_FALLBACK_MODELS ?? "").split(",").map((m) => m.trim()).filter(Boolean),
+    ],
   };
 }
 
@@ -26,27 +30,37 @@ function stripThinking(text: string): string {
   return text.replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/^[\s\S]*?<\/think>/i, "").trim();
 }
 
-async function chatCompletion(
-  messages: ChatTurn[],
-  opts: { temperature?: number; maxTokens?: number; json?: boolean } = {},
-): Promise<string> {
-  const cfg = aiConfig();
-  if (!cfg) throw new Error("AI_API_KEY is not configured");
+/** Models that returned 429/404 recently, so later requests skip straight to a fallback. */
+const blockedUntil = new Map<string, number>();
 
+/** Seconds from Groq's "Please try again in 27m8.208s" message; 0 if absent. */
+function retryAfterMs(message: string): number {
+  const m = message.match(/try again in (?:(\d+)h)?(?:(\d+)m)?(?:([\d.]+)s)?/i);
+  if (!m) return 0;
+  return ((Number(m[1] ?? 0) * 60 + Number(m[2] ?? 0)) * 60 + Number(m[3] ?? 0)) * 1000;
+}
+
+async function callModel(
+  cfg: NonNullable<ReturnType<typeof aiConfig>>,
+  model: string,
+  messages: ChatTurn[],
+  opts: { temperature?: number; maxTokens?: number; json?: boolean },
+): Promise<string> {
   // Qwen3-style models bill hidden reasoning tokens against the daily quota, so switch it off
   const reasoning = process.env.AI_REASONING_EFFORT ?? "none";
+  const supportsReasoning = /qwen/i.test(model) && reasoning !== "off";
 
   const send = async (json: boolean, withReasoning: boolean) => {
     const res = await fetch(`${cfg.baseUrl}/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
       body: JSON.stringify({
-        model: cfg.model,
+        model,
         messages,
         temperature: opts.temperature ?? 0.7,
         max_tokens: opts.maxTokens ?? 2048,
         ...(json ? { response_format: { type: "json_object" } } : {}),
-        ...(withReasoning && reasoning !== "off" ? { reasoning_effort: reasoning } : {}),
+        ...(withReasoning && supportsReasoning ? { reasoning_effort: reasoning } : {}),
       }),
       signal: AbortSignal.timeout(60_000),
     });
@@ -58,12 +72,70 @@ async function chatCompletion(
     return stripThinking(data.choices?.[0]?.message?.content ?? "");
   };
 
-  // Not every provider/model supports reasoning_effort or response_format; retry once without them
+  // Not every model supports reasoning_effort or response_format; retry once without them
   try {
     return await send(!!opts.json, true);
   } catch (error) {
     if (error instanceof AIRequestError && error.status === 400) return send(false, false);
     throw error;
+  }
+}
+
+async function chatCompletion(
+  messages: ChatTurn[],
+  opts: { temperature?: number; maxTokens?: number; json?: boolean } = {},
+): Promise<string> {
+  const cfg = aiConfig();
+  if (!cfg) throw new Error("AI_API_KEY is not configured");
+
+  const now = Date.now();
+  const available = cfg.models.filter((m) => (blockedUntil.get(m) ?? 0) <= now);
+  // If everything is blocked, still try the primary rather than failing without a request
+  const order = available.length > 0 ? available : [cfg.models[0]];
+
+  let lastError: unknown;
+  for (const model of order) {
+    try {
+      return await callModel(cfg, model, messages, opts);
+    } catch (error) {
+      lastError = error;
+      const status = error instanceof AIRequestError ? error.status : 0;
+      // Quota exhausted, model missing, or provider overloaded: park this model and move to the next
+      if (status === 429 || status === 404 || status === 503) {
+        const wait = status === 429 ? retryAfterMs(error instanceof Error ? error.message : "") || 10 * 60_000 : 60 * 60_000;
+        blockedUntil.set(model, Date.now() + wait);
+        console.warn(`[AI] ${model} unavailable (${status}); falling back`);
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw lastError;
+}
+
+/**
+ * Screens a user message with a prompt-injection classifier (Llama Prompt Guard).
+ * It is a classifier, not a chat model, so it can only guard the advisor, never replace it.
+ * Fails open: any error or missing model lets the message through to the normal guardrails.
+ */
+export async function isPromptAttack(message: string): Promise<boolean> {
+  const cfg = aiConfig();
+  const model = process.env.AI_GUARD_MODEL ?? "meta-llama/llama-prompt-guard-2-86m";
+  if (!cfg || !model || model === "off") return false;
+  try {
+    const res = await fetch(`${cfg.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
+      body: JSON.stringify({ model, messages: [{ role: "user", content: message.slice(0, 500) }] }),
+      signal: AbortSignal.timeout(5_000),
+    });
+    if (!res.ok) return false;
+    const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+    const score = parseFloat(data.choices?.[0]?.message?.content ?? "");
+    // Prompt Guard returns the probability that the text is an injection/jailbreak
+    return Number.isFinite(score) && score >= 0.95;
+  } catch {
+    return false;
   }
 }
 
