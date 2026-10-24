@@ -1,13 +1,77 @@
-import Groq from "groq-sdk";
+const DEFAULT_MODEL = "qwen/qwen3.8-27b";
+const GROQ_URL = "https://api.groq.com/openai/v1";
 
-let groqClient: Groq | null = null;
+export type ChatTurn = { role: "system" | "user" | "assistant"; content: string };
 
-function getGroqClient(): Groq | null {
-  if (!process.env.GROQ_API_KEY) return null;
-  if (!groqClient) {
-    groqClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
+function aiConfig() {
+  const apiKey = process.env.AI_API_KEY || process.env.LLM_API_KEY || process.env.GROQ_API_KEY;
+  if (!apiKey) return null;
+  return {
+    apiKey,
+    baseUrl: (process.env.AI_BASE_URL || GROQ_URL).replace(/\/+$/, ""),
+    model: process.env.AI_MODEL || DEFAULT_MODEL,
+  };
+}
+
+class AIRequestError extends Error {
+  constructor(message: string, public status: number) {
+    super(message);
   }
-  return groqClient;
+}
+
+/** Qwen3-style models emit their reasoning in <think> tags; users should only see the answer. */
+function stripThinking(text: string): string {
+  return text.replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/^[\s\S]*?<\/think>/i, "").trim();
+}
+
+async function chatCompletion(
+  messages: ChatTurn[],
+  opts: { temperature?: number; maxTokens?: number; json?: boolean } = {},
+): Promise<string> {
+  const cfg = aiConfig();
+  if (!cfg) throw new Error("AI_API_KEY is not configured");
+
+  const send = async (json: boolean) => {
+    const res = await fetch(`${cfg.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
+      body: JSON.stringify({
+        model: cfg.model,
+        messages,
+        temperature: opts.temperature ?? 0.7,
+        max_tokens: opts.maxTokens ?? 2048,
+        ...(json ? { response_format: { type: "json_object" } } : {}),
+      }),
+      signal: AbortSignal.timeout(60_000),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new AIRequestError(`${res.status} ${body.slice(0, 300)}`, res.status);
+    }
+    const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+    return stripThinking(data.choices?.[0]?.message?.content ?? "");
+  };
+
+  try {
+    return await send(!!opts.json);
+  } catch (error) {
+    // Not every provider/model supports response_format; the prompt already demands JSON
+    if (opts.json && error instanceof AIRequestError && error.status === 400) return send(false);
+    throw error;
+  }
+}
+
+/** Pulls the first JSON object out of a model reply, tolerating code fences and chatter. */
+export function parseJsonObject<T>(raw: string): T | null {
+  const cleaned = raw.replace(/```(?:json)?/gi, "");
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start === -1 || end <= start) return null;
+  try {
+    return JSON.parse(cleaned.slice(start, end + 1)) as T;
+  } catch {
+    return null;
+  }
 }
 
 // Helper function to delay execution
@@ -35,6 +99,14 @@ export function friendlyAIError(error: unknown): string {
     return "SpendClan AI is analyzing a lot of balance sheets right now! 📊 Please give us a quick moment and try asking your question again.";
   }
 
+  if (msgLower.includes("401") || msgLower.includes("403") || msgLower.includes("invalid api key") || msgLower.includes("unauthorized")) {
+    return "The AI service rejected our credentials. Please let the admin know the AI API key needs updating.";
+  }
+
+  if (msgLower.includes("404") || msgLower.includes("no endpoints") || msgLower.includes("model_not_found")) {
+    return "The configured AI model isn't available right now. Please let the admin know.";
+  }
+
   if (msgLower.includes("api_key") || msgLower.includes("not configured") || msgLower.includes("api key")) {
     return "AI features are being set up. Check back soon! ✨";
   }
@@ -46,50 +118,37 @@ export function friendlyAIError(error: unknown): string {
   return "Something unexpected happened with our AI advisor. Please try again in a moment. 🙏";
 }
 
-export async function generateFinancialInsight(prompt: string, maxRetries = 3): Promise<string> {
-  const ai = getGroqClient();
-  if (!ai) {
-    throw new Error("GROQ_API_KEY is not configured");
-  }
-
+export async function generateFinancialInsight(prompt: string | ChatTurn[], maxRetries = 3): Promise<string> {
+  const messages: ChatTurn[] = typeof prompt === "string" ? [{ role: "user", content: prompt }] : prompt;
   let attempt = 0;
-  
+
   while (attempt < maxRetries) {
     try {
-      const response = await ai.chat.completions.create({
-        model: "llama-3.3-70b-versatile", // Using Groq's high-performance Llama 3.3 70B
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-        max_tokens: 2048,
-      });
-
-      return response.choices[0]?.message?.content ?? "";
+      return await chatCompletion(messages, { temperature: 0.6, maxTokens: 2048 });
     } catch (error: unknown) {
       attempt++;
-      
       const errMsg = error instanceof Error ? error.message : String(error);
-      const errStatus = (error && typeof error === "object" && "status" in error) ? (error as { status: number }).status : undefined;
-      const isRateLimit = errStatus === 429 || errMsg.includes('429') || errMsg.includes('rate limit');
-      
+      const isRateLimit = (error instanceof AIRequestError && error.status === 429) || errMsg.toLowerCase().includes("rate limit");
+
       if (isRateLimit && attempt < maxRetries) {
-        // Exponential backoff: 2s, 4s, 8s...
         const backoffMs = Math.pow(2, attempt) * 1000;
-        console.warn(`[Groq] Rate limit hit (429). Retrying in ${backoffMs}ms... (Attempt ${attempt}/${maxRetries})`);
+        console.warn(`[AI] Rate limit hit (429). Retrying in ${backoffMs}ms... (Attempt ${attempt}/${maxRetries})`);
         await delay(backoffMs);
         continue;
       }
-      
-      const rawMsg = error instanceof Error ? error.message : "Unknown error";
-      console.error(`[Groq] Error generating content (Attempt ${attempt}):`, rawMsg);
+
+      console.error(`[AI] Error generating content (Attempt ${attempt}):`, errMsg);
       throw new Error(friendlyAIError(error));
     }
   }
-  
+
   throw new Error("SpendClan AI is analyzing a lot of balance sheets right now! 📊 Please give us a quick moment and try asking your question again.");
 }
 
+const aiConfigured = () => aiConfig() !== null;
+
 export function isAIConfigured(): boolean {
-  return !!process.env.GROQ_API_KEY;
+  return aiConfigured();
 }
 
 // Simple in-memory cache to avoid redundant API calls
@@ -123,14 +182,9 @@ export interface TransformedQuery {
 }
 
 /**
- * Uses Groq to parse a user's natural language question into search terms and SQL filters.
+ * Uses the AI model to parse a user's natural language question into search terms and SQL filters.
  */
 export async function transformQuery(userMessage: string): Promise<TransformedQuery> {
-  const ai = getGroqClient();
-  if (!ai) {
-    throw new Error("GROQ_API_KEY is not configured");
-  }
-
   const now = new Date();
   const systemPrompt = `
 You are an AI Query Transformer for SpendClan, an app for splitting group expenses.
@@ -159,18 +213,15 @@ Return ONLY a valid JSON object matching this exact TypeScript structure. Do NOT
 `;
 
   try {
-    const response = await ai.chat.completions.create({
-      model: "llama-3.3-70b-versatile", // Using Llama 3.3 70B for JSON capability
-      messages: [
+    const text = await chatCompletion(
+      [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userMessage }
+        { role: "user", content: userMessage },
       ],
-      temperature: 0.1,
-      response_format: { type: "json_object" },
-    });
-
-    const text = response.choices[0]?.message?.content?.trim() || "{}";
-    const parsed = JSON.parse(text) as TransformedQuery;
+      { temperature: 0.1, json: true, maxTokens: 512 },
+    );
+    const parsed = parseJsonObject<TransformedQuery>(text);
+    if (!parsed) throw new Error("Model returned no JSON");
     
     // Ensure structure is clean and default values exist
     return {
@@ -205,8 +256,7 @@ export async function extractAdvisorNotes(
   userMessage: string,
   currentNotes: string | null
 ): Promise<string | null> {
-  const ai = getGroqClient();
-  if (!ai) return null;
+  if (!isAIConfigured()) return null;
 
   const notesContext = currentNotes ? `Existing User Preferences/Goals:\n${currentNotes}` : "No existing preferences recorded yet.";
 
@@ -231,16 +281,13 @@ ${notesContext}
 `;
 
   try {
-    const response = await ai.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
+    const resultText = await chatCompletion(
+      [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `User Message: "${userMessage}"` }
+        { role: "user", content: `User Message: "${userMessage}"` },
       ],
-      temperature: 0.1,
-    });
-
-    const resultText = response.choices[0]?.message?.content?.trim();
+      { temperature: 0.1, maxTokens: 512 },
+    );
     if (!resultText || resultText === "NO_CHANGE" || resultText.includes("NO_CHANGE")) {
       return null;
     }

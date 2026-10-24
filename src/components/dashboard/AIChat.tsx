@@ -16,12 +16,15 @@ const SUGGESTED_QUESTIONS = [
   "What did my groups spend this month?",
   "Compare group spending vs last month",
   "Who has paid for most of the bills?",
+  "Which group is costing me the most?",
+  "Draft a reminder for whoever owes me",
 ];
 
 export function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -46,7 +49,10 @@ export function AIChat() {
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text.trim() }),
+        body: JSON.stringify({
+          message: text.trim(),
+          history: messages.filter((m) => !m.isError).map(({ role, content }) => ({ role, content })),
+        }),
       });
 
       const data = await res.json();
@@ -70,6 +76,13 @@ export function AIChat() {
     inputRef.current?.focus();
   }
 
+  function copyMessage(msg: Message) {
+    navigator.clipboard?.writeText(msg.content).then(() => {
+      setCopiedId(msg.id);
+      setTimeout(() => setCopiedId((id) => (id === msg.id ? null : id)), 1500);
+    }).catch(() => {});
+  }
+
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -79,6 +92,18 @@ export function AIChat() {
 
   return (
     <div className="flex h-[600px] flex-col rounded-xl border border-[var(--border)] bg-[var(--card)]">
+      {messages.length > 0 && (
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-2">
+          <span className="text-xs text-[var(--foreground-muted)]">I remember this conversation, so you can ask follow-ups.</span>
+          <button
+            onClick={() => setMessages([])}
+            disabled={loading}
+            className="text-xs font-medium text-[var(--accent)] hover:underline disabled:opacity-50"
+          >
+            New chat
+          </button>
+        </div>
+      )}
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
@@ -121,7 +146,17 @@ export function AIChat() {
               }`}
             >
               {msg.role === "assistant" ? (
-                <div className="ai-markdown text-sm" dangerouslySetInnerHTML={{ __html: simpleMarkdown(msg.content) }} />
+                <>
+                  <div className="ai-markdown text-sm" dangerouslySetInnerHTML={{ __html: simpleMarkdown(msg.content) }} />
+                  {!msg.isError && (
+                    <button
+                      onClick={() => copyMessage(msg)}
+                      className="mt-1 text-[11px] text-[var(--foreground-subtle)] transition-colors hover:text-[var(--foreground)]"
+                    >
+                      {copiedId === msg.id ? "Copied ✓" : "Copy"}
+                    </button>
+                  )}
+                </>
               ) : (
                 <p className="text-sm">{msg.content}</p>
               )}
@@ -164,6 +199,7 @@ export function AIChat() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask about your groups..."
+            maxLength={500}
             className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--foreground)] placeholder-[var(--foreground-subtle)] outline-none transition-colors focus:border-[var(--border-focus)] focus:ring-1 focus:ring-[var(--accent-ring)]"
             disabled={loading}
           />
