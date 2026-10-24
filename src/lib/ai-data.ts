@@ -20,6 +20,20 @@ export type AIGroupContext = {
     expenseCount: number;
     /** The suggested settle-up payments that involve the user. */
     settleUp: { from: string; to: string; amount: number }[];
+    previousMonthSpend: number;
+    /** Every member's totals, precomputed so the model never has to add up expenses itself. */
+    members: {
+      name: string;
+      balance: number;
+      paidThisMonth: number;
+      shareThisMonth: number;
+      paidAllTime: number;
+      shareAllTime: number;
+    }[];
+    /** The full simplified settle-up plan for the group, including payments between other members. */
+    fullSettleUp: { from: string; to: string; amount: number }[];
+    recentExpenses: { date: string; description: string; amount: number; paidBy: string; yourShare: number }[];
+    recentSettlements: { date: string; from: string; to: string; amount: number }[];
   }[];
   /** Net position with each person across all groups (positive = they owe the user). */
   people: { name: string; net: number }[];
@@ -84,6 +98,26 @@ export async function getAIContext(userId: string): Promise<AIGroupContext> {
         return { from: d.fromId === userId ? "You" : d.fromName, to: d.toId === userId ? "You" : d.toName, amount: d.amount };
       });
 
+    const nameOf = (id: string) => (id === userId ? "You" : members.find((m) => m.userId === id)?.name ?? "Former member");
+    const prevMonthStart = startOfMonth(subMonths(now, 1));
+    const memberStats = new Map(members.map((m) => [m.userId, { paidThisMonth: 0, shareThisMonth: 0, paidAllTime: 0, shareAllTime: 0 }]));
+    const stat = (id: string) => {
+      let st = memberStats.get(id);
+      if (!st) memberStats.set(id, (st = { paidThisMonth: 0, shareThisMonth: 0, paidAllTime: 0, shareAllTime: 0 }));
+      return st;
+    };
+    let previousMonthSpend = 0;
+    for (const e of group.expenses) {
+      const inMonth = e.date >= monthStart;
+      stat(e.paidById).paidAllTime += e.amount;
+      if (inMonth) stat(e.paidById).paidThisMonth += e.amount;
+      if (e.date >= prevMonthStart && e.date < monthStart) previousMonthSpend += e.amount;
+      for (const sp of e.splits) {
+        stat(sp.userId).shareAllTime += sp.amount;
+        if (inMonth) stat(sp.userId).shareThisMonth += sp.amount;
+      }
+    }
+
     let spendThisMonth = 0;
     let yourShareThisMonth = 0;
     let spendLast3Months = 0;
@@ -121,6 +155,30 @@ export async function getAIContext(userId: string): Promise<AIGroupContext> {
       spendLast3Months: round(spendLast3Months),
       expenseCount: group.expenses.length,
       settleUp,
+      previousMonthSpend: round(previousMonthSpend),
+      members: [...memberStats.entries()].map(([id, st]) => ({
+        name: nameOf(id),
+        balance: round(balances.find((b) => b.userId === id)?.balance ?? 0),
+        paidThisMonth: round(st.paidThisMonth),
+        shareThisMonth: round(st.shareThisMonth),
+        paidAllTime: round(st.paidAllTime),
+        shareAllTime: round(st.shareAllTime),
+      })),
+      fullSettleUp: simplifyDebts(balances).map((d) => ({ from: nameOf(d.fromId), to: nameOf(d.toId), amount: round(d.amount) })),
+      recentExpenses: [...group.expenses]
+        .sort((a, b) => b.date.getTime() - a.date.getTime())
+        .slice(0, 10)
+        .map((e) => ({
+          date: format(e.date, "yyyy-MM-dd"),
+          description: e.description,
+          amount: e.amount,
+          paidBy: nameOf(e.paidById),
+          yourShare: e.splits.find((sp) => sp.userId === userId)?.amount ?? 0,
+        })),
+      recentSettlements: [...group.settlements]
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, 5)
+        .map((st) => ({ date: format(st.createdAt, "yyyy-MM-dd"), from: nameOf(st.fromId), to: nameOf(st.toId), amount: st.amount })),
     };
   });
 
