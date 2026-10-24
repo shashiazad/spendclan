@@ -167,7 +167,7 @@ export async function getAIContext(userId: string): Promise<AIGroupContext> {
       fullSettleUp: simplifyDebts(balances).map((d) => ({ from: nameOf(d.fromId), to: nameOf(d.toId), amount: round(d.amount) })),
       recentExpenses: [...group.expenses]
         .sort((a, b) => b.date.getTime() - a.date.getTime())
-        .slice(0, 10)
+        .slice(0, 6)
         .map((e) => ({
           date: format(e.date, "yyyy-MM-dd"),
           description: e.description,
@@ -177,7 +177,7 @@ export async function getAIContext(userId: string): Promise<AIGroupContext> {
         })),
       recentSettlements: [...group.settlements]
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        .slice(0, 5)
+        .slice(0, 3)
         .map((st) => ({ date: format(st.createdAt, "yyyy-MM-dd"), from: nameOf(st.fromId), to: nameOf(st.toId), amount: st.amount })),
     };
   });
@@ -201,14 +201,14 @@ export async function getAIContext(userId: string): Promise<AIGroupContext> {
 /** Group expenses the user can see that match the advisor's parsed question. */
 export async function findRelevantGroupExpenses(
   userId: string,
-  filters: { searchQuery: string; dateStart: string | null; dateEnd: string | null; minAmount: number | null; maxAmount: number | null },
+  filters: { searchQuery: string; dateStart?: string | null; dateEnd?: string | null; minAmount?: number | null; maxAmount?: number | null },
 ) {
   // The filters come from a language model, so anything malformed is ignored rather than trusted
-  const toDate = (s: string | null) => {
+  const toDate = (s: string | null | undefined) => {
     const d = s ? new Date(s) : null;
     return d && !Number.isNaN(d.getTime()) ? d : undefined;
   };
-  const toAmount = (n: number | null) => (typeof n === "number" && Number.isFinite(n) ? n : undefined);
+  const toAmount = (n: number | null | undefined) => (typeof n === "number" && Number.isFinite(n) ? n : undefined);
   const from = toDate(filters.dateStart);
   const to = toDate(filters.dateEnd);
   const min = toAmount(filters.minAmount);
@@ -224,7 +224,7 @@ export async function findRelevantGroupExpenses(
     prisma.groupExpense.findMany({
       where: { ...base, ...where },
       orderBy: { date: "desc" },
-      take: 15,
+      take: 8,
       include: {
         group: { select: { name: true } },
         paidBy: { select: { id: true, name: true } },
@@ -234,8 +234,8 @@ export async function findRelevantGroupExpenses(
 
   const term = filters.searchQuery.trim();
   let rows = term ? await query({ description: { contains: term.slice(0, 100), mode: "insensitive" } }) : [];
-  // No description matched: fall back to the date/amount filters alone
-  if (rows.length === 0) rows = await query({});
+  // Without a matching description, only date/amount filters can narrow things; never dump unrelated rows
+  if (rows.length === 0 && (from || to || min !== undefined || max !== undefined)) rows = await query({});
 
   return rows.map((e) => ({
     date: format(e.date, "yyyy-MM-dd"),

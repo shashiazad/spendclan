@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { isAIConfigured, generateFinancialInsight, friendlyAIError, parseJsonObject } from "@/lib/ai";
+import { isAIConfigured, generateWithCache, friendlyAIError, parseJsonObject } from "@/lib/ai";
 import { getAIContext } from "@/lib/ai-data";
 import { buildRemindersPrompt } from "@/lib/ai-prompts";
 
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ reminders: [] });
     }
 
-    const raw = await generateFinancialInsight(buildRemindersPrompt(ctx, tone));
+    const raw = await generateWithCache(`reminders:${auth.session.user.id}`, buildRemindersPrompt(ctx, tone), { maxTokens: 600, json: true });
     const parsed = parseJsonObject<{ reminders: Reminder[] }>(raw);
     const reminders = (parsed?.reminders ?? []).filter(
       (r) => typeof r?.name === "string" && typeof r?.message === "string",

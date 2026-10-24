@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 const DEFAULT_MODEL = "qwen/qwen3.8-27b";
 const GROQ_URL = "https://api.groq.com/openai/v1";
 
@@ -31,7 +33,10 @@ async function chatCompletion(
   const cfg = aiConfig();
   if (!cfg) throw new Error("AI_API_KEY is not configured");
 
-  const send = async (json: boolean) => {
+  // Qwen3-style models bill hidden reasoning tokens against the daily quota, so switch it off
+  const reasoning = process.env.AI_REASONING_EFFORT ?? "none";
+
+  const send = async (json: boolean, withReasoning: boolean) => {
     const res = await fetch(`${cfg.baseUrl}/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
@@ -41,6 +46,7 @@ async function chatCompletion(
         temperature: opts.temperature ?? 0.7,
         max_tokens: opts.maxTokens ?? 2048,
         ...(json ? { response_format: { type: "json_object" } } : {}),
+        ...(withReasoning && reasoning !== "off" ? { reasoning_effort: reasoning } : {}),
       }),
       signal: AbortSignal.timeout(60_000),
     });
@@ -52,11 +58,11 @@ async function chatCompletion(
     return stripThinking(data.choices?.[0]?.message?.content ?? "");
   };
 
+  // Not every provider/model supports reasoning_effort or response_format; retry once without them
   try {
-    return await send(!!opts.json);
+    return await send(!!opts.json, true);
   } catch (error) {
-    // Not every provider/model supports response_format; the prompt already demands JSON
-    if (opts.json && error instanceof AIRequestError && error.status === 400) return send(false);
+    if (error instanceof AIRequestError && error.status === 400) return send(false, false);
     throw error;
   }
 }
@@ -73,9 +79,6 @@ export function parseJsonObject<T>(raw: string): T | null {
     return null;
   }
 }
-
-// Helper function to delay execution
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 /** Maps raw AI API errors to user-friendly messages */
 export function friendlyAIError(error: unknown): string {
@@ -96,6 +99,10 @@ export function friendlyAIError(error: unknown): string {
     msgLower.includes("resource_exhausted") ||
     msgLower.includes("rate limit")
   ) {
+    const wait = msg.match(/try again in ((?:\d+h)?(?:\d+m)?[\d.]*s?)/i)?.[1];
+    if (msgLower.includes("per day") || msgLower.includes("tpd")) {
+      return `The AI advisor has hit its daily usage limit${wait ? `. Please try again in about ${wait.replace(/\.\d+/, "")}` : ", please try again later"}. 🕒`;
+    }
     return "SpendClan AI is analyzing a lot of balance sheets right now! 📊 Please give us a quick moment and try asking your question again.";
   }
 
@@ -118,31 +125,19 @@ export function friendlyAIError(error: unknown): string {
   return "Something unexpected happened with our AI advisor. Please try again in a moment. 🙏";
 }
 
-export async function generateFinancialInsight(prompt: string | ChatTurn[], maxRetries = 3): Promise<string> {
+export async function generateFinancialInsight(
+  prompt: string | ChatTurn[],
+  opts: { maxTokens?: number; json?: boolean } = {},
+): Promise<string> {
   const messages: ChatTurn[] = typeof prompt === "string" ? [{ role: "user", content: prompt }] : prompt;
-  let attempt = 0;
 
-  while (attempt < maxRetries) {
-    try {
-      return await chatCompletion(messages, { temperature: 0.6, maxTokens: 2048 });
-    } catch (error: unknown) {
-      attempt++;
-      const errMsg = error instanceof Error ? error.message : String(error);
-      const isRateLimit = (error instanceof AIRequestError && error.status === 429) || errMsg.toLowerCase().includes("rate limit");
-
-      if (isRateLimit && attempt < maxRetries) {
-        const backoffMs = Math.pow(2, attempt) * 1000;
-        console.warn(`[AI] Rate limit hit (429). Retrying in ${backoffMs}ms... (Attempt ${attempt}/${maxRetries})`);
-        await delay(backoffMs);
-        continue;
-      }
-
-      console.error(`[AI] Error generating content (Attempt ${attempt}):`, errMsg);
-      throw new Error(friendlyAIError(error));
-    }
+  try {
+    return await chatCompletion(messages, { temperature: 0.5, maxTokens: opts.maxTokens ?? 700, json: opts.json });
+  } catch (error: unknown) {
+    // No automatic retries: a retried request burns the same tokens again and 429s are usually quota, not blips
+    console.error("[AI] Error generating content:", error instanceof Error ? error.message : error);
+    throw new Error(friendlyAIError(error));
   }
-
-  throw new Error("SpendClan AI is analyzing a lot of balance sheets right now! 📊 Please give us a quick moment and try asking your question again.");
 }
 
 const aiConfigured = () => aiConfig() !== null;
@@ -154,98 +149,38 @@ export function isAIConfigured(): boolean {
 // Simple in-memory cache to avoid redundant API calls
 const cache = new Map<string, { data: string; expiresAt: number }>();
 
+/** Cached by prompt content, so unchanged group data never costs a second request. */
 export async function generateWithCache(
   key: string,
   prompt: string,
-  ttlMs: number = 3600000, // 1 hour default
+  opts: { ttlMs?: number; maxTokens?: number; json?: boolean } = {},
 ): Promise<string> {
-  const cached = cache.get(key);
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.data;
-  }
+  const fullKey = `${key}:${createHash("sha1").update(prompt).digest("hex")}`;
+  const cached = cache.get(fullKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.data;
 
-  const result = await generateFinancialInsight(prompt);
-  cache.set(key, { data: result, expiresAt: Date.now() + ttlMs });
+  const result = await generateFinancialInsight(prompt, opts);
+  cache.set(fullKey, { data: result, expiresAt: Date.now() + (opts.ttlMs ?? 6 * 3600_000) });
+  if (cache.size > 500) cache.delete(cache.keys().next().value as string);
   return result;
 }
 
-export interface StructuredQueryFilters {
-  dateStart: string | null;
-  dateEnd: string | null;
-  minAmount: number | null;
-  maxAmount: number | null;
-}
+const usage = new Map<string, number[]>();
 
-export interface TransformedQuery {
-  searchQuery: string;
-  filters: StructuredQueryFilters;
-}
-
-/**
- * Uses the AI model to parse a user's natural language question into search terms and SQL filters.
- */
-export async function transformQuery(userMessage: string): Promise<TransformedQuery> {
-  const now = new Date();
-  const systemPrompt = `
-You are an AI Query Transformer for SpendClan, an app for splitting group expenses.
-Your task is to analyze the user's natural language question about their group expenses and extract structured search filters.
-
-Analyze the question and extract:
-1. "searchQuery": The core term to look for in expense descriptions (e.g., "hotel", "uber", "rent", "dinner", "groceries"). Keep it short. If the question is general (e.g. "who owes me?"), return an empty string "".
-2. "filters": A JSON object containing:
-   - "dateStart" (ISO string or null): Start of the date range the user mentions ("last week", "in June", "since yesterday").
-   - "dateEnd" (ISO string or null): End of that date range.
-   - "minAmount" (number or null): Minimum expense amount.
-   - "maxAmount" (number or null): Maximum expense amount.
-
-The current time is ${now.toISOString()} (${now.toUTCString()}). Resolve relative dates against it.
-
-Return ONLY a valid JSON object matching this exact TypeScript structure. Do NOT wrap in markdown backticks or code blocks.
-{
-  "searchQuery": string,
-  "filters": {
-    "dateStart": string | null,
-    "dateEnd": string | null,
-    "minAmount": number | null,
-    "maxAmount": number | null
+/** Per-user cap on AI calls per hour, so one user can't drain the shared daily token quota. */
+export function consumeAIQuota(userId: string, limit = 20): boolean {
+  const now = Date.now();
+  const recent = (usage.get(userId) ?? []).filter((t) => now - t < 3600_000);
+  if (recent.length >= limit) {
+    usage.set(userId, recent);
+    return false;
   }
+  recent.push(now);
+  usage.set(userId, recent);
+  return true;
 }
-`;
 
-  try {
-    const text = await chatCompletion(
-      [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userMessage },
-      ],
-      { temperature: 0.1, json: true, maxTokens: 512 },
-    );
-    const parsed = parseJsonObject<TransformedQuery>(text);
-    if (!parsed) throw new Error("Model returned no JSON");
-    
-    // Ensure structure is clean and default values exist
-    return {
-      searchQuery: parsed.searchQuery || "",
-      filters: {
-        dateStart: parsed.filters?.dateStart || null,
-        dateEnd: parsed.filters?.dateEnd || null,
-        minAmount: parsed.filters?.minAmount ?? null,
-        maxAmount: parsed.filters?.maxAmount ?? null,
-      },
-    };
-  } catch (error) {
-    console.error("[Query Transformation] Failed to transform query, using fallback:", error);
-    return {
-      searchQuery: userMessage,
-      filters: {
-        dateStart: null,
-        dateEnd: null,
-        minAmount: null,
-        maxAmount: null,
-      },
-    };
-  }
-}
+export const AI_QUOTA_MESSAGE = "You've asked a lot of questions this hour. Please try again in a bit. 🕒";
 
 /**
  * Analyzes the user's message for persistent financial goals, rules, or constraints.
@@ -286,7 +221,7 @@ ${notesContext}
         { role: "system", content: systemPrompt },
         { role: "user", content: `User Message: "${userMessage}"` },
       ],
-      { temperature: 0.1, maxTokens: 512 },
+      { temperature: 0.1, maxTokens: 300 },
     );
     if (!resultText || resultText === "NO_CHANGE" || resultText.includes("NO_CHANGE")) {
       return null;
